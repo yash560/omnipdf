@@ -29,6 +29,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'register' | 'guest'>('login');
 
+  // 1. Immediate client-side hydration from localStorage on mount
+  useEffect(() => {
+    try {
+      const cachedUser = localStorage.getItem('omnipdf_user');
+      const cachedToken = localStorage.getItem('omnipdf_token');
+      if (cachedUser) {
+        setUser(JSON.parse(cachedUser));
+      }
+      if (cachedToken) {
+        setToken(cachedToken);
+      }
+    } catch {}
+  }, []);
+
   const openAuthModal = useCallback((tab: 'login' | 'register' | 'guest' = 'login') => {
     setAuthModalTab(tab);
     setAuthModalOpen(true);
@@ -40,19 +54,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const refreshUser = useCallback(async () => {
     try {
-      const res = await fetch('/api/auth/me');
+      const storedToken = localStorage.getItem('omnipdf_token');
+      const headers: Record<string, string> = {};
+      if (storedToken) {
+        headers['Authorization'] = `Bearer ${storedToken}`;
+      }
+
+      const res = await fetch('/api/auth/me', {
+        headers,
+        cache: 'no-store',
+      });
+
       if (res.ok) {
         const data = await res.json();
         if (data.user) {
           setUser(data.user);
           localStorage.setItem('omnipdf_user', JSON.stringify(data.user));
         } else {
-          setUser(null);
-          localStorage.removeItem('omnipdf_user');
+          // Only clear if server explicitly validated there is no active session
+          if (!storedToken) {
+            setUser(null);
+            localStorage.removeItem('omnipdf_user');
+            localStorage.removeItem('omnipdf_token');
+          }
         }
       }
     } catch {
-      // Offline fallback: check localStorage
+      // Offline fallback: keep cached localStorage state
       const cached = localStorage.getItem('omnipdf_user');
       if (cached) {
         try {
@@ -64,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // Initialize on mount
+  // Re-verify session in background
   useEffect(() => {
     refreshUser();
   }, [refreshUser]);
@@ -85,8 +113,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.user) {
         setUser(data.user);
-        setToken(data.token || null);
+        const tok = data.token || null;
+        setToken(tok);
         localStorage.setItem('omnipdf_user', JSON.stringify(data.user));
+        if (tok) {
+          localStorage.setItem('omnipdf_token', tok);
+        }
       }
       closeAuthModal();
       return data;
@@ -111,8 +143,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.user) {
         setUser(data.user);
-        setToken(data.token || null);
+        const tok = data.token || null;
+        setToken(tok);
         localStorage.setItem('omnipdf_user', JSON.stringify(data.user));
+        if (tok) {
+          localStorage.setItem('omnipdf_token', tok);
+        }
       }
       closeAuthModal();
       return data;
@@ -135,8 +171,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (data.user) {
         setUser(data.user);
-        setToken(data.token || null);
+        const tok = data.token || null;
+        setToken(tok);
         localStorage.setItem('omnipdf_user', JSON.stringify(data.user));
+        if (tok) {
+          localStorage.setItem('omnipdf_token', tok);
+        }
       }
       closeAuthModal();
       return data;
@@ -152,6 +192,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(null);
     setToken(null);
     localStorage.removeItem('omnipdf_user');
+    localStorage.removeItem('omnipdf_token');
   };
 
   const isPro = user?.plan === 'pro' || user?.plan === 'enterprise' || user?.role === 'admin';

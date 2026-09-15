@@ -1,73 +1,96 @@
 import { User } from '@/types/auth';
 import { hashPassword } from './jwt';
+import { getMongoDb } from '@/lib/db/mongodb';
 
-interface UserRecord extends User {
+export interface UserRecord extends User {
   passwordHash: string;
   passwordSalt: string;
 }
 
-// Global user repository cache across serverless runs
-const globalUsers = new Map<string, UserRecord>();
+const USERS_COLLECTION = 'filecraft_users';
 
-// Initialize default VIP accounts
-let initialized = false;
+// In-memory fallback / quick cache for serverless lifecycles
+const memoryCache = new Map<string, UserRecord>();
 
-async function initDefaultUsers() {
-  if (initialized) return;
-  initialized = true;
+let dbInitialized = false;
 
-  // 1. Yash Jain (Pro Admin Account)
-  const yashPass = await hashPassword('Password123!', 'salt_yash_omnipdf');
-  const yashUser: UserRecord = {
-    id: 'user_yash_vip_001',
-    name: 'Yash Jain',
-    email: 'yash@thewebvale.com',
-    role: 'admin',
-    plan: 'pro',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    createdAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
-    lastLoginAt: Date.now(),
-    usage: {
-      documentsCount: 42,
-      aiQueriesUsed: 128,
-      storageBytes: 14_500_000,
-      maxStorageBytes: 1_000_000_000, // 1 GB Pro
-    },
-    preferences: {
-      defaultFont: 'Plus Jakarta Sans',
-      theme: 'dark',
-      autoSaveInterval: 1000,
-    },
-    passwordHash: yashPass.hash,
-    passwordSalt: yashPass.salt,
-  };
-  globalUsers.set(yashUser.email.toLowerCase(), yashUser);
+async function ensureDefaultUsers() {
+  if (dbInitialized) return;
+  dbInitialized = true;
 
-  // 2. Demo Pro Account
-  const demoPass = await hashPassword('demo1234', 'salt_demo_omnipdf');
-  const demoUser: UserRecord = {
-    id: 'user_demo_002',
-    name: 'Demo Architect',
-    email: 'demo@omnipdf.app',
-    role: 'user',
-    plan: 'pro',
-    createdAt: Date.now() - 7 * 24 * 60 * 60 * 1000,
-    lastLoginAt: Date.now(),
-    usage: {
-      documentsCount: 8,
-      aiQueriesUsed: 24,
-      storageBytes: 2_400_000,
-      maxStorageBytes: 500_000_000,
-    },
-    preferences: {
-      defaultFont: 'Inter',
-      theme: 'dark',
-      autoSaveInterval: 1500,
-    },
-    passwordHash: demoPass.hash,
-    passwordSalt: demoPass.salt,
-  };
-  globalUsers.set(demoUser.email.toLowerCase(), demoUser);
+  try {
+    const db = await getMongoDb();
+    const collection = db.collection<UserRecord>(USERS_COLLECTION);
+
+    // Create unique index on email
+    await collection.createIndex({ email: 1 }, { unique: true }).catch(() => {});
+    await collection.createIndex({ id: 1 }, { unique: true }).catch(() => {});
+
+    // Check if Yash user exists
+    const yashExists = await collection.findOne({ email: 'yash@thewebvale.com' });
+    if (!yashExists) {
+      const yashPass = await hashPassword('Password123!', 'salt_yash_omnipdf');
+      const yashUser: UserRecord = {
+        id: 'user_yash_vip_001',
+        name: 'Yash Jain',
+        email: 'yash@thewebvale.com',
+        role: 'admin',
+        plan: 'pro',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        createdAt: Date.now() - 30 * 24 * 60 * 60 * 1000,
+        lastLoginAt: Date.now(),
+        usage: {
+          documentsCount: 42,
+          aiQueriesUsed: 128,
+          storageBytes: 14_500_000,
+          maxStorageBytes: 10_000_000_000, // 10 GB Pro
+        },
+        preferences: {
+          defaultFont: 'Plus Jakarta Sans',
+          theme: 'dark',
+          autoSaveInterval: 1000,
+        },
+        passwordHash: yashPass.hash,
+        passwordSalt: yashPass.salt,
+      };
+      await collection.insertOne(yashUser);
+      memoryCache.set(yashUser.email.toLowerCase(), yashUser);
+      memoryCache.set(yashUser.id, yashUser);
+    }
+
+    // Check if demo user exists
+    const demoExists = await collection.findOne({ email: 'demo@omnipdf.app' });
+    if (!demoExists) {
+      const demoPass = await hashPassword('demo1234', 'salt_demo_omnipdf');
+      const demoUser: UserRecord = {
+        id: 'user_demo_002',
+        name: 'Demo Architect',
+        email: 'demo@omnipdf.app',
+        role: 'user',
+        plan: 'pro',
+        createdAt: Date.now() - 7 * 24 * 60 * 60 * 1000,
+        lastLoginAt: Date.now(),
+        usage: {
+          documentsCount: 8,
+          aiQueriesUsed: 24,
+          storageBytes: 2_400_000,
+          maxStorageBytes: 1_000_000_000,
+        },
+        preferences: {
+          defaultFont: 'Plus Jakarta Sans',
+          theme: 'dark',
+          autoSaveInterval: 1500,
+        },
+        passwordHash: demoPass.hash,
+        passwordSalt: demoPass.salt,
+      };
+      await collection.insertOne(demoUser);
+      memoryCache.set(demoUser.email.toLowerCase(), demoUser);
+      memoryCache.set(demoUser.id, demoUser);
+    }
+  } catch (err) {
+    console.warn('[FileCraft Auth] MongoDB initialization fallback to memory:', err);
+  }
 }
 
 // Safe user serializer (omits password hash and salt)
@@ -78,13 +101,49 @@ export function sanitizeUser(record: UserRecord): User {
 }
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
-  await initDefaultUsers();
-  return globalUsers.get(email.toLowerCase().trim()) || null;
+  const normalized = email.toLowerCase().trim();
+  await ensureDefaultUsers();
+
+  // Try MongoDB first
+  try {
+    const db = await getMongoDb();
+    const collection = db.collection<UserRecord>(USERS_COLLECTION);
+    const doc = await collection.findOne({ email: normalized });
+    if (doc) {
+      memoryCache.set(normalized, doc);
+      memoryCache.set(doc.id, doc);
+      return doc;
+    }
+  } catch (err) {
+    console.warn('[FileCraft Auth] MongoDB query error:', err);
+  }
+
+  // Fallback to memory cache
+  return memoryCache.get(normalized) || null;
 }
 
 export async function findUserById(id: string): Promise<UserRecord | null> {
-  await initDefaultUsers();
-  for (const user of globalUsers.values()) {
+  await ensureDefaultUsers();
+
+  // Try MongoDB first
+  try {
+    const db = await getMongoDb();
+    const collection = db.collection<UserRecord>(USERS_COLLECTION);
+    const doc = await collection.findOne({ id });
+    if (doc) {
+      memoryCache.set(doc.email.toLowerCase(), doc);
+      memoryCache.set(id, doc);
+      return doc;
+    }
+  } catch (err) {
+    console.warn('[FileCraft Auth] MongoDB findUserById error:', err);
+  }
+
+  // Fallback to memory cache
+  if (memoryCache.has(id)) {
+    return memoryCache.get(id)!;
+  }
+  for (const user of memoryCache.values()) {
     if (user.id === id) return user;
   }
   return null;
@@ -96,10 +155,12 @@ export async function createUser(data: {
   password: string;
   plan?: 'free' | 'pro' | 'enterprise';
 }): Promise<UserRecord> {
-  await initDefaultUsers();
+  await ensureDefaultUsers();
   const normalizedEmail = data.email.toLowerCase().trim();
 
-  if (globalUsers.has(normalizedEmail)) {
+  // Check if exists
+  const existing = await findUserByEmail(normalizedEmail);
+  if (existing) {
     throw new Error('An account with this email address already exists.');
   }
 
@@ -116,7 +177,7 @@ export async function createUser(data: {
       documentsCount: 0,
       aiQueriesUsed: 0,
       storageBytes: 0,
-      maxStorageBytes: 500_000_000,
+      maxStorageBytes: 1_000_000_000,
     },
     preferences: {
       defaultFont: 'Plus Jakarta Sans',
@@ -127,32 +188,55 @@ export async function createUser(data: {
     passwordSalt: salt,
   };
 
-  globalUsers.set(normalizedEmail, newUser);
+  try {
+    const db = await getMongoDb();
+    const collection = db.collection<UserRecord>(USERS_COLLECTION);
+    await collection.insertOne(newUser);
+  } catch (err) {
+    console.warn('[FileCraft Auth] MongoDB insert error:', err);
+  }
+
+  memoryCache.set(normalizedEmail, newUser);
+  memoryCache.set(newUser.id, newUser);
   return newUser;
 }
 
 export async function createGuestUser(): Promise<UserRecord> {
-  await initDefaultUsers();
+  await ensureDefaultUsers();
   const guestId = `guest_${Date.now().toString(36)}`;
   const guestUser: UserRecord = {
     id: `user_${guestId}`,
     name: `Guest User #${guestId.slice(-4)}`,
-    email: `guest_${guestId}@omnipdf.local`,
+    email: `guest_${guestId}@filecraft.local`,
     role: 'user',
     plan: 'pro',
     createdAt: Date.now(),
     lastLoginAt: Date.now(),
     usage: {
       documentsCount: 1,
-      aiQueriesUsed: 5,
+      aiQueriesUsed: 10,
       storageBytes: 500_000,
-      maxStorageBytes: 100_000_000,
+      maxStorageBytes: 500_000_000,
+    },
+    preferences: {
+      defaultFont: 'Plus Jakarta Sans',
+      theme: 'system',
+      autoSaveInterval: 1200,
     },
     passwordHash: 'guest_no_password',
     passwordSalt: 'guest_salt',
   };
 
-  globalUsers.set(guestUser.email.toLowerCase(), guestUser);
+  try {
+    const db = await getMongoDb();
+    const collection = db.collection<UserRecord>(USERS_COLLECTION);
+    await collection.insertOne(guestUser);
+  } catch (err) {
+    console.warn('[FileCraft Auth] MongoDB insert guest error:', err);
+  }
+
+  memoryCache.set(guestUser.email.toLowerCase(), guestUser);
+  memoryCache.set(guestUser.id, guestUser);
   return guestUser;
 }
 
@@ -160,7 +244,21 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
   const user = await findUserById(id);
   if (!user) return null;
 
-  Object.assign(user, updates);
-  globalUsers.set(user.email.toLowerCase(), user);
-  return sanitizeUser(user);
+  const updatedUser: UserRecord = {
+    ...user,
+    ...updates,
+    lastLoginAt: Date.now(),
+  };
+
+  try {
+    const db = await getMongoDb();
+    const collection = db.collection<UserRecord>(USERS_COLLECTION);
+    await collection.updateOne({ id }, { $set: updatedUser });
+  } catch (err) {
+    console.warn('[FileCraft Auth] MongoDB update error:', err);
+  }
+
+  memoryCache.set(updatedUser.email.toLowerCase(), updatedUser);
+  memoryCache.set(id, updatedUser);
+  return sanitizeUser(updatedUser);
 }
