@@ -22,6 +22,34 @@ import {
   FileText, 
   ScanText, 
   Columns2,
+  RefreshCw,
+  Sliders,
+  Wand2,
+  Maximize2,
+  ShieldAlert,
+  Code2,
+  Palette,
+  Table,
+  Sparkles,
+  BarChart3,
+  FileType,
+  GitCompare,
+  BookOpen,
+  Video,
+  Clapperboard,
+  Volume2,
+  Activity,
+  Subtitles,
+  FolderArchive,
+  FileArchive,
+  Split,
+  Flame,
+  Binary,
+  QrCode,
+  MessageSquareText,
+  TableProperties,
+  Tags,
+  Mic,
   ArrowUpRight
 } from 'lucide-react';
 import { PDFTool } from '@/types/pdf';
@@ -51,6 +79,34 @@ const iconMap: Record<string, any> = {
   FileText,
   ScanText,
   Columns2,
+  RefreshCw,
+  Sliders,
+  Wand2,
+  Maximize2,
+  ShieldAlert,
+  Code2,
+  Palette,
+  Table,
+  Sparkles,
+  BarChart3,
+  FileType,
+  GitCompare,
+  BookOpen,
+  Video,
+  Clapperboard,
+  Volume2,
+  Activity,
+  Subtitles,
+  FolderArchive,
+  FileArchive,
+  Split,
+  Flame,
+  Binary,
+  QrCode,
+  MessageSquareText,
+  TableProperties,
+  Tags,
+  Mic,
 };
 
 export function ToolCard({ tool }: ToolCardProps) {
@@ -105,7 +161,7 @@ export function ToolCard({ tool }: ToolCardProps) {
 
       {/* Bottom Category Tag */}
       <div className="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800/60 flex items-center justify-between text-[11px] font-semibold text-zinc-400 dark:text-zinc-500">
-        <span className="capitalize">{tool.category}</span>
+        <span className="capitalize">{tool.suite ? `${tool.suite} Suite` : tool.category}</span>
         <span className="opacity-0 group-hover:opacity-100 group-hover:text-zinc-900 dark:group-hover:text-zinc-200 transition-opacity flex items-center gap-1 font-bold">
           Open Tool →
         </span>

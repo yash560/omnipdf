@@ -1,11 +1,25 @@
-export type ToolCategory = 'all' | 'organize' | 'optimize' | 'edit' | 'security' | 'convert' | 'smart';
+export type ToolCategory = 
+  | 'all' 
+  | 'pdf' 
+  | 'image' 
+  | 'data' 
+  | 'media' 
+  | 'archive' 
+  | 'security' 
+  | 'ai'
+  | 'organize' 
+  | 'optimize' 
+  | 'edit' 
+  | 'convert' 
+  | 'smart';
 
 export interface PDFTool {
   id: string;
   name: string;
   slug: string;
   description: string;
-  category: 'organize' | 'optimize' | 'edit' | 'security' | 'convert' | 'smart';
+  category: ToolCategory;
+  suite?: 'pdf' | 'image' | 'data' | 'media' | 'archive' | 'security' | 'ai';
   icon: string;
   color: string;
   badge?: string;

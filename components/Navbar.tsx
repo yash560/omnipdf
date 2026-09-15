@@ -8,32 +8,31 @@ import {
   Search, 
   ShieldCheck, 
   Layers, 
-  Scissors, 
+  Image as ImageIcon, 
   Minimize2, 
   FileEdit, 
   PenTool, 
   Lock, 
-  Image as ImageIcon,
-  ScanText
+  Sparkles,
+  Table,
+  Video,
+  Bot
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { UserDropdown } from './auth/UserDropdown';
 import { useAuth } from '@/lib/auth/auth-context';
-import { PDF_TOOLS } from '@/lib/tools-data';
+import { ALL_TOOLS } from '@/lib/tools-data';
 
 export function Navbar() {
   const [toolsOpen, setToolsOpen] = useState(false);
   const { isAuthenticated, openAuthModal } = useAuth();
 
-  const quickTools = [
-    { name: 'Merge PDF', slug: 'merge', icon: Layers, color: 'text-red-500' },
-    { name: 'Split PDF', slug: 'split', icon: Scissors, color: 'text-orange-500' },
-    { name: 'Compress PDF', slug: 'compress', icon: Minimize2, color: 'text-cyan-500' },
-    { name: 'Edit PDF', slug: 'edit', icon: FileEdit, color: 'text-blue-500' },
-    { name: 'e-Sign PDF', slug: 'sign', icon: PenTool, color: 'text-purple-500' },
-    { name: 'Protect PDF', slug: 'protect', icon: Lock, color: 'text-pink-500' },
-    { name: 'JPG to PDF', slug: 'jpg-to-pdf', icon: ImageIcon, color: 'text-teal-500' },
-    { name: 'OCR PDF', slug: 'ocr', icon: ScanText, color: 'text-violet-500' },
+  const quickSuites = [
+    { name: 'PDF Studio', slug: 'edit', icon: FileEdit },
+    { name: 'Image Studio', slug: 'image-converter', icon: ImageIcon },
+    { name: 'Spreadsheets', slug: 'csv-json-excel', icon: Table },
+    { name: 'AI Chat', slug: 'chat-file', icon: Bot },
+    { name: 'Secure Share', slug: 'burn-share', icon: Lock },
   ];
 
   return (
@@ -42,15 +41,15 @@ export function Navbar() {
         {/* Left: Brand Logo & Mega Menu */}
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 via-red-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform duration-200">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform duration-200">
               <FileText className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
-                Omni<span className="text-rose-500">PDF</span>
+                Omni<span className="text-rose-500">Files</span>
               </span>
               <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 -mt-1 hidden sm:inline">
-                Document Studio
+                Universal File OS
               </span>
             </div>
           </Link>
@@ -62,14 +61,14 @@ export function Navbar() {
               onBlur={() => setTimeout(() => setToolsOpen(false), 200)}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors"
             >
-              <span>All PDF Tools</span>
+              <span>50 Tools Catalog</span>
               <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${toolsOpen ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Mega Dropdown */}
             {toolsOpen && (
               <div className="absolute left-0 top-full mt-2 w-[540px] p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl grid grid-cols-2 gap-2 animate-in fade-in zoom-in-95 duration-150 z-50">
-                {PDF_TOOLS.slice(0, 10).map((tool) => (
+                {ALL_TOOLS.slice(0, 10).map((tool) => (
                   <Link
                     key={tool.id}
                     href={`/${tool.slug}`}
@@ -92,7 +91,7 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="col-span-2 pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center text-xs">
-                  <span className="text-zinc-500">20+ Powerhouse PDF Tools</span>
+                  <span className="text-zinc-500">50 Powerhouse Tools Across 6 Suites</span>
                   <Link href="/" className="font-semibold text-rose-500 hover:underline">
                     View Complete Catalog →
                   </Link>
@@ -103,7 +102,7 @@ export function Navbar() {
 
           {/* Quick links */}
           <nav className="hidden lg:flex items-center gap-1">
-            {quickTools.slice(0, 4).map((tool) => (
+            {quickSuites.map((tool) => (
               <Link
                 key={tool.slug}
                 href={`/${tool.slug}`}
