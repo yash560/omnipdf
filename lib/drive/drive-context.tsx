@@ -12,27 +12,22 @@ import {
   DriveFolderColor,
 } from './drive-types';
 import {
-  getFolderChildren,
-  getStarredItems,
-  getRecentItems,
-  getTrashItems,
-  getItemsByCategory,
-  getFolderBreadcrumbs,
-  createDriveFolder,
-  uploadDriveFile,
-  uploadDriveDirectoryStructure,
-  updateDriveItem,
-  moveDriveItems,
-  duplicateDriveFile,
-  moveDriveItemsToTrash,
-  restoreDriveItemsFromTrash,
-  deleteDriveItemsPermanently,
-  emptyDriveTrash,
-  getDriveStats,
-  searchDrive,
-  exportDriveItemAsZip,
-  getFileBlob,
-} from './drive-db';
+  fetchCloudItems,
+  uploadCloudFiles,
+  uploadCloudDirectoryStructure,
+  createCloudFolderApi,
+  updateCloudItemApi,
+  moveCloudItemsApi,
+  trashCloudItemsApi,
+  restoreCloudItemsApi,
+  deleteCloudItemsPermanentlyApi,
+  emptyCloudTrashApi,
+  fetchCloudStats,
+  exportCloudItemAsZip,
+  getCloudFileBlob,
+  getCloudFileUrl,
+} from './cloud-api';
+import { useAuth } from '@/lib/auth/auth-context';
 import saveAs from 'file-saver';
 
 interface DriveContextType {
@@ -59,6 +54,7 @@ interface DriveContextType {
   detailsItem: DriveItem | null;
   isUploading: boolean;
   uploadProgress: number;
+  authRequired: boolean;
 
   // Actions
   navigateToFolder: (folderId: string | null) => void;
@@ -67,7 +63,7 @@ interface DriveContextType {
   selectAll: () => void;
   clearSelection: () => void;
   
-  // CRUD Operations
+  // Cloud CRUD Operations
   createFolder: (name: string, color?: DriveFolderColor) => Promise<DriveItem>;
   uploadFiles: (fileList: File[] | FileList) => Promise<void>;
   uploadDirectory: (items: { path: string; file: File }[]) => Promise<void>;
@@ -90,8 +86,10 @@ interface DriveContextType {
 const DriveContext = createContext<DriveContextType | null>(null);
 
 export function DriveProvider({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, user } = useAuth();
+
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<DriveBreadcrumb[]>([{ id: null, name: 'My Drive' }]);
+  const [breadcrumbs, setBreadcrumbs] = useState<DriveBreadcrumb[]>([{ id: null, name: 'Cloud Drive' }]);
   const [viewSection, setViewSection] = useState<DriveViewSection>('my-drive');
   const [selectedCategory, setSelectedCategory] = useState<DriveCategory | null>(null);
   const [viewLayout, setViewLayout] = useState<DriveViewLayout>('grid');
@@ -106,30 +104,29 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
   const [detailsItem, setDetailsItem] = useState<DriveItem | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [authRequired, setAuthRequired] = useState(false);
 
-  // Load items for current section / folder / search
+  // Load items from Cloud API for current section / folder / search
   const loadItems = useCallback(async () => {
+    if (!isAuthenticated && !user) {
+      setAuthRequired(true);
+      setLoading(false);
+      return;
+    }
+
+    setAuthRequired(false);
     setLoading(true);
+
     try {
-      let fetched: DriveItem[] = [];
+      const { items: fetched, breadcrumbs: crumbs } = await fetchCloudItems({
+        section: viewSection,
+        parentId: currentFolderId,
+        category: selectedCategory || undefined,
+        query: searchTerm.trim() || undefined,
+      });
 
-      if (searchTerm.trim().length > 0) {
-        fetched = await searchDrive(searchTerm, selectedCategory || undefined);
-      } else if (viewSection === 'my-drive') {
-        fetched = await getFolderChildren(currentFolderId, false);
-      } else if (viewSection === 'starred') {
-        fetched = await getStarredItems();
-      } else if (viewSection === 'recent') {
-        fetched = await getRecentItems();
-      } else if (viewSection === 'trash') {
-        fetched = await getTrashItems();
-      } else if (viewSection === 'category' && selectedCategory) {
-        fetched = await getItemsByCategory(selectedCategory);
-      }
-
-      // Apply Sort
+      // Apply Client Sort
       fetched.sort((a, b) => {
-        // Folders always first in My Drive view
         if (viewSection === 'my-drive' && a.type !== b.type) {
           return a.type === 'folder' ? -1 : 1;
         }
@@ -149,20 +146,21 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
       });
 
       setItems(fetched);
+      setBreadcrumbs(crumbs.length > 0 ? crumbs : [{ id: null, name: 'Cloud Drive' }]);
 
-      // Load breadcrumbs
-      const crumbs = await getFolderBreadcrumbs(currentFolderId);
-      setBreadcrumbs(crumbs);
-
-      // Load aggregated stats
-      const s = await getDriveStats();
-      setStats(s);
-    } catch (err) {
-      console.error('Error loading drive items:', err);
+      // Fetch cloud stats
+      const s = await fetchCloudStats().catch(() => null);
+      if (s) setStats(s);
+    } catch (err: any) {
+      if (err.message === 'AUTH_REQUIRED') {
+        setAuthRequired(true);
+      } else {
+        console.error('[DriveProvider] Error loading cloud items:', err);
+      }
     } finally {
       setLoading(false);
     }
-  }, [currentFolderId, viewSection, selectedCategory, sortOption, searchTerm]);
+  }, [isAuthenticated, user, currentFolderId, viewSection, selectedCategory, sortOption, searchTerm]);
 
   useEffect(() => {
     loadItems();
@@ -215,7 +213,7 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
   };
 
   const createFolder = async (name: string, color: DriveFolderColor = 'default') => {
-    const folder = await createDriveFolder(name, currentFolderId, color);
+    const folder = await createCloudFolderApi(name, currentFolderId, color);
     await loadItems();
     return folder;
   };
@@ -225,15 +223,11 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
     if (list.length === 0) return;
 
     setIsUploading(true);
-    setUploadProgress(10);
+    setUploadProgress(15);
 
     try {
-      let completed = 0;
-      for (const file of list) {
-        await uploadDriveFile(file, currentFolderId);
-        completed++;
-        setUploadProgress(Math.round((completed / list.length) * 100));
-      }
+      await uploadCloudFiles(list, currentFolderId);
+      setUploadProgress(100);
       await loadItems();
     } finally {
       setIsUploading(false);
@@ -246,7 +240,8 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
     setIsUploading(true);
     setUploadProgress(20);
     try {
-      await uploadDriveDirectoryStructure(directoryItems, currentFolderId);
+      await uploadCloudDirectoryStructure(directoryItems, currentFolderId);
+      setUploadProgress(100);
       await loadItems();
     } finally {
       setIsUploading(false);
@@ -255,76 +250,86 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
   };
 
   const renameItem = async (id: string, newName: string) => {
-    await updateDriveItem(id, { name: newName });
+    await updateCloudItemApi(id, { name: newName });
     await loadItems();
   };
 
   const moveItems = async (targetFolderId: string | null) => {
     if (selectedIds.length === 0) return;
-    await moveDriveItems(selectedIds, targetFolderId);
+    await moveCloudItemsApi(selectedIds, targetFolderId);
     clearSelection();
     await loadItems();
   };
 
   const duplicateItem = async (id: string) => {
-    await duplicateDriveFile(id);
-    await loadItems();
+    const original = items.find((i) => i.id === id);
+    if (!original || original.type === 'folder') return;
+    const blob = await getCloudFileBlob(id);
+    if (blob) {
+      const copyName = original.name.replace(/(\.[^.]+)$/, ' (Copy)$1');
+      await uploadCloudFiles([{ name: copyName.includes('(Copy)') ? copyName : `${original.name} (Copy)`, blob, type: original.mimeType }], original.parentId);
+      await loadItems();
+    }
   };
 
   const toggleStar = async (id: string) => {
     const item = items.find((i) => i.id === id);
     if (item) {
-      await updateDriveItem(id, { isStarred: !item.isStarred });
+      await updateCloudItemApi(id, { isStarred: !item.isStarred });
       await loadItems();
     }
   };
 
   const changeFolderColor = async (id: string, color: DriveFolderColor) => {
-    await updateDriveItem(id, { color });
+    await updateCloudItemApi(id, { color });
     await loadItems();
   };
 
   const trashSelected = async () => {
     if (selectedIds.length === 0) return;
-    await moveDriveItemsToTrash(selectedIds);
+    await trashCloudItemsApi(selectedIds);
     clearSelection();
     await loadItems();
   };
 
   const restoreSelected = async () => {
     if (selectedIds.length === 0) return;
-    await restoreDriveItemsFromTrash(selectedIds);
+    await restoreCloudItemsApi(selectedIds);
     clearSelection();
     await loadItems();
   };
 
   const deleteSelectedPermanently = async () => {
     if (selectedIds.length === 0) return;
-    await deleteDriveItemsPermanently(selectedIds);
+    await deleteCloudItemsPermanentlyApi(selectedIds);
     clearSelection();
     await loadItems();
   };
 
   const emptyTrash = async () => {
-    await emptyDriveTrash();
+    await emptyCloudTrashApi();
     clearSelection();
     await loadItems();
   };
 
   const downloadItem = async (item: DriveItem) => {
     if (item.type === 'folder') {
-      await exportDriveItemAsZip(item.id);
+      await exportCloudItemAsZip(item);
     } else {
-      const blob = await getFileBlob(item.id);
+      const blob = await getCloudFileBlob(item.id);
       if (blob) {
         saveAs(blob, item.name);
+      } else {
+        // Direct browser download
+        const url = getCloudFileUrl(item.id) + '?download=1';
+        window.open(url, '_blank');
       }
     }
   };
 
   const openPreview = (item: DriveItem) => {
     setPreviewItem(item);
-    updateDriveItem(item.id, { lastAccessedAt: Date.now() });
+    updateCloudItemApi(item.id, { lastAccessedAt: Date.now() }).catch(() => {});
   };
 
   const closePreview = () => {
@@ -354,6 +359,7 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
         detailsItem,
         isUploading,
         uploadProgress,
+        authRequired,
         navigateToFolder,
         selectSection,
         toggleSelect,

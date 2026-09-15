@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Download, RefreshCw, Sparkles, Loader2, Share2, FileText, ArrowRight, HardDrive } from 'lucide-react';
+import { CheckCircle2, Download, RefreshCw, Sparkles, Loader2, Share2, FileText, ArrowRight, HardDrive, Cloud } from 'lucide-react';
 import { formatBytes } from '@/lib/pdf/core';
-import { uploadDriveFile } from '@/lib/drive/drive-db';
+import { uploadCloudFiles } from '@/lib/drive/cloud-api';
+import { useAuth } from '@/lib/auth/auth-context';
 import Link from 'next/link';
 
 interface ProcessingModalProps {
@@ -34,6 +35,7 @@ export function ProcessingModal({
   onReset,
   actionTitle = 'Processing Document',
 }: ProcessingModalProps) {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [isSavingToDrive, setIsSavingToDrive] = useState(false);
   const [savedToDrive, setSavedToDrive] = useState(false);
 
@@ -50,15 +52,20 @@ export function ProcessingModal({
 
   const handleSaveToDrive = async () => {
     if (!resultBytes) return;
+    if (!isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+
     try {
       setIsSavingToDrive(true);
       const mime = resultFilename.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream';
       const blob = new Blob([resultBytes as unknown as BlobPart], { type: mime });
-      await uploadDriveFile({ name: resultFilename, blob, type: mime });
+      await uploadCloudFiles([{ name: resultFilename, blob, type: mime }]);
       setSavedToDrive(true);
       setTimeout(() => setSavedToDrive(false), 4000);
     } catch (err) {
-      console.error('Failed to save to Drive:', err);
+      console.error('Failed to save to Cloud Drive:', err);
     } finally {
       setIsSavingToDrive(false);
     }
@@ -170,16 +177,16 @@ export function ProcessingModal({
                     ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
                     : 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400'
                 }`}
-                title="Save directly to your offline FileCraft Drive"
+                title="Save directly to your FileCraft Cloud Drive"
               >
                 {isSavingToDrive ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : savedToDrive ? (
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                 ) : (
-                  <HardDrive className="w-3.5 h-3.5" />
+                  <Cloud className="w-3.5 h-3.5" />
                 )}
-                <span>{savedToDrive ? 'Saved in Drive!' : 'Save in Drive'}</span>
+                <span>{savedToDrive ? 'Saved in Cloud Drive!' : 'Save to Cloud'}</span>
               </button>
 
               {onReset && (

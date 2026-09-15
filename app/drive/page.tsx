@@ -8,6 +8,7 @@ import { DriveGrid } from '@/components/drive/DriveGrid';
 import { DriveTable } from '@/components/drive/DriveTable';
 import { DriveQuickLookModal } from '@/components/drive/DriveQuickLookModal';
 import { DriveDetailsDrawer } from '@/components/drive/DriveDetailsDrawer';
+import { DriveAuthGate } from '@/components/drive/DriveAuthGate';
 import {
   NewFolderModal,
   RenameModal,
@@ -16,7 +17,7 @@ import {
 } from '@/components/drive/DriveModals';
 import { DriveItem } from '@/lib/drive/drive-types';
 import { 
-  HardDrive, 
+  Cloud, 
   Upload, 
   FolderPlus, 
   FileText, 
@@ -32,6 +33,7 @@ function DriveWorkspaceInner() {
     folders,
     files,
     loading,
+    authRequired,
     viewLayout,
     viewSection,
     selectedCategory,
@@ -104,6 +106,11 @@ function DriveWorkspaceInner() {
     }
   };
 
+  // If user is not authenticated, show the Cloud Drive sign in gate
+  if (authRequired) {
+    return <DriveAuthGate />;
+  }
+
   return (
     <div
       onDragOver={handleDragOver}
@@ -113,16 +120,16 @@ function DriveWorkspaceInner() {
     >
       {/* Drag & Drop Fullscreen Overlay */}
       {isDragOverScreen && (
-        <div className="absolute inset-0 z-50 bg-rose-500/90 dark:bg-rose-950/90 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-4 p-8 pointer-events-none animate-in fade-in duration-150">
+        <div className="absolute inset-0 z-50 bg-blue-600/90 dark:bg-blue-950/90 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-4 p-8 pointer-events-none animate-in fade-in duration-150">
           <div className="w-20 h-20 rounded-3xl bg-white/20 border-2 border-white/40 flex items-center justify-center animate-bounce">
             <Upload className="w-10 h-10" />
           </div>
           <div className="text-center">
             <h2 className="text-2xl font-black tracking-tight mb-1">
-              Drop Files to Ingest into FileCraft Drive
+              Drop Files to Upload to FileCraft Cloud Drive
             </h2>
-            <p className="text-sm text-rose-100 font-medium">
-              Files will be stored privately in local IndexedDB. Zero cloud uploads.
+            <p className="text-sm text-blue-100 font-medium">
+              Files will be synchronized securely to your MongoDB Cloud Storage in real-time.
             </p>
           </div>
         </div>
@@ -142,8 +149,8 @@ function DriveWorkspaceInner() {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center space-y-3 text-zinc-400 py-24">
-              <span className="w-6 h-6 rounded-full bg-rose-500 animate-ping" />
-              <span className="text-xs font-bold">Synchronizing Local Drive...</span>
+              <span className="w-6 h-6 rounded-full bg-blue-500 animate-ping" />
+              <span className="text-xs font-bold">Synchronizing Cloud Drive...</span>
             </div>
           ) : items.length === 0 ? (
             /* Empty State */
@@ -161,12 +168,12 @@ function DriveWorkspaceInner() {
                     ? 'No Recent Documents'
                     : selectedCategory
                     ? `No ${selectedCategory.toUpperCase()} Files Found`
-                    : 'Your Drive is Ready'}
+                    : 'Your Cloud Drive is Ready'}
                 </h3>
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                   {viewSection === 'trash'
                     ? 'Deleted files and folders will appear here until permanently emptied.'
-                    : 'Drag & drop any files anywhere on the screen, or click the buttons below to get started.'}
+                    : 'Drag & drop any files anywhere on the screen, or click the buttons below to upload to Cloud.'}
                 </p>
               </div>
 
