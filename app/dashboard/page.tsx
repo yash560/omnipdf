@@ -66,7 +66,7 @@ export default function DashboardPage() {
           onClick={() => openAuthModal('login')}
           className="px-6 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-extrabold text-sm shadow-lg shadow-rose-500/20 transition-all cursor-pointer"
         >
-          Sign In to OmniPDF
+          Sign In to FileCraft
         </button>
       </div>
     );

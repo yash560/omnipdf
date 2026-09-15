@@ -7,7 +7,7 @@ export function WhatsAppDock() {
   const [hovered, setHovered] = useState(false);
   const phoneNumber = '918770183178';
   const defaultMessage = encodeURIComponent(
-    'Hi Yash, I was exploring OmniPDF and would like to connect!'
+    'Hi Yash, I was exploring FileCraft and would like to connect!'
   );
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${defaultMessage}`;
 

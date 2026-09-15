@@ -46,7 +46,7 @@ export function Navbar() {
             </div>
             <div className="flex flex-col">
               <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
-                Omni<span className="text-rose-500">Files</span>
+                File<span className="text-rose-500">Craft</span>
               </span>
               <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 -mt-1 hidden sm:inline">
                 Universal File OS

@@ -142,11 +142,11 @@ export function Footer() {
       <div className="border-t border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-950/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-500 dark:text-zinc-400">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-rose-500 to-red-600 flex items-center justify-center text-white text-xs font-bold">
-              O
+            <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-rose-500 to-red-600 flex items-center justify-center text-white text-xs font-black shadow-xs">
+              F
             </div>
             <span>
-              © {new Date().getFullYear()} OmniPDF. Designed & Architected by{' '}
+              © {new Date().getFullYear()} FileCraft. Architected & Designed by{' '}
               <a
                 href="https://thewebvale.com"
                 target="_blank"
@@ -155,7 +155,16 @@ export function Footer() {
               >
                 Yash Jain
               </a>
-              . All rights reserved.
+              . Powered by{' '}
+              <a
+                href="https://thewebvale.com"
+                target="_blank"
+                rel="noreferrer"
+                className="font-bold text-rose-500 hover:underline"
+              >
+                TheWebVale
+              </a>
+              .
             </span>
           </div>
 

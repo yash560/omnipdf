@@ -52,7 +52,7 @@ export default function HomePage() {
 
   const faqs = [
     {
-      q: 'Is Omni Files completely private with zero server uploads?',
+      q: 'Is FileCraft completely private with zero server uploads?',
       a: 'Yes! All non-AI tools (PDFs, Image conversions, Video compressions, Audio trimming, Spreadsheets, and Hash verifications) run 100% client-side in your browser using WebAssembly, Canvas 2D, SubtleCrypto, and Web Audio. Your files never leave your device.',
     },
     {

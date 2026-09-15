@@ -38,7 +38,7 @@ export default function LoginPage() {
             <FileText className="w-6 h-6" />
           </div>
           <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100">
-            Sign In to OmniPDF
+            Sign In to FileCraft
           </h1>
           <p className="text-xs text-zinc-500">
             Access your cloud workspaces, encrypted shares & AI vision studio

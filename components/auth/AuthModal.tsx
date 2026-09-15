@@ -74,7 +74,7 @@ export function AuthModal() {
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className="text-base font-extrabold text-white">
-                  OmniPDF Account
+                  FileCraft Account
                 </h3>
                 <span className="px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-200 text-[10px] font-mono font-bold uppercase border border-amber-300/30">
                   Pro Cloud

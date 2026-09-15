@@ -16,9 +16,9 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'OmniPDF — Full-Blown PDF Editor & Document Processing Suite',
-  description: 'Merge, split, compress, edit, e-sign, rotate, watermark, and convert PDF documents 100% locally in your browser. Ultra-fast, private, zero limits.',
-  keywords: ['PDF editor', 'merge PDF', 'split PDF', 'compress PDF', 'iLovePDF alternative', 'e-sign PDF', 'OCR PDF'],
+  title: 'FileCraft — 50+ In-Browser File & Document Powerhouse Tools',
+  description: 'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads.',
+  keywords: ['FileCraft', 'PDF editor', 'image converter', 'csv cleaner', 'audio trimmer', 'video compress', 'burn share', 'client-side files'],
 };
 
 export const viewport: Viewport = {
