@@ -19,8 +19,8 @@ import {
 import { useAuth } from '@/lib/auth/auth-context';
 
 export function AuthModal() {
-  const { authModalOpen, authModalTab, closeAuthModal, login, register, loginGuest } = useAuth();
-  const [tab, setTab] = useState<'login' | 'register' | 'guest'>(authModalTab);
+  const { authModalOpen, authModalTab, closeAuthModal, login, register } = useAuth();
+  const [tab, setTab] = useState<'login' | 'register'>(authModalTab === 'register' ? 'register' : 'login');
 
   // Form fields
   const [name, setName] = useState('');
@@ -54,23 +54,6 @@ export function AuthModal() {
       await register(name, email, password);
     } catch (err: any) {
       setError(err.message || 'Failed to register');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const handleFillDemoAdmin = () => {
-    setEmail('yash@thewebvale.com');
-    setPassword('Password123!');
-  };
-
-  const handleQuickGuest = async () => {
-    setError(null);
-    setSubmitting(true);
-    try {
-      await loginGuest();
-    } catch (err: any) {
-      setError(err.message || 'Guest login failed');
     } finally {
       setSubmitting(false);
     }
@@ -136,18 +119,6 @@ export function AuthModal() {
             <Sparkles className="w-3.5 h-3.5" />
             <span>Create Account</span>
           </button>
-
-          <button
-            onClick={() => { setTab('guest'); setError(null); }}
-            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
-              tab === 'guest'
-                ? 'border-rose-500 text-rose-600 dark:text-rose-400'
-                : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
-            }`}
-          >
-            <Zap className="w-3.5 h-3.5" />
-            <span>1-Click Demo</span>
-          </button>
         </div>
 
         {/* Form Body */}
@@ -180,18 +151,9 @@ export function AuthModal() {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-[11px] font-extrabold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider">
-                    Password
-                  </label>
-                  <button
-                    type="button"
-                    onClick={handleFillDemoAdmin}
-                    className="text-[10px] text-rose-500 hover:underline font-bold cursor-pointer"
-                  >
-                    Use Yash Jain VIP Login
-                  </button>
-                </div>
+                <label className="block text-[11px] font-extrabold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
+                  Password
+                </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-zinc-400 absolute left-3.5 top-3" />
                   <input
@@ -228,7 +190,7 @@ export function AuthModal() {
                   <input
                     type="text"
                     required
-                    placeholder="Yash Jain"
+                    placeholder="Your Name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/90 text-zinc-900 dark:text-zinc-100 text-xs outline-none focus:border-rose-500"
@@ -245,7 +207,7 @@ export function AuthModal() {
                   <input
                     type="email"
                     required
-                    placeholder="yash@thewebvale.com"
+                    placeholder="name@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/90 text-zinc-900 dark:text-zinc-100 text-xs outline-none focus:border-rose-500"
@@ -285,32 +247,6 @@ export function AuthModal() {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </form>
-          )}
-
-          {/* TAB 3: 1-CLICK GUEST DEMO */}
-          {tab === 'guest' && (
-            <div className="space-y-4 text-center">
-              <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 space-y-2">
-                <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 mx-auto flex items-center justify-center">
-                  <Zap className="w-5 h-5" />
-                </div>
-                <h4 className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">
-                  Instant Guest Pro Access
-                </h4>
-                <p className="text-zinc-500 text-[11px]">
-                  Experience the full power of OmniPDF Pro with zero signup hassle. Your working drafts and encrypted shares will be tied to this browser session.
-                </p>
-              </div>
-
-              <button
-                onClick={handleQuickGuest}
-                disabled={submitting}
-                className="w-full py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
-              >
-                <Zap className="w-4 h-4" />
-                <span>{submitting ? 'Starting Guest Session...' : 'Launch Instant Pro Guest Session'}</span>
-              </button>
-            </div>
           )}
         </div>
 
