@@ -1,0 +1,297 @@
+'use client';
+
+import { useState, useRef, ChangeEvent, DragEvent } from 'react';
+import { UploadCloud, FileText, Trash2, RotateCw, Plus, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { StagedFile } from '@/types/pdf';
+import { formatBytes, fileToArrayBuffer, renderPageToDataUrl } from '@/lib/pdf/core';
+
+interface FileDropzoneProps {
+  files: StagedFile[];
+  onFilesChange: (files: StagedFile[]) => void;
+  accept?: string;
+  multiple?: boolean;
+  title?: string;
+  subtitle?: string;
+  primaryColor?: string;
+  renderThumbnails?: boolean;
+}
+
+export function FileDropzone({
+  files,
+  onFilesChange,
+  accept = '.pdf,application/pdf',
+  multiple = true,
+  title = 'Select PDF files',
+  subtitle = 'or drop PDF documents here',
+  primaryColor = '#ef4444',
+  renderThumbnails = true,
+}: FileDropzoneProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [loadingThumbnails, setLoadingThumbnails] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const processFiles = async (fileList: FileList | File[]) => {
+    const rawFiles = Array.from(fileList);
+    if (!multiple && rawFiles.length > 0) {
+      // Keep only first
+      rawFiles.splice(1);
+    }
+
+    setLoadingThumbnails(true);
+    const newStagedList: StagedFile[] = [];
+
+    for (const f of rawFiles) {
+      const id = `${f.name}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+      const arrayBuf = await fileToArrayBuffer(f);
+
+      let previewUrl = '';
+      let pageCount = 1;
+
+      if (renderThumbnails && (f.type === 'application/pdf' || f.name.endsWith('.pdf'))) {
+        try {
+          const thumb = await renderPageToDataUrl(arrayBuf, 1, 0.4);
+          previewUrl = thumb.dataUrl;
+        } catch {
+          // Fallback if preview render fails
+        }
+      } else if (f.type.startsWith('image/')) {
+        previewUrl = URL.createObjectURL(f);
+      }
+
+      newStagedList.push({
+        id,
+        file: f,
+        name: f.name,
+        size: f.size,
+        pageCount,
+        previewUrl,
+        arrayBuffer: arrayBuf,
+        rotation: 0,
+      });
+    }
+
+    setLoadingThumbnails(false);
+    if (multiple) {
+      onFilesChange([...files, ...newStagedList]);
+    } else {
+      onFilesChange(newStagedList);
+    }
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(e.dataTransfer.files);
+    }
+  };
+
+  const handleFileInput = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processFiles(e.target.files);
+    }
+  };
+
+  const removeFile = (id: string) => {
+    onFilesChange(files.filter((f) => f.id !== id));
+  };
+
+  const rotateFile = (id: string) => {
+    onFilesChange(
+      files.map((f) =>
+        f.id === id ? { ...f, rotation: ((f.rotation || 0) + 90) % 360 } : f
+      )
+    );
+  };
+
+  const moveFile = (dragIdx: number, dropIdx: number) => {
+    const updated = [...files];
+    const [dragged] = updated.splice(dragIdx, 1);
+    updated.splice(dropIdx, 0, dragged);
+    onFilesChange(updated);
+  };
+
+  return (
+    <div className="w-full">
+      <input
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        onChange={handleFileInput}
+        className="hidden"
+      />
+
+      {files.length === 0 ? (
+        /* Empty State Dropzone */
+        <div
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={() => inputRef.current?.click()}
+          className={`group relative flex flex-col items-center justify-center p-12 sm:p-16 border-2 border-dashed rounded-3xl cursor-pointer transition-all duration-300 text-center ${
+            isDragging
+              ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 scale-[0.99]'
+              : 'border-zinc-300 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 bg-white/60 dark:bg-zinc-900/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/80 shadow-sm hover:shadow-xl'
+          }`}
+        >
+          {/* Main Action Button */}
+          <div
+            className="w-20 h-20 rounded-3xl flex items-center justify-center text-white shadow-xl group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 mb-6"
+            style={{ backgroundColor: primaryColor }}
+          >
+            <UploadCloud className="w-10 h-10 stroke-[2.2]" />
+          </div>
+
+          <h3 className="text-xl sm:text-2xl font-extrabold text-zinc-900 dark:text-zinc-100 mb-2">
+            {title}
+          </h3>
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-sm mb-6">
+            {subtitle}
+          </p>
+
+          <button
+            type="button"
+            className="px-8 py-3.5 rounded-2xl text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+            style={{ backgroundColor: primaryColor }}
+          >
+            Choose Files
+          </button>
+
+          <div className="mt-8 flex items-center gap-2 text-xs font-semibold text-zinc-400 dark:text-zinc-500">
+            <ShieldCheck className="w-4 h-4 text-emerald-500" />
+            <span>Files are encrypted and processed 100% locally in your browser</span>
+          </div>
+        </div>
+      ) : (
+        /* Staged Files View with Previews & Reordering */
+        <div className="space-y-4">
+          {/* Header Controls */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm">
+            <div className="flex items-center gap-2 text-sm font-bold text-zinc-800 dark:text-zinc-200">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+              <span>
+                {files.length} {files.length === 1 ? 'file' : 'files'} selected (
+                {formatBytes(files.reduce((acc, f) => acc + f.size, 0))})
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {multiple && (
+                <button
+                  onClick={() => inputRef.current?.click()}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add More</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => onFilesChange([])}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Clear</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Staged File Cards Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {files.map((fileItem, idx) => (
+              <div
+                key={fileItem.id}
+                draggable
+                onDragStart={(e) => e.dataTransfer.setData('text/plain', String(idx))}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const dragIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+                  if (!isNaN(dragIdx) && dragIdx !== idx) {
+                    moveFile(dragIdx, idx);
+                  }
+                }}
+                className="group relative flex flex-col p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-lg transition-all duration-200 hover:border-zinc-400 dark:hover:border-zinc-700 cursor-grab active:cursor-grabbing"
+              >
+                {/* Index badge */}
+                <div className="absolute top-2 left-2 z-10 w-6 h-6 rounded-full bg-zinc-900/80 dark:bg-white/90 text-white dark:text-zinc-900 text-[10px] font-extrabold flex items-center justify-center shadow">
+                  {idx + 1}
+                </div>
+
+                {/* Card Controls */}
+                <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => rotateFile(fileItem.id)}
+                    title="Rotate 90°"
+                    className="p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 shadow-sm transition-colors cursor-pointer"
+                  >
+                    <RotateCw className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => removeFile(fileItem.id)}
+                    title="Remove file"
+                    className="p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/60 shadow-sm transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                {/* Thumbnail Preview */}
+                <div className="w-full aspect-[3/4] rounded-xl bg-zinc-100 dark:bg-zinc-800/60 overflow-hidden flex items-center justify-center relative mb-2.5">
+                  {fileItem.previewUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={fileItem.previewUrl}
+                      alt={fileItem.name}
+                      className="w-full h-full object-contain transition-transform duration-300"
+                      style={{
+                        transform: `rotate(${fileItem.rotation || 0}deg)`,
+                      }}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-zinc-400">
+                      <FileText className="w-10 h-10" />
+                      <span className="text-[10px]">PDF</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* File Metadata */}
+                <div className="mt-auto">
+                  <p className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate" title={fileItem.name}>
+                    {fileItem.name}
+                  </p>
+                  <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">
+                    {formatBytes(fileItem.size)}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+            {/* Quick add card */}
+            {multiple && (
+              <button
+                onClick={() => inputRef.current?.click()}
+                className="flex flex-col items-center justify-center p-4 aspect-[3/4] border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-zinc-400 dark:hover:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+              >
+                <Plus className="w-8 h-8 mb-2" />
+                <span className="text-xs font-bold">Add PDF</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

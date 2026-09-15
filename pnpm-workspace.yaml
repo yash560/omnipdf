@@ -1,3 +1,4 @@
 allowBuilds:
-  sharp: false
-  unrs-resolver: false
+  tesseract.js: true
+onlyBuiltDependencies:
+  - tesseract.js
