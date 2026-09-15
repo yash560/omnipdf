@@ -1,0 +1,252 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { DriveItem } from '@/lib/drive/drive-types';
+import { getFileBlob } from '@/lib/drive/drive-db';
+import { formatBytes, getFileCraftToolsForItem } from '@/lib/drive/drive-helpers';
+import { useAI } from '@/lib/ai/ai-context';
+import { 
+  X, 
+  Download, 
+  Sparkles, 
+  ExternalLink, 
+  FileText, 
+  ChevronLeft, 
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  Maximize2
+} from 'lucide-react';
+import Link from 'next/link';
+
+interface DriveQuickLookModalProps {
+  item: DriveItem | null;
+  onClose: () => void;
+}
+
+export function DriveQuickLookModal({ item, onClose }: DriveQuickLookModalProps) {
+  const { openDrawer, setActiveFile, triggerQuickAction } = useAI();
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [textContent, setTextContent] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [zoom, setZoom] = useState(1.0);
+
+  useEffect(() => {
+    let url: string | null = null;
+    let isMounted = true;
+
+    async function loadContent() {
+      if (!item || item.type === 'folder') return;
+      setLoading(true);
+      setTextContent(null);
+
+      try {
+        const blob = await getFileBlob(item.id);
+        if (!blob) return;
+
+        url = URL.createObjectURL(blob);
+        if (isMounted) setBlobUrl(url);
+
+        // If text, code, or csv, parse raw text
+        if (
+          item.category === 'code' || 
+          item.category === 'document' || 
+          item.category === 'spreadsheet' || 
+          item.mimeType.startsWith('text/')
+        ) {
+          const text = await blob.text();
+          if (isMounted) setTextContent(text.substring(0, 50000));
+        }
+      } catch (err) {
+        console.error('Failed to load QuickLook content:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+
+    loadContent();
+
+    return () => {
+      isMounted = false;
+      if (url) URL.revokeObjectURL(url);
+    };
+  }, [item]);
+
+  // Handle ESC key to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  if (!item) return null;
+
+  const tools = getFileCraftToolsForItem(item);
+
+  const handleLaunchAI = () => {
+    setActiveFile({
+      name: item.name,
+      size: item.size,
+      textContent: textContent || undefined,
+      previewUrl: blobUrl || undefined,
+    });
+    openDrawer();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-5xl h-[88vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+        {/* Header Bar */}
+        <div className="p-4 bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center font-bold text-xs shrink-0">
+              <FileText className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 truncate">
+                {item.name}
+              </h3>
+              <p className="text-[11px] text-zinc-400 font-mono">
+                {formatBytes(item.size)} • {item.category.toUpperCase()}
+              </p>
+            </div>
+          </div>
+
+          {/* Header Controls */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* AI Copilot Launch Button */}
+            <button
+              type="button"
+              onClick={handleLaunchAI}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Ask AI About File</span>
+            </button>
+
+            {/* Direct Tool Launch Shortcut */}
+            {tools.length > 0 && (
+              <Link
+                href={tools[0].href}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-extrabold shadow-sm transition-all"
+              >
+                <span>{tools[0].label}</span>
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Link>
+            )}
+
+            {/* Download */}
+            {blobUrl && (
+              <a
+                href={blobUrl}
+                download={item.name}
+                className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+                title="Download File"
+              >
+                <Download className="w-4 h-4" />
+              </a>
+            )}
+
+            {/* Close Button */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Viewer Canvas Area */}
+        <div className="flex-1 bg-zinc-100 dark:bg-zinc-950 overflow-auto flex items-center justify-center p-4 relative">
+          {loading ? (
+            <div className="flex flex-col items-center gap-2 text-zinc-400 text-xs">
+              <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping" />
+              <span>Loading File Preview...</span>
+            </div>
+          ) : item.category === 'image' && blobUrl ? (
+            // Image Preview
+            <div className="max-w-full max-h-full flex items-center justify-center overflow-auto">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={blobUrl}
+                alt={item.name}
+                className="max-h-[70vh] object-contain rounded-xl shadow-lg"
+                style={{ transform: `scale(${zoom})`, transition: 'transform 0.15s ease' }}
+              />
+            </div>
+          ) : item.category === 'pdf' && blobUrl ? (
+            // PDF Preview
+            <iframe
+              src={blobUrl}
+              title={item.name}
+              className="w-full h-full rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white"
+            />
+          ) : item.category === 'media' && blobUrl ? (
+            // Audio/Video Preview
+            item.mimeType.startsWith('video/') ? (
+              <video controls src={blobUrl} className="max-h-[70vh] max-w-full rounded-2xl shadow-xl" />
+            ) : (
+              <div className="p-8 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-4 max-w-md w-full text-center">
+                <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 mx-auto flex items-center justify-center">
+                  <FileText className="w-8 h-8" />
+                </div>
+                <audio controls src={blobUrl} className="w-full" />
+              </div>
+            )
+          ) : textContent !== null ? (
+            // Code / Text / Markdown / CSV Preview
+            <div className="w-full h-full bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 font-mono text-xs text-zinc-800 dark:text-zinc-200 overflow-auto whitespace-pre leading-relaxed shadow-inner">
+              {textContent}
+            </div>
+          ) : (
+            // Fallback
+            <div className="text-center p-8 space-y-3">
+              <div className="w-16 h-16 rounded-3xl bg-zinc-200 dark:bg-zinc-800 text-zinc-400 mx-auto flex items-center justify-center">
+                <FileText className="w-8 h-8" />
+              </div>
+              <h4 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
+                Binary File Preview Not Available Directly
+              </h4>
+              <p className="text-xs text-zinc-400 max-w-sm">
+                You can download this file or launch it inside a specialized FileCraft tool workspace.
+              </p>
+              {blobUrl && (
+                <a
+                  href={blobUrl}
+                  download={item.name}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-500 text-white text-xs font-bold shadow-md hover:bg-rose-600 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download {item.name}</span>
+                </a>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Footer Toolbar: Quick Launch Options */}
+        {tools.length > 0 && (
+          <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 overflow-x-auto no-scrollbar">
+            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider whitespace-nowrap pl-2 mr-1">
+              Open With:
+            </span>
+            {tools.map((t, idx) => (
+              <Link
+                key={idx}
+                href={t.href}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-rose-500 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-semibold text-zinc-700 dark:text-zinc-300 shadow-2xs whitespace-nowrap transition-all"
+              >
+                <span>{t.label}</span>
+                <ExternalLink className="w-3 h-3 text-rose-500" />
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

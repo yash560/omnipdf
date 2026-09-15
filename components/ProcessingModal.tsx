@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
-import { CheckCircle2, Download, RefreshCw, Sparkles, Loader2, Share2, FileText, ArrowRight } from 'lucide-react';
+import { CheckCircle2, Download, RefreshCw, Sparkles, Loader2, Share2, FileText, ArrowRight, HardDrive } from 'lucide-react';
 import { formatBytes } from '@/lib/pdf/core';
+import { uploadDriveFile } from '@/lib/drive/drive-db';
+import Link from 'next/link';
 
 interface ProcessingModalProps {
   isOpen: boolean;
@@ -32,6 +34,9 @@ export function ProcessingModal({
   onReset,
   actionTitle = 'Processing Document',
 }: ProcessingModalProps) {
+  const [isSavingToDrive, setIsSavingToDrive] = useState(false);
+  const [savedToDrive, setSavedToDrive] = useState(false);
+
   useEffect(() => {
     if (isOpen && !isProcessing && resultBytes) {
       // Trigger celebratory confetti
@@ -42,6 +47,22 @@ export function ProcessingModal({
       });
     }
   }, [isOpen, isProcessing, resultBytes]);
+
+  const handleSaveToDrive = async () => {
+    if (!resultBytes) return;
+    try {
+      setIsSavingToDrive(true);
+      const mime = resultFilename.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream';
+      const blob = new Blob([resultBytes as unknown as BlobPart], { type: mime });
+      await uploadDriveFile({ name: resultFilename, blob, type: mime });
+      setSavedToDrive(true);
+      setTimeout(() => setSavedToDrive(false), 4000);
+    } catch (err) {
+      console.error('Failed to save to Drive:', err);
+    } finally {
+      setIsSavingToDrive(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -130,24 +151,44 @@ export function ProcessingModal({
             </div>
 
             {/* Primary Download & Reset Actions */}
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center gap-2.5">
               {onDownload && (
                 <button
                   onClick={onDownload}
-                  className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-extrabold text-sm shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
+                  className="w-full sm:flex-1 py-3.5 px-5 rounded-2xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-extrabold text-sm shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
                 >
                   <Download className="w-4 h-4 stroke-[2.5]" />
                   <span>Download File</span>
                 </button>
               )}
 
+              <button
+                onClick={handleSaveToDrive}
+                disabled={isSavingToDrive || savedToDrive}
+                className={`w-full sm:w-auto py-3.5 px-4 rounded-2xl border font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-75 ${
+                  savedToDrive
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
+                    : 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400'
+                }`}
+                title="Save directly to your offline FileCraft Drive"
+              >
+                {isSavingToDrive ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : savedToDrive ? (
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                ) : (
+                  <HardDrive className="w-3.5 h-3.5" />
+                )}
+                <span>{savedToDrive ? 'Saved in Drive!' : 'Save in Drive'}</span>
+              </button>
+
               {onReset && (
                 <button
                   onClick={onReset}
-                  className="w-full sm:w-auto py-3.5 px-5 rounded-2xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full sm:w-auto py-3.5 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Start Another</span>
+                  <span>Reset</span>
                 </button>
               )}
             </div>

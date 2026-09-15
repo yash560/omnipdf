@@ -1,0 +1,305 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useDrive } from '@/lib/drive/drive-context';
+import { DriveItem, DriveFolderColor, FOLDER_COLORS } from '@/lib/drive/drive-types';
+import { getFileCraftToolsForItem } from '@/lib/drive/drive-helpers';
+import {
+  Eye,
+  Download,
+  Edit2,
+  FolderInput,
+  Copy,
+  Star,
+  Palette,
+  Sparkles,
+  Trash2,
+  RotateCcw,
+  Wrench,
+  ChevronRight,
+  ExternalLink
+} from 'lucide-react';
+import Link from 'next/link';
+
+interface DriveContextMenuProps {
+  item: DriveItem;
+  isOpen: boolean;
+  onClose: () => void;
+  position?: { x: number; y: number };
+  onOpenRenameModal: (item: DriveItem) => void;
+  onOpenMoveModal: () => void;
+}
+
+export function DriveContextMenu({
+  item,
+  isOpen,
+  onClose,
+  position,
+  onOpenRenameModal,
+  onOpenMoveModal,
+}: DriveContextMenuProps) {
+  const {
+    viewSection,
+    openPreview,
+    downloadItem,
+    duplicateItem,
+    toggleStar,
+    changeFolderColor,
+    trashSelected,
+    restoreSelected,
+    deleteSelectedPermanently,
+    toggleSelect,
+    selectedIds,
+  } = useDrive();
+
+  const [colorMenuOpen, setColorMenuOpen] = useState(false);
+  const [toolsMenuOpen, setToolsMenuOpen] = useState(false);
+
+  if (!isOpen) return null;
+
+  const tools = getFileCraftToolsForItem(item);
+  const isFolder = item.type === 'folder';
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50" onClick={onClose} onContextMenu={(e) => { e.preventDefault(); onClose(); }} />
+      <div
+        style={position ? { top: Math.min(position.y, window.innerHeight - 340), left: Math.min(position.x, window.innerWidth - 240) } : undefined}
+        className={`${
+          position ? 'fixed' : 'absolute right-2 top-8'
+        } w-60 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 text-xs text-zinc-700 dark:text-zinc-300 animate-in fade-in zoom-in-95 duration-150`}
+      >
+        {/* Quick Look Preview */}
+        {!isFolder && viewSection !== 'trash' && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              openPreview(item);
+            }}
+            className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold cursor-pointer"
+          >
+            <Eye className="w-4 h-4 text-blue-500" />
+            <span>Preview (Quick Look)</span>
+          </button>
+        )}
+
+        {/* FileCraft Tools Submenu */}
+        {tools.length > 0 && viewSection !== 'trash' && (
+          <div className="relative">
+            <button
+              type="button"
+              onMouseEnter={() => setToolsMenuOpen(true)}
+              onClick={() => setToolsMenuOpen(!toolsMenuOpen)}
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <Wrench className="w-4 h-4" />
+                <span>Open in FileCraft Tools</span>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+
+            {toolsMenuOpen && (
+              <div
+                onMouseLeave={() => setToolsMenuOpen(false)}
+                className="absolute left-full top-0 -ml-1 w-64 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl p-1.5 space-y-0.5 z-50 animate-in fade-in slide-in-from-left-2 duration-150"
+              >
+                <div className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
+                  Tool Workspaces
+                </div>
+                {tools.map((t, idx) => (
+                  <Link
+                    key={idx}
+                    href={t.href}
+                    onClick={onClose}
+                    className="w-full flex items-start gap-2 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left cursor-pointer"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5 mt-0.5 text-rose-500 shrink-0" />
+                    <div>
+                      <div className="font-bold text-zinc-800 dark:text-zinc-200 text-xs truncate">
+                        {t.label}
+                      </div>
+                      <div className="text-[10px] text-zinc-400 leading-tight">
+                        {t.description}
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
+
+        {/* Download / ZIP */}
+        {viewSection !== 'trash' && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              downloadItem(item);
+            }}
+            className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold cursor-pointer"
+          >
+            <Download className="w-4 h-4 text-emerald-500" />
+            <span>{isFolder ? 'Download Folder as ZIP' : 'Download File'}</span>
+          </button>
+        )}
+
+        {/* Rename */}
+        {viewSection !== 'trash' && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              onOpenRenameModal(item);
+            }}
+            className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold cursor-pointer"
+          >
+            <Edit2 className="w-4 h-4 text-zinc-500" />
+            <span>Rename</span>
+          </button>
+        )}
+
+        {/* Move To */}
+        {viewSection !== 'trash' && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              if (!selectedIds.includes(item.id)) {
+                toggleSelect(item.id, false);
+              }
+              onOpenMoveModal();
+            }}
+            className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold cursor-pointer"
+          >
+            <FolderInput className="w-4 h-4 text-blue-500" />
+            <span>Move to...</span>
+          </button>
+        )}
+
+        {/* Duplicate (files only) */}
+        {!isFolder && viewSection !== 'trash' && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              duplicateItem(item.id);
+            }}
+            className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold cursor-pointer"
+          >
+            <Copy className="w-4 h-4 text-zinc-500" />
+            <span>Make a Copy</span>
+          </button>
+        )}
+
+        {/* Star */}
+        {viewSection !== 'trash' && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              toggleStar(item.id);
+            }}
+            className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold cursor-pointer"
+          >
+            <Star className={`w-4 h-4 ${item.isStarred ? 'text-amber-400 fill-amber-400' : 'text-zinc-400'}`} />
+            <span>{item.isStarred ? 'Remove from Starred' : 'Add to Starred'}</span>
+          </button>
+        )}
+
+        {/* Folder Color Palette (Folders only) */}
+        {isFolder && viewSection !== 'trash' && (
+          <div className="relative">
+            <button
+              type="button"
+              onMouseEnter={() => setColorMenuOpen(true)}
+              onClick={() => setColorMenuOpen(!colorMenuOpen)}
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <Palette className="w-4 h-4 text-purple-500" />
+                <span>Folder Color</span>
+              </div>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+
+            {colorMenuOpen && (
+              <div
+                onMouseLeave={() => setColorMenuOpen(false)}
+                className="absolute left-full top-0 -ml-1 w-48 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-left-2 duration-150"
+              >
+                <div className="text-[10px] font-extrabold uppercase text-zinc-400 mb-2 px-1">
+                  Choose Color
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  {(Object.keys(FOLDER_COLORS) as DriveFolderColor[]).map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => {
+                        changeFolderColor(item.id, c);
+                        onClose();
+                      }}
+                      title={FOLDER_COLORS[c].label}
+                      className="w-7 h-7 rounded-full border-2 border-white dark:border-zinc-800 shadow-sm flex items-center justify-center transition-transform hover:scale-125 cursor-pointer"
+                      style={{ backgroundColor: FOLDER_COLORS[c].hex }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
+
+        {/* Trash Actions */}
+        {viewSection === 'trash' ? (
+          <>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                if (!selectedIds.includes(item.id)) toggleSelect(item.id, false);
+                restoreSelected();
+              }}
+              className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold text-emerald-600 dark:text-emerald-400 cursor-pointer"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Restore from Trash</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                if (!selectedIds.includes(item.id)) toggleSelect(item.id, false);
+                deleteSelectedPermanently();
+              }}
+              className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold text-rose-600 dark:text-rose-400 cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete Permanently</span>
+            </button>
+          </>
+        ) : (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              if (!selectedIds.includes(item.id)) toggleSelect(item.id, false);
+              trashSelected();
+            }}
+            className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold text-rose-600 dark:text-rose-400 cursor-pointer"
+          >
+            <Trash2 className="w-4 h-4" />
+            <span>Move to Trash</span>
+          </button>
+        )}
+      </div>
+    </>
+  );
+}

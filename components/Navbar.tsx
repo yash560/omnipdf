@@ -16,7 +16,8 @@ import {
   Sparkles,
   Table,
   Video,
-  Bot
+  Bot,
+  HardDrive
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { UserDropdown } from './auth/UserDropdown';
@@ -28,11 +29,11 @@ export function Navbar() {
   const { isAuthenticated, openAuthModal } = useAuth();
 
   const quickSuites = [
+    { name: 'Drive', slug: 'drive', icon: HardDrive },
     { name: 'PDF Studio', slug: 'edit', icon: FileEdit },
     { name: 'Image Studio', slug: 'image-converter', icon: ImageIcon },
     { name: 'Spreadsheets', slug: 'csv-json-excel', icon: Table },
     { name: 'AI Chat', slug: 'chat-file', icon: Bot },
-    { name: 'Secure Share', slug: 'burn-share', icon: Lock },
   ];
 
   return (
@@ -138,6 +139,15 @@ export function Navbar() {
 
           {/* Theme Toggle */}
           <ThemeToggle />
+
+          {/* Drive Workspace Quick Launcher */}
+          <Link
+            href="/drive"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-bold transition-all"
+          >
+            <HardDrive className="w-3.5 h-3.5 text-blue-500" />
+            <span className="hidden md:inline">Drive</span>
+          </Link>
 
           {/* AI Copilot Quick Launcher */}
           <Link
