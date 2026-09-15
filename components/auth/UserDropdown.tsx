@@ -121,7 +121,7 @@ export function UserDropdown() {
               className="flex items-center gap-2.5 p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 font-medium transition-colors"
             >
               <Sparkles className="w-4 h-4 text-indigo-500" />
-              <span>AI Page Studio (Gemini Flash)</span>
+              <span>AI Page Studio (TheWebVale AI)</span>
             </Link>
 
             <Link

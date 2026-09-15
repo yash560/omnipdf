@@ -62,13 +62,13 @@ export default function AiTableExtractorPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 text-xs font-bold mb-3">
           <TableProperties className="w-3.5 h-3.5" />
-          <span>Vision AI Table Parser • Gemini 2.5 Flash</span>
+          <span>Vision AI Table Parser • TheWebVale AI</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Extract Tables & Receipts to Excel
         </h1>
         <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
-          Upload photo receipts, invoices, or screenshot tables and let Gemini Vision convert them into clean editable spreadsheets.
+          Upload photo receipts, invoices, or screenshot tables and let TheWebVale Vision AI convert them into clean editable spreadsheets.
         </p>
       </div>
 
@@ -144,7 +144,7 @@ export default function AiTableExtractorPage() {
         </div>
       )}
 
-      <ProcessingModal isOpen={processing} progress={60} statusText="Gemini Vision is parsing table rows..." />
+      <ProcessingModal isOpen={processing} progress={60} statusText="TheWebVale AI is parsing table rows..." />
     </div>
   );
 }

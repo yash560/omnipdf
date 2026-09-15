@@ -75,7 +75,7 @@ export function DriveDetailsDrawer() {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-rose-500" />
             <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-              Gemini AI File Intelligence
+              TheWebVale AI File Intelligence
             </span>
           </div>
           <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">

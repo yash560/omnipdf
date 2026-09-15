@@ -58,7 +58,7 @@ export default function AiFileRenamerPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 text-xs font-bold mb-3">
           <Tags className="w-3.5 h-3.5" />
-          <span>Batch File Smart Renamer • Gemini 2.5 Flash</span>
+          <span>Batch File Smart Renamer • TheWebVale AI</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Organize & Standardize Messy Filenames
@@ -139,7 +139,7 @@ export default function AiFileRenamerPage() {
         </div>
       )}
 
-      <ProcessingModal isOpen={processing} progress={50} statusText="Gemini is generating smart naming patterns..." />
+      <ProcessingModal isOpen={processing} progress={50} statusText="TheWebVale AI is generating smart naming patterns..." />
     </div>
   );
 }

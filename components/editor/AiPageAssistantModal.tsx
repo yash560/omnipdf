@@ -255,7 +255,7 @@ export function AiPageAssistantModal({
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-extrabold text-white">
-                  Gemini Flash Page Studio AI
+                  TheWebVale Page Studio AI
                 </h3>
                 <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-mono font-bold uppercase backdrop-blur-sm">
                   Page {currentPage}
@@ -470,7 +470,7 @@ export function AiPageAssistantModal({
               <div className="p-3.5 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 text-rose-900 dark:text-rose-300 flex items-start gap-2.5">
                 <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
                 <p className="text-[11px] leading-relaxed">
-                  Gemini Multimodal Vision scans the rendered page image, locates sensitive bounding boxes, and places permanent blackout redactions.
+                  TheWebVale Vision AI scans the rendered page image, locates sensitive bounding boxes, and places permanent blackout redactions.
                 </p>
               </div>
 
@@ -580,7 +580,7 @@ export function AiPageAssistantModal({
         <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 flex items-center justify-between text-xs">
           <div className="text-[11px] text-zinc-400 flex items-center gap-1.5">
             <Cpu className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Powered by Gemini 2.5 Flash Multimodal Vision</span>
+            <span>Powered by TheWebVale Multimodal AI Engine</span>
           </div>
           <button
             onClick={onClose}

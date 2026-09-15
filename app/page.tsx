@@ -65,7 +65,7 @@ export default function HomePage() {
     },
     {
       q: 'How do the AI File Intelligence tools work?',
-      a: 'Our AI suite connects to Gemini 2.5 Flash with automated key rotation from our database. It parses documents, extracts receipt tables into Excel, and transcribes audio meeting notes into action items in seconds.',
+      a: 'Our suite is powered by TheWebVale AI with multi-model intelligence and automated resilience. It parses complex documents, extracts receipt tables into Excel, and transcribes audio meeting notes into action items in seconds.',
     },
   ];
 

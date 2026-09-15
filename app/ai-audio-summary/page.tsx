@@ -65,7 +65,7 @@ export default function AiAudioSummaryPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-bold mb-3">
           <Mic className="w-3.5 h-3.5" />
-          <span>Multimodal Audio AI • Gemini 2.5 Flash</span>
+          <span>Multimodal Audio AI • TheWebVale AI</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Meeting & Voice Memo AI Summarizer
@@ -160,7 +160,7 @@ export default function AiAudioSummaryPage() {
         </div>
       )}
 
-      <ProcessingModal isOpen={processing} progress={50} statusText="Gemini Audio is analyzing meeting recordings..." />
+      <ProcessingModal isOpen={processing} progress={50} statusText="TheWebVale AI is analyzing meeting recordings..." />
     </div>
   );
 }

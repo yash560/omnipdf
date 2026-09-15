@@ -92,7 +92,7 @@ export default function DashboardPage() {
               Welcome back, {user?.name || 'Yash Jain'}!
             </h1>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-xl">
-              Your documents are synchronized and secured with client-side encryption. You have full access to all 20+ PDF engines and Gemini Flash Vision AI.
+              Your documents are synchronized and secured with client-side encryption. You have full access to all 20+ PDF engines and TheWebVale Multimodal AI Suite.
             </p>
           </div>
 

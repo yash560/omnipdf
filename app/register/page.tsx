@@ -42,7 +42,7 @@ export default function RegisterPage() {
             Create Your Account
           </h1>
           <p className="text-xs text-zinc-500">
-            Includes free Pro Tier Cloud Trial with Gemini Multimodal Vision
+            Includes free Pro Tier Cloud Trial with TheWebVale Multimodal AI Suite
           </p>
         </div>
 

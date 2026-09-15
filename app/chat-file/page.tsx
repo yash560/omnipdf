@@ -236,7 +236,7 @@ export default function ChatFilePage() {
       <div className="text-center max-w-3xl mx-auto space-y-3">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-extrabold shadow-xs">
           <Sparkles className="w-4 h-4 text-purple-500 animate-pulse" />
-          <span>Multimodal Gemini 2.5 Flash • Context Grounded Studio</span>
+          <span>TheWebVale Multimodal AI • Context Grounded Studio</span>
         </div>
         <h1 className="text-3xl sm:text-5xl font-black text-zinc-900 dark:text-white tracking-tight">
           AI Multimodal File Studio
@@ -318,7 +318,7 @@ export default function ChatFilePage() {
                   Multimodal Workspace Feed
                 </h3>
                 <span className="text-[10px] text-zinc-400">
-                  Powered by Gemini 2.5 Flash Key Rotator Pool
+                  Powered by TheWebVale Multimodal AI Engine
                 </span>
               </div>
             </div>
@@ -441,7 +441,7 @@ export default function ChatFilePage() {
                 <div className="rounded-2xl rounded-tl-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-4 text-xs text-zinc-500 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
                   <span className="font-semibold text-zinc-700 dark:text-zinc-300">
-                    Gemini 2.5 Flash analyzing multimodal file context...
+                    TheWebVale AI analyzing multimodal file context...
                   </span>
                 </div>
               </div>

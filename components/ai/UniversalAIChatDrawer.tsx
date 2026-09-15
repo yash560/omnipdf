@@ -355,7 +355,7 @@ export function UniversalAIChatDrawer() {
                 <div className="rounded-2xl rounded-tl-xs bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/80 dark:border-zinc-800 p-3.5 text-xs text-zinc-500 flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
                   <span className="font-semibold text-zinc-700 dark:text-zinc-300">
-                    Gemini 2.5 Flash analyzing context...
+                    TheWebVale AI analyzing context...
                   </span>
                 </div>
               </div>

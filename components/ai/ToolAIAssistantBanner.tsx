@@ -121,7 +121,7 @@ export function ToolAIAssistantBanner({
                 AI File Intelligence & Chat Copilot
               </h4>
               <span className="px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold">
-                Gemini 2.5 Flash
+                TheWebVale AI
               </span>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400">
