@@ -139,6 +139,15 @@ export function Navbar() {
           {/* Theme Toggle */}
           <ThemeToggle />
 
+          {/* AI Copilot Quick Launcher */}
+          <Link
+            href="/chat-file"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-cyan-500/10 hover:from-rose-500/20 hover:to-cyan-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold transition-all shadow-2xs"
+          >
+            <Sparkles className="w-3.5 h-3.5 animate-pulse text-purple-500" />
+            <span className="hidden sm:inline">AI Studio</span>
+          </Link>
+
           {/* User Auth or Dropdown */}
           {isAuthenticated ? (
             <UserDropdown />

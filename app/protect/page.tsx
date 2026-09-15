@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
 import { protectPdf } from '@/lib/pdf/security';
 import { downloadBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function ProtectPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -163,6 +164,17 @@ export default function ProtectPage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="protect"
+          fileName={files[0]?.name}
+          fileSize={files[0]?.size}
+          fileContext={`Protected Document Security: ${files[0]?.name}, Size: ${(files[0]?.size / 1024).toFixed(0)} KB. AES encryption applied.`}
+        />
+      )}
 
       {/* Processing Modal */}
       <ProcessingModal

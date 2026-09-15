@@ -7,6 +7,7 @@ import { parseCsvText, parseJsonText, parseExcelBuffer, ParsedTableData } from '
 import { detectColumnTypes, renderChartSvg, ChartConfig, ChartType } from '@/lib/data/data-visualizer';
 import { BarChart3, Download, Sliders, Sparkles, PieChart, LineChart } from 'lucide-react';
 import saveAs from 'file-saver';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function DataVisualizerPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -231,6 +232,17 @@ export default function DataVisualizerPage() {
             />
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="data"
+          toolSlug="data-visualizer"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={data ? `Chart: ${config.title} (${config.type} chart, X: ${config.xAxisColumn}, Y: ${config.yAxisColumn})\nData sample: ${JSON.stringify(data.rows.slice(0, 10))}` : undefined}
+        />
       )}
     </div>
   );

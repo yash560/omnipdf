@@ -7,6 +7,7 @@ import { compressImage, compressToTargetSize, CompressResult } from '@/lib/image
 import { Sliders, Download, Sparkles, CheckCircle2, ArrowRight, Gauge } from 'lucide-react';
 import saveAs from 'file-saver';
 import { formatBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function ImageCompressPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -207,6 +208,17 @@ export default function ImageCompressPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="image"
+          toolSlug="image-compress"
+          fileName={files[0]?.file.name}
+          fileSize={result ? result.compressedSize : files[0]?.file.size}
+          imageBase64={result?.dataUrl}
+        />
       )}
     </div>
   );

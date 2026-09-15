@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
 import { mergePdfs } from '@/lib/pdf/merge';
 import { downloadBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function MergePage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -119,6 +120,17 @@ export default function MergePage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="merge"
+          fileName={files.map(f => f.name).join(', ')}
+          fileSize={files.reduce((acc, f) => acc + f.size, 0)}
+          fileContext={`Merged PDFs: ${files.map(f => `${f.name} (${(f.size / 1024).toFixed(0)} KB)`).join(', ')}`}
+        />
+      )}
 
       {/* Processing & Complete Modal */}
       <ProcessingModal

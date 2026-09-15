@@ -7,6 +7,7 @@ import { trimAudio, extractWaveformPeaks } from '@/lib/media/audio-trimmer';
 import { Activity, Download, Scissors, Play, Pause, Sparkles } from 'lucide-react';
 import saveAs from 'file-saver';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function AudioTrimmerPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -204,6 +205,17 @@ export default function AudioTrimmerPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="media"
+          toolSlug="audio-trimmer"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={`Audio track: ${files[0]?.file.name}, Duration: ${totalDuration.toFixed(1)}s, Trimmed Range: ${startTime.toFixed(1)}s to ${endTime.toFixed(1)}s`}
+        />
       )}
 
       <ProcessingModal isOpen={processing} progress={50} statusText="Processing audio buffer..." />

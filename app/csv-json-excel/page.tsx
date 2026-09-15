@@ -14,6 +14,7 @@ import {
 } from '@/lib/data/csv-matrix';
 import { Table, Download, FileSpreadsheet, Sparkles, Sliders, CheckCircle2, ArrowRight } from 'lucide-react';
 import saveAs from 'file-saver';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function CsvJsonExcelPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -172,6 +173,15 @@ export default function CsvJsonExcelPage() {
               </table>
             </div>
           </div>
+
+          {/* AI Assistant Banner */}
+          <ToolAIAssistantBanner
+            suite="data"
+            toolSlug="csv-json-excel"
+            fileName={files[0]?.file.name}
+            fileSize={files[0]?.file.size}
+            fileContext={data ? `Headers: ${data.headers.join(', ')}\nSample rows (${Math.min(data.rows.length, 10)}):\n${JSON.stringify(data.rows.slice(0, 10), null, 2)}` : undefined}
+          />
         </div>
       )}
     </div>

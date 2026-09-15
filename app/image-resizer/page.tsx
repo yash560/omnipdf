@@ -7,6 +7,7 @@ import { resizeImage, SOCIAL_PRESETS, ResizePreset } from '@/lib/image/resizer';
 import { Maximize2, Download, Sliders, CheckCircle2, Lock, Unlock, Sparkles } from 'lucide-react';
 import saveAs from 'file-saver';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function ImageResizerPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -231,6 +232,17 @@ export default function ImageResizerPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="image"
+          toolSlug="image-resizer"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          imageBase64={resultUrl || undefined}
+        />
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
 import { extractTextFromPdf } from '@/lib/pdf/convert';
 import { downloadBlob } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function PdfToTextPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -181,6 +182,17 @@ export default function PdfToTextPage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="pdf-to-text"
+          fileName={files[0]?.name}
+          fileSize={files[0]?.size}
+          fileContext={extractedMarkdown || extractedPlain || `PDF Document: ${files[0]?.name}`}
+        />
+      )}
 
       {/* Processing Modal */}
       <ProcessingModal

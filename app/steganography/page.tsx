@@ -7,6 +7,7 @@ import { hideMessageInImage, revealMessageFromImage } from '@/lib/security/stega
 import { EyeOff, Download, Copy, CheckCircle2, Lock, Unlock, Sparkles, ShieldCheck } from 'lucide-react';
 import saveAs from 'file-saver';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function SteganographyPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -179,6 +180,17 @@ export default function SteganographyPage() {
             {revealedText}
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="security"
+          toolSlug="steganography"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={revealedText ? `Steganography Revealed Message: ${revealedText}` : `Steganography hidden payload: ${secretMessage}`}
+        />
       )}
 
       <ProcessingModal isOpen={processing} progress={50} statusText="Processing image bitstreams..." />

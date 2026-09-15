@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile, WatermarkConfig } from '@/types/pdf';
 import { applyWatermark } from '@/lib/pdf/watermark';
 import { downloadBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function WatermarkPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -232,6 +233,17 @@ export default function WatermarkPage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="watermark"
+          fileName={files[0]?.name}
+          fileSize={files[0]?.size}
+          fileContext={`Watermark Stamping: Document: ${files[0]?.name}, Watermark Text: "${watermarkText}", Position: ${position}, Opacity: ${opacity * 100}%`}
+        />
+      )}
 
       {/* Processing Modal */}
       <ProcessingModal

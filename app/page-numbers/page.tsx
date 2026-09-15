@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile, PageNumberConfig } from '@/types/pdf';
 import { addPageNumbers } from '@/lib/pdf/page-numbers';
 import { downloadBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function PageNumbersPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -200,6 +201,17 @@ export default function PageNumbersPage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="page-numbers"
+          fileName={files[0]?.name}
+          fileSize={files[0]?.size}
+          fileContext={`Page Numbering Config: Document: ${files[0]?.name}, Format: ${format}, Position: ${position}, Starting at Page: ${startPage}`}
+        />
+      )}
 
       {/* Processing Modal */}
       <ProcessingModal

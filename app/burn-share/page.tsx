@@ -6,6 +6,7 @@ import { StagedFile } from '@/types/pdf';
 import { encryptFileForShare } from '@/lib/security/burn-share';
 import { Flame, Copy, CheckCircle2, ShieldCheck, Lock, Link as LinkIcon, Sparkles } from 'lucide-react';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function BurnSharePage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -162,6 +163,17 @@ export default function BurnSharePage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="security"
+          toolSlug="burn-share"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={`Zero-Knowledge Encrypted File: ${files[0]?.file.name} (${(files[0]?.file.size / 1024).toFixed(1)} KB), AES-256-GCM in-browser, Self-destruct TTL: ${ttl} minutes`}
+        />
       )}
 
       <ProcessingModal isOpen={processing} progress={50} statusText="Encrypting payload with AES-256-GCM..." />

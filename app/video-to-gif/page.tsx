@@ -7,6 +7,7 @@ import { convertVideoToAnimatedWebp } from '@/lib/media/video-to-gif';
 import { Clapperboard, Download, Sliders, CheckCircle2, Sparkles, Play } from 'lucide-react';
 import saveAs from 'file-saver';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function VideoToGifPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -170,6 +171,17 @@ export default function VideoToGifPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="media"
+          toolSlug="video-to-gif"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={`Video source: ${files[0]?.file.name}, Animated GIF/WebP parameters: FPS=${fps}, Duration=${duration}s, StartTime=${startTime}s, Width=${scaleWidth}px`}
+        />
       )}
 
       <ProcessingModal isOpen={processing} progress={progress} statusText={`Rendering animation (${progress}%)...`} />

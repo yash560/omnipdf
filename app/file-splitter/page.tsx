@@ -7,6 +7,7 @@ import { splitFile, joinFileParts, SplitManifest } from '@/lib/archive/file-spli
 import { Split, Download, Sliders, CheckCircle2, Binary, Sparkles, Layers } from 'lucide-react';
 import saveAs from 'file-saver';
 import { formatBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function FileSplitterPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -171,6 +172,17 @@ export default function FileSplitterPage() {
             <span>Download Reconstructed File</span>
           </button>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="archive"
+          toolSlug="file-splitter"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={`File: ${files[0]?.file.name} (${formatBytes(files[0]?.file.size)}), Split into ${manifest?.chunks.length || 0} chunks (${chunkSizeMb} MB each)`}
+        />
       )}
     </div>
   );

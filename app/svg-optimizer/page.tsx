@@ -6,6 +6,7 @@ import { StagedFile } from '@/types/pdf';
 import { optimizeSvg, vectorizeBitmap } from '@/lib/image/svg-engine';
 import { Code2, Download, Copy, CheckCircle2, Sparkles, Sliders, Layers } from 'lucide-react';
 import saveAs from 'file-saver';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function SvgOptimizerPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -173,6 +174,17 @@ export default function SvgOptimizerPage() {
             />
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="image"
+          toolSlug="svg-optimizer"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={svgCode.substring(0, 10000)}
+        />
       )}
     </div>
   );

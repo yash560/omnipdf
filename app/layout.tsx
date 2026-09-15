@@ -7,6 +7,8 @@ import { WhatsAppDock } from '@/components/WhatsAppDock';
 import { CommandMenu } from '@/components/CommandMenu';
 import { AuthProvider } from '@/lib/auth/auth-context';
 import { AuthModal } from '@/components/auth/AuthModal';
+import { AIProvider } from '@/lib/ai/ai-context';
+import { UniversalAIChatDrawer } from '@/components/ai/UniversalAIChatDrawer';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   variable: '--font-plus-jakarta-sans',
@@ -52,12 +54,15 @@ export default function RootLayout({
       </head>
       <body className="bg-[var(--background)] text-[var(--foreground)] min-h-screen flex flex-col selection:bg-rose-500 selection:text-white">
         <AuthProvider>
-          <Navbar />
-          <main className="flex-1 flex flex-col">{children}</main>
-          <Footer />
-          <WhatsAppDock />
-          <CommandMenu />
-          <AuthModal />
+          <AIProvider>
+            <Navbar />
+            <main className="flex-1 flex flex-col">{children}</main>
+            <Footer />
+            <WhatsAppDock />
+            <CommandMenu />
+            <AuthModal />
+            <UniversalAIChatDrawer />
+          </AIProvider>
         </AuthProvider>
       </body>
     </html>

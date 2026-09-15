@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
 import { rotateAllPages } from '@/lib/pdf/organize';
 import { downloadBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function RotatePage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -142,6 +143,17 @@ export default function RotatePage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="rotate"
+          fileName={files[0]?.name}
+          fileSize={files[0]?.size}
+          fileContext={`PDF Orientation: Document: ${files[0]?.name}, Size: ${(files[0]?.size / 1024).toFixed(0)} KB, Rotation Angle: ${rotationAngle}°`}
+        />
+      )}
 
       {/* Processing Modal */}
       <ProcessingModal

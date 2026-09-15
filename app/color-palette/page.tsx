@@ -6,6 +6,7 @@ import { StagedFile } from '@/types/pdf';
 import { extractPalette, ExtractedColor } from '@/lib/image/palette';
 import { Palette, Copy, CheckCircle2, Download, Sparkles, ShieldCheck } from 'lucide-react';
 import saveAs from 'file-saver';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function ColorPalettePage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -177,6 +178,15 @@ export default function ColorPalettePage() {
               <span>Export JSON Palette</span>
             </button>
           </div>
+
+          {/* AI Assistant Banner */}
+          <ToolAIAssistantBanner
+            suite="image"
+            toolSlug="color-palette"
+            fileName={files[0]?.file.name}
+            fileSize={files[0]?.file.size}
+            fileContext={`Extracted Palette (${colors.length} colors): ${colors.map(c => `${c.hex} (${c.tailwindName}, ${c.percentage.toFixed(1)}%)`).join(', ')}`}
+          />
         </div>
       )}
     </div>

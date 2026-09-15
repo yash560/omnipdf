@@ -8,6 +8,7 @@ import { RefreshCw, Download, Sparkles, Sliders, CheckCircle2, ArrowRight } from
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function ImageConverterPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -138,12 +139,23 @@ export default function ImageConverterPage() {
           <button
             onClick={handleConvert}
             disabled={processing}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold text-sm shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white font-bold text-sm shadow-lg shadow-cyan-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>Convert & Download {files.length} Image{files.length > 1 ? 's' : ''}</span>
           </button>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="image"
+          toolSlug="image-converter"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          imageBase64={results[0]?.dataUrl}
+        />
       )}
 
       {/* Results View */}

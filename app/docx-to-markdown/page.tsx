@@ -6,6 +6,7 @@ import { StagedFile } from '@/types/pdf';
 import { convertDocxToMarkdown, DocxConvertedResult } from '@/lib/data/docx-parser';
 import { FileType, Download, Copy, CheckCircle2, Sparkles, Code2, BookOpen } from 'lucide-react';
 import saveAs from 'file-saver';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function DocxToMarkdownPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -150,6 +151,15 @@ export default function DocxToMarkdownPage() {
               />
             )}
           </div>
+
+          {/* AI Assistant Banner */}
+          <ToolAIAssistantBanner
+            suite="pdf"
+            toolSlug="docx-to-markdown"
+            fileName={files[0]?.file.name}
+            fileSize={files[0]?.file.size}
+            fileContext={result?.markdown}
+          />
         </div>
       )}
     </div>

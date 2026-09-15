@@ -8,6 +8,7 @@ import { Video, Download, Sliders, CheckCircle2, Sparkles, Gauge } from 'lucide-
 import saveAs from 'file-saver';
 import { formatBytes } from '@/lib/pdf/core';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function VideoCompressPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -172,6 +173,17 @@ export default function VideoCompressPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="media"
+          toolSlug="video-compress"
+          fileName={files[0]?.file.name}
+          fileSize={result ? result.compressedSize : files[0]?.file.size}
+          fileContext={`Video: ${files[0]?.file.name} (${resolution}, bitrate: ${bitrateMbps} Mbps, original: ${formatBytes(files[0]?.file.size)})`}
+        />
       )}
 
       <ProcessingModal isOpen={processing} progress={progress} statusText={`Compressing video in-browser (${progress}%)...`} />

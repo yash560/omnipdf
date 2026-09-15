@@ -7,6 +7,7 @@ import { readExif, stripExif, ExifData } from '@/lib/image/exif';
 import { ShieldAlert, ShieldCheck, Download, MapPin, Camera, Sparkles, CheckCircle2, EyeOff } from 'lucide-react';
 import saveAs from 'file-saver';
 import { formatBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function ExifCleanerPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -154,6 +155,17 @@ export default function ExifCleanerPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="image"
+          toolSlug="exif-cleaner"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={exif ? `EXIF Metadata: Camera=${exif.make || 'N/A'} ${exif.model || ''}, ISO=${exif.iso || 'N/A'}, Shutter=${exif.exposureTime || 'N/A'}, Aperture=${exif.fNumber || 'N/A'}, GPS=${exif.gps ? `${exif.gps.latitude}, ${exif.gps.longitude}` : 'N/A'}, Date=${exif.dateTime || 'N/A'}` : 'No EXIF metadata tags found.'}
+        />
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { parseSrt, exportToSrt, exportToVtt, shiftSubtitleTiming, SubtitleCue } from '@/lib/media/subtitle-engine';
 import { Subtitles, Download, Plus, Trash2, Clock, CheckCircle2, Copy } from 'lucide-react';
 import saveAs from 'file-saver';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function SubtitleEditorPage() {
   const [cues, setCues] = useState<SubtitleCue[]>([
@@ -154,6 +155,14 @@ export default function SubtitleEditorPage() {
           </div>
         ))}
       </div>
+
+      {/* AI Assistant Banner */}
+      <ToolAIAssistantBanner
+        suite="media"
+        toolSlug="subtitle-editor"
+        fileName="Subtitles Track"
+        fileContext={cues.map(c => `[${(c.startTimeMs / 1000).toFixed(1)}s -> ${(c.endTimeMs / 1000).toFixed(1)}s]: ${c.text}`).join('\n')}
+      />
     </div>
   );
 }

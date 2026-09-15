@@ -7,6 +7,7 @@ import { FileDropzone } from '@/components/FileDropzone';
 import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
 import { pdfToImagesAndDownloadZip } from '@/lib/pdf/convert';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function PdfToJpgPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -178,6 +179,17 @@ export default function PdfToJpgPage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="pdf-to-jpg"
+          fileName={files[0]?.name}
+          fileSize={files[0]?.size}
+          fileContext={`PDF to Image Rasterizer: Document: ${files[0]?.name}, Target Image Format: ${format.toUpperCase()}, Render Resolution: ${dpiScale * 150} DPI`}
+        />
+      )}
 
       {/* Processing Modal */}
       <ProcessingModal

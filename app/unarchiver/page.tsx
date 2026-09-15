@@ -7,6 +7,7 @@ import { unpackArchive, ArchiveEntry } from '@/lib/archive/unarchiver';
 import { FolderArchive, Download, FileText, Folder, Eye, Search } from 'lucide-react';
 import saveAs from 'file-saver';
 import { formatBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function UnarchiverPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -151,6 +152,17 @@ export default function UnarchiverPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="archive"
+          toolSlug="unarchiver"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={`Archive: ${files[0]?.file.name} (${entries.length} files)\nFiles:\n${entries.map(e => `- ${e.path} (${e.isDir ? 'directory' : formatBytes(e.size)})`).join('\n')}`}
+        />
       )}
     </div>
   );

@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
 import { performPdfOcr } from '@/lib/pdf/ocr';
 import { downloadBlob } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function OcrPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -159,6 +160,17 @@ export default function OcrPage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="ocr"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={extractedText || undefined}
+        />
+      )}
 
       {/* Processing Modal */}
       <ProcessingModal

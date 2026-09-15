@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
 import { splitPdf, burstPdfPages, parsePageRangeString } from '@/lib/pdf/split';
 import { downloadBytes, createAndDownloadZip } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function SplitPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -207,6 +208,17 @@ export default function SplitPage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="split"
+          fileName={files[0]?.name}
+          fileSize={files[0]?.size}
+          fileContext={`PDF Document: ${files[0]?.name}, Split Mode: ${splitMode}, Selected Range: ${rangeInput}`}
+        />
+      )}
 
       {/* Processing & Download Modal */}
       <ProcessingModal

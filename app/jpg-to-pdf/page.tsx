@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
 import { imagesToPdf, ImageToPdfOptions } from '@/lib/pdf/convert';
 import { downloadBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function JpgToPdfPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -230,6 +231,17 @@ export default function JpgToPdfPage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="jpg-to-pdf"
+          fileName={`${files.length} Images to PDF`}
+          fileSize={files.reduce((acc, f) => acc + f.size, 0)}
+          fileContext={`Image to PDF Conversion: ${files.length} source images (${files.map(f => f.name).slice(0, 5).join(', ')}${files.length > 5 ? '...' : ''}), Page Size: ${pageSize.toUpperCase()}, Orientation: ${orientation}, Margin: ${margin}`}
+        />
+      )}
 
       {/* Processing Modal */}
       <ProcessingModal

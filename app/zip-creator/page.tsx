@@ -8,6 +8,7 @@ import { FileArchive, Download, Sliders, CheckCircle2, Lock, Sparkles } from 'lu
 import saveAs from 'file-saver';
 import { formatBytes } from '@/lib/pdf/core';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function ZipCreatorPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -112,6 +113,17 @@ export default function ZipCreatorPage() {
             <span>Generate & Download ZIP Archive</span>
           </button>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="archive"
+          toolSlug="zip-creator"
+          fileName={zipName}
+          fileSize={totalSize}
+          fileContext={`Archive bundle: ${zipName} containing ${files.length} files (${formatBytes(totalSize)} total):\n${files.map(f => `- ${f.name} (${formatBytes(f.size)})`).join('\n')}`}
+        />
       )}
 
       <ProcessingModal isOpen={processing} progress={60} statusText="Building compressed ZIP archive..." />

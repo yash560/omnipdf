@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { computeDiff, DiffResult } from '@/lib/data/diff-engine';
 import { GitCompare, Sliders, CheckCircle2, Copy, FileText, ArrowRight } from 'lucide-react';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function DiffCheckerPage() {
   const [oldText, setOldText] = useState<string>('// Version 1.0\nfunction calculateTotal(items) {\n  let sum = 0;\n  for (let i = 0; i < items.length; i++) {\n    sum += items[i].price;\n  }\n  return sum;\n}');
@@ -151,6 +152,14 @@ export default function DiffCheckerPage() {
           ))}
         </div>
       </div>
+
+      {/* AI Assistant Banner */}
+      <ToolAIAssistantBanner
+        suite="data"
+        toolSlug="diff-checker"
+        fileName="Revision Comparison"
+        fileContext={`Diff Summary: ${diff.additions} additions, ${diff.deletions} deletions.\nOld text:\n${oldText.substring(0, 5000)}\n\nNew text:\n${newText.substring(0, 5000)}`}
+      />
     </div>
   );
 }

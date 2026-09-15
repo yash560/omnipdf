@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile, PageThumbnail } from '@/types/pdf';
 import { renderAllPageThumbnails, downloadBytes } from '@/lib/pdf/core';
 import { organizePdf, PageAction } from '@/lib/pdf/organize';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function OrganizePage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -261,6 +262,17 @@ export default function OrganizePage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="organize"
+          fileName={files[0]?.name}
+          fileSize={files[0]?.size}
+          fileContext={`PDF Page Organizer: Document: ${files[0]?.name}, Total Pages: ${pages.length}, Page Sequence: [${pages.map((p, i) => `Page ${i+1} (orig #${p.originalIndex + 1})`).slice(0, 10).join(', ')}${pages.length > 10 ? '...' : ''}]`}
+        />
       )}
 
       {/* Processing Modal */}

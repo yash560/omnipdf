@@ -7,6 +7,7 @@ import { parseCsvText, exportToCsv, exportToExcel, ParsedTableData } from '@/lib
 import { cleanTabularData, CleanOptions, CleanReport } from '@/lib/data/csv-cleaner';
 import { Sparkles, Download, CheckCircle2, Sliders, Filter, Trash2 } from 'lucide-react';
 import saveAs from 'file-saver';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function CsvCleanerPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -248,6 +249,17 @@ export default function CsvCleanerPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="data"
+          toolSlug="csv-cleaner"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={report ? `Hygiene Report: Original Rows=${report.originalRows}, Cleaned Rows=${report.cleanedRows}, Duplicates Removed=${report.duplicatesRemoved}, Cells Trimmed=${report.cellsTrimmed}` : undefined}
+        />
       )}
     </div>
   );

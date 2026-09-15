@@ -7,6 +7,7 @@ import { removeBackground } from '@/lib/image/bg-remover';
 import { Wand2, Download, Sliders, CheckCircle2, PaintBucket, Sparkles, RefreshCw } from 'lucide-react';
 import saveAs from 'file-saver';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function BgRemoverPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -201,6 +202,17 @@ export default function BgRemoverPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="image"
+          toolSlug="bg-remover"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          imageBase64={resultUrl || undefined}
+        />
       )}
     </div>
   );

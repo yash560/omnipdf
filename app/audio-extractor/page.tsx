@@ -7,6 +7,7 @@ import { extractAudioTrack, AudioExtractOptions } from '@/lib/media/audio-extrac
 import { Volume2, Download, Sliders, CheckCircle2, Music, Sparkles } from 'lucide-react';
 import saveAs from 'file-saver';
 import { ProcessingModal } from '@/components/ProcessingModal';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function AudioExtractorPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -161,6 +162,17 @@ export default function AudioExtractorPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="media"
+          toolSlug="audio-extractor"
+          fileName={files[0]?.file.name}
+          fileSize={files[0]?.file.size}
+          fileContext={`Video source: ${files[0]?.file.name}, Duration: ${duration.toFixed(1)}s, Sample Rate: ${sampleRate}Hz, Channels: ${channels === 2 ? 'Stereo' : 'Mono'}`}
+        />
       )}
 
       <ProcessingModal isOpen={processing} progress={50} statusText="Decoding and extracting audio buffer..." />

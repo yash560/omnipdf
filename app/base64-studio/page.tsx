@@ -7,6 +7,7 @@ import { fileToBase64, base64ToFile, Base64Result } from '@/lib/security/base64-
 import { Binary, Copy, CheckCircle2, Download, Code2, Sparkles } from 'lucide-react';
 import saveAs from 'file-saver';
 import { formatBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function Base64StudioPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -168,6 +169,17 @@ export default function Base64StudioPage() {
             <span>Decode & Download File</span>
           </button>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {(files.length > 0 || (tab === 'decode' && decodeInput.trim().length > 0)) && (
+        <ToolAIAssistantBanner
+          suite="security"
+          toolSlug="base64-studio"
+          fileName={files[0]?.file.name || decodeFileName}
+          fileSize={files[0]?.file.size}
+          fileContext={result ? `Base64 (${result.base64.length} chars, ${result.mimeType}):\n${result.base64.substring(0, 3000)}\n\nData URI:\n${result.dataUri.substring(0, 3000)}` : decodeInput.substring(0, 3000)}
+        />
       )}
     </div>
   );

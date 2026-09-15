@@ -6,6 +6,7 @@ import { StagedFile } from '@/types/pdf';
 import { computeHashes, HashReport } from '@/lib/security/hash-engine';
 import { Hash, Copy, CheckCircle2, XCircle, Sliders, Sparkles } from 'lucide-react';
 import { formatBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function HashVerifierPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -133,6 +134,15 @@ export default function HashVerifierPage() {
               </div>
             ))}
           </div>
+
+          {/* AI Assistant Banner */}
+          <ToolAIAssistantBanner
+            suite="security"
+            toolSlug="hash-verifier"
+            fileName={files[0]?.file.name}
+            fileSize={files[0]?.file.size}
+            fileContext={hashes ? `File: ${files[0]?.file.name} (${formatBytes(files[0]?.file.size)})\nSHA-256: ${hashes.sha256}\nSHA-512: ${hashes.sha512}\nSHA-1: ${hashes.sha1}\nCRC32: ${hashes.crc32}` : undefined}
+          />
         </div>
       )}
     </div>

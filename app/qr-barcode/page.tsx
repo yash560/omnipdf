@@ -4,13 +4,14 @@ import { useState } from 'react';
 import { generateQrSvg, QrOptions } from '@/lib/security/qr-barcode';
 import { QrCode, Download, Copy, CheckCircle2, Sliders, Sparkles, Link as LinkIcon, Wifi, Mail } from 'lucide-react';
 import saveAs from 'file-saver';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function QrBarcodePage() {
-  const [text, setText] = useState('https://files.thewebvale.com');
+  const [text, setText] = useState('https://filecraft.thewebvale.com');
   const [fgColor, setFgColor] = useState('#000000');
   const [bgColor, setBgColor] = useState('#ffffff');
   const [rounded, setRounded] = useState(true);
-  const [qrSvg, setQrSvg] = useState(() => generateQrSvg({ text: 'https://files.thewebvale.com', size: 300, fgColor: '#000000', bgColor: '#ffffff', rounded: true, ecc: 'M' }));
+  const [qrSvg, setQrSvg] = useState(() => generateQrSvg({ text: 'https://filecraft.thewebvale.com', size: 300, fgColor: '#000000', bgColor: '#ffffff', rounded: true, ecc: 'M' }));
   const [copied, setCopied] = useState(false);
 
   const updateQr = (newText = text, fg = fgColor, bg = bgColor, r = rounded) => {
@@ -137,6 +138,14 @@ export default function QrBarcodePage() {
           />
         </div>
       </div>
+
+      {/* AI Assistant Banner */}
+      <ToolAIAssistantBanner
+        suite="security"
+        toolSlug="qr-barcode"
+        fileName="QR Vector Payload"
+        fileContext={`QR Code Payload: "${text}", Styling: FG=${fgColor}, BG=${bgColor}, Rounded=${rounded}`}
+      />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { Columns2, ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, ZoomIn, Zoo
 import { StagedFile } from '@/types/pdf';
 import { FileDropzone } from '@/components/FileDropzone';
 import { getPdfJs, safeCloneBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function ComparePage() {
   const [file1, setFile1] = useState<StagedFile[]>([]);
@@ -205,6 +206,14 @@ export default function ComparePage() {
               </div>
             </div>
           </div>
+
+          {/* AI Assistant Banner */}
+          <ToolAIAssistantBanner
+            suite="pdf"
+            toolSlug="compare"
+            fileName={`${file1[0]?.name} vs ${file2[0]?.name}`}
+            fileContext={`Comparing PDF Documents:\nDocument A: ${file1[0]?.name} (${(file1[0]?.size / 1024).toFixed(0)} KB)\nDocument B: ${file2[0]?.name} (${(file2[0]?.size / 1024).toFixed(0)} KB)\nCurrent Page: ${currentPage} of ${totalPages}`}
+          />
         </div>
       )}
     </div>

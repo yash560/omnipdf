@@ -6,6 +6,7 @@ import { StagedFile } from '@/types/pdf';
 import { parseEpub, createEpubFromMarkdown, ParsedEpub } from '@/lib/data/epub-parser';
 import { BookOpen, Download, Copy, CheckCircle2, Sparkles, BookText, FileText } from 'lucide-react';
 import saveAs from 'file-saver';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function EpubConverterPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -185,12 +186,22 @@ export default function EpubConverterPage() {
           </div>
           <button
             onClick={handleCreateEpub}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-fuchsia-500 to-pink-600 hover:from-fuchsia-600 hover:to-pink-700 text-white font-bold text-sm shadow-md shadow-fuchsia-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+            className="w-full py-3 rounded-xl bg-fuchsia-500 hover:bg-fuchsia-600 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-fuchsia-500/20 transition-all cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            <span>Package & Download EPUB</span>
+            <span>Generate & Download EPUB</span>
           </button>
         </div>
+      )}
+
+      {/* AI Assistant Banner */}
+      {(files.length > 0 || tab === 'create') && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="epub-converter"
+          fileName={epub ? epub.title : createTitle}
+          fileContext={epub ? epub.fullMarkdown.substring(0, 15000) : createMarkdown}
+        />
       )}
     </div>
   );

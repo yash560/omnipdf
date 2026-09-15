@@ -8,6 +8,7 @@ import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
 import { compressPdf } from '@/lib/pdf/compress';
 import { downloadBytes } from '@/lib/pdf/core';
+import { ToolAIAssistantBanner } from '@/components/ai/ToolAIAssistantBanner';
 
 export default function CompressPage() {
   const [files, setFiles] = useState<StagedFile[]>([]);
@@ -195,6 +196,17 @@ export default function CompressPage() {
           </div>
         )}
       </div>
+
+      {/* AI Assistant Banner */}
+      {files.length > 0 && (
+        <ToolAIAssistantBanner
+          suite="pdf"
+          toolSlug="compress"
+          fileName={files[0]?.name}
+          fileSize={files[0]?.size}
+          fileContext={`PDF Document: ${files[0]?.name}, Size: ${(files[0]?.size / 1024).toFixed(0)} KB, Selected Compression Level: ${level}`}
+        />
+      )}
 
       {/* Processing & Complete Modal */}
       <ProcessingModal
