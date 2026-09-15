@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const stats = await getCloudDriveStats(auth.userId);
+    const stats = await getCloudDriveStats(auth.userId, auth.email);
     return NextResponse.json({
       success: true,
       stats,

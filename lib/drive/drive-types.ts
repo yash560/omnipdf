@@ -44,6 +44,28 @@ export const FOLDER_COLORS: Record<DriveFolderColor, DriveFolderColorInfo> = {
   rose: { id: 'rose', label: 'Vibrant Rose', bgClass: 'bg-rose-500/10 dark:bg-rose-500/20', textClass: 'text-rose-600 dark:text-rose-400', borderClass: 'border-rose-300 dark:border-rose-800', hex: '#f43f5e' },
 };
 
+export type CollaboratorRole = 'viewer' | 'commenter' | 'editor' | 'admin';
+
+export interface Collaborator {
+  userId: string;
+  email: string;
+  name: string;
+  role: CollaboratorRole;
+  addedAt: number;
+}
+
+export interface ShareConfig {
+  isPublic: boolean;
+  publicId: string;
+  hasPassword?: boolean;
+  passwordHash?: string;
+  expiresAt?: number | null;
+  allowDownload: boolean;
+  viewCount: number;
+  downloadCount: number;
+  maxDownloads?: number | null;
+}
+
 export interface DriveItem {
   id: string;
   name: string;
@@ -65,6 +87,53 @@ export interface DriveItem {
   aiSummary?: string;
   thumbnailUrl?: string;
   itemCount?: number; // for folders (computed/cached)
+  // Multi-account & collaboration
+  userId?: string;
+  ownerEmail?: string;
+  ownerName?: string;
+  sharedWith?: Collaborator[];
+  shareConfig?: ShareConfig;
+  isSharedWithMe?: boolean;
+  myRole?: CollaboratorRole;
+}
+
+export interface DriveComment {
+  id: string;
+  itemId: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  content: string;
+  createdAt: number;
+  updatedAt?: number;
+  resolved?: boolean;
+}
+
+export type DriveActivityAction = 
+  | 'uploaded'
+  | 'created_folder'
+  | 'renamed'
+  | 'moved'
+  | 'starred'
+  | 'unstarred'
+  | 'shared'
+  | 'unshared'
+  | 'downloaded'
+  | 'trashed'
+  | 'restored'
+  | 'commented';
+
+export interface DriveActivity {
+  id: string;
+  itemId: string;
+  itemName: string;
+  itemType: DriveItemType;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  action: DriveActivityAction;
+  details?: string;
+  timestamp: number;
 }
 
 export interface DriveBlobRecord {
@@ -79,6 +148,7 @@ export type DriveViewSection =
   | 'starred' 
   | 'recent' 
   | 'trash' 
+  | 'shared'
   | 'category';
 
 export type DriveSortField = 'name' | 'updatedAt' | 'size' | 'category';
@@ -99,6 +169,7 @@ export interface DriveStats {
   categoryCount: Record<DriveCategory, number>;
   starredCount: number;
   trashCount: number;
+  sharedWithMeCount?: number;
 }
 
 export interface DriveBreadcrumb {
@@ -111,4 +182,17 @@ export interface QuickToolAction {
   href: string;
   icon: string;
   description: string;
+}
+
+export interface ChunkUploadProgress {
+  uploadId: string;
+  fileName: string;
+  fileSize: number;
+  relativePath?: string;
+  uploadedBytes: number;
+  totalBytes: number;
+  percentage: number;
+  speedBytesPerSec: number;
+  status: 'queued' | 'uploading' | 'assembling' | 'completed' | 'paused' | 'error';
+  error?: string;
 }

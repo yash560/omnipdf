@@ -1,36 +1,42 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { DriveItem } from '@/lib/drive/drive-types';
 import { getCloudFileBlob } from '@/lib/drive/cloud-api';
 import { getFileBlob } from '@/lib/drive/drive-db';
 import { formatBytes, getFileCraftToolsForItem } from '@/lib/drive/drive-helpers';
 import { useAI } from '@/lib/ai/ai-context';
+import { DriveArchiveViewer } from './DriveArchiveViewer';
+import { DriveSpreadsheetViewer } from './DriveSpreadsheetViewer';
+import { DriveCodeViewer } from './DriveCodeViewer';
+import { DriveMediaPlayer } from './DriveMediaPlayer';
 import { 
   X, 
   Download, 
   Sparkles, 
   ExternalLink, 
   FileText, 
-  ChevronLeft, 
-  ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  Maximize2
+  ZoomIn, 
+  ZoomOut, 
+  RotateCw,
+  Share2
 } from 'lucide-react';
 import Link from 'next/link';
 
 interface DriveQuickLookModalProps {
   item: DriveItem | null;
   onClose: () => void;
+  onOpenShare?: (item: DriveItem) => void;
 }
 
-export function DriveQuickLookModal({ item, onClose }: DriveQuickLookModalProps) {
-  const { openDrawer, setActiveFile, triggerQuickAction } = useAI();
+export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLookModalProps) {
+  const { openDrawer, setActiveFile } = useAI();
+  const [blob, setBlob] = useState<Blob | null>(null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [textContent, setTextContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [zoom, setZoom] = useState(1.0);
+  const [rotation, setRotation] = useState(0);
 
   useEffect(() => {
     let url: string | null = null;
@@ -40,23 +46,25 @@ export function DriveQuickLookModal({ item, onClose }: DriveQuickLookModalProps)
       if (!item || item.type === 'folder') return;
       setLoading(true);
       setTextContent(null);
+      setBlob(null);
 
       try {
-        const blob = (await getCloudFileBlob(item.id)) || (await getFileBlob(item.id));
-        if (!blob) return;
+        const fetchedBlob = (await getCloudFileBlob(item.id)) || (await getFileBlob(item.id));
+        if (!fetchedBlob) return;
 
-        url = URL.createObjectURL(blob);
+        if (isMounted) setBlob(fetchedBlob);
+        url = URL.createObjectURL(fetchedBlob);
         if (isMounted) setBlobUrl(url);
 
-        // If text, code, or csv, parse raw text
+        // If code or text, parse text content
         if (
           item.category === 'code' || 
           item.category === 'document' || 
-          item.category === 'spreadsheet' || 
-          item.mimeType.startsWith('text/')
+          item.mimeType.startsWith('text/') ||
+          ['json', 'yaml', 'yml', 'md', 'ts', 'tsx', 'js', 'jsx', 'py', 'sql', 'css', 'html', 'rs', 'go', 'sh', 'txt'].includes(item.extension)
         ) {
-          const text = await blob.text();
-          if (isMounted) setTextContent(text.substring(0, 50000));
+          const text = await fetchedBlob.text();
+          if (isMounted) setTextContent(text);
         }
       } catch (err) {
         console.error('Failed to load QuickLook content:', err);
@@ -73,7 +81,6 @@ export function DriveQuickLookModal({ item, onClose }: DriveQuickLookModalProps)
     };
   }, [item]);
 
-  // Handle ESC key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -96,11 +103,15 @@ export function DriveQuickLookModal({ item, onClose }: DriveQuickLookModalProps)
     openDrawer();
   };
 
+  const isZipArchive = ['zip', 'jar', 'tar', 'gz', 'rar'].includes(item.extension) || item.category === 'archive';
+  const isSpreadsheet = ['xlsx', 'xls', 'csv', 'tsv'].includes(item.extension) || item.category === 'spreadsheet';
+  const isCodeOrText = textContent !== null || item.category === 'code';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl h-[88vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden">
+      <div className="relative w-full max-w-5xl h-[88vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150">
         {/* Header Bar */}
-        <div className="p-4 bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-4">
+        <div className="p-4 bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
               <FileText className="w-4 h-4" />
@@ -117,21 +128,33 @@ export function DriveQuickLookModal({ item, onClose }: DriveQuickLookModalProps)
 
           {/* Header Controls */}
           <div className="flex items-center gap-2 shrink-0">
-            {/* AI Copilot Launch Button */}
+            {/* Ask AI */}
             <button
               type="button"
               onClick={handleLaunchAI}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Ask AI About File</span>
+              <span>Ask AI Copilot</span>
             </button>
 
-            {/* Direct Tool Launch Shortcut */}
+            {/* Share */}
+            {onOpenShare && (
+              <button
+                type="button"
+                onClick={() => onOpenShare(item)}
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-bold transition-colors cursor-pointer"
+              >
+                <Share2 className="w-3.5 h-3.5 text-rose-500" />
+                <span>Share</span>
+              </button>
+            )}
+
+            {/* Direct Tool Launch */}
             {tools.length > 0 && (
               <Link
                 href={tools[0].href}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-extrabold shadow-sm transition-all"
+                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-white text-white dark:text-zinc-900 text-xs font-extrabold shadow-xs transition-all"
               >
                 <span>{tools[0].label}</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -162,64 +185,98 @@ export function DriveQuickLookModal({ item, onClose }: DriveQuickLookModalProps)
         </div>
 
         {/* Viewer Canvas Area */}
-        <div className="flex-1 bg-zinc-100 dark:bg-zinc-950 overflow-auto flex items-center justify-center p-4 relative">
+        <div className="flex-1 bg-zinc-100 dark:bg-zinc-950 overflow-hidden flex items-center justify-center relative">
           {loading ? (
             <div className="flex flex-col items-center gap-2 text-zinc-400 text-xs">
-              <span className="w-3 h-3 rounded-full bg-blue-500 animate-ping" />
-              <span>Loading Cloud File Preview...</span>
+              <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping" />
+              <span className="font-bold">Streaming Cloud File Preview...</span>
+            </div>
+          ) : isZipArchive && blob ? (
+            // 1. In-browser ZIP / Archive Explorer
+            <div className="w-full h-full">
+              <DriveArchiveViewer blob={blob} />
+            </div>
+          ) : isSpreadsheet && blob ? (
+            // 2. Interactive Spreadsheet Grid
+            <div className="w-full h-full">
+              <DriveSpreadsheetViewer blob={blob} fileName={item.name} />
+            </div>
+          ) : item.category === 'media' && blobUrl ? (
+            // 3. 4K / HD Video or Audio Player with speed controls & range seeking
+            <div className="w-full h-full">
+              <DriveMediaPlayer
+                src={blobUrl}
+                type={item.mimeType.startsWith('video/') ? 'video' : 'audio'}
+                name={item.name}
+              />
+            </div>
+          ) : isCodeOrText && textContent !== null ? (
+            // 4. Code / Text / Markdown Syntax Viewer
+            <div className="w-full h-full">
+              <DriveCodeViewer code={textContent} language={item.extension || 'plaintext'} />
             </div>
           ) : item.category === 'image' && blobUrl ? (
-            // Image Preview
-            <div className="max-w-full max-h-full flex items-center justify-center overflow-auto">
+            // 5. Image Preview with zoom & rotation
+            <div className="w-full h-full flex flex-col items-center justify-center p-4 relative overflow-auto">
+              <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 bg-black/60 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 text-white">
+                <button
+                  onClick={() => setZoom((z) => Math.max(0.2, z - 0.2))}
+                  className="p-1.5 hover:bg-white/20 rounded-xl transition-colors"
+                  title="Zoom Out"
+                >
+                  <ZoomOut className="w-4 h-4" />
+                </button>
+                <span className="text-[10px] font-mono px-1 font-bold">{Math.round(zoom * 100)}%</span>
+                <button
+                  onClick={() => setZoom((z) => Math.min(3.0, z + 0.2))}
+                  className="p-1.5 hover:bg-white/20 rounded-xl transition-colors"
+                  title="Zoom In"
+                >
+                  <ZoomIn className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setRotation((r) => (r + 90) % 360)}
+                  className="p-1.5 hover:bg-white/20 rounded-xl transition-colors"
+                  title="Rotate"
+                >
+                  <RotateCw className="w-4 h-4" />
+                </button>
+              </div>
+
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={blobUrl}
                 alt={item.name}
-                className="max-h-[70vh] object-contain rounded-xl shadow-lg"
-                style={{ transform: `scale(${zoom})`, transition: 'transform 0.15s ease' }}
+                className="max-h-[70vh] object-contain rounded-2xl shadow-2xl transition-transform duration-150"
+                style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
               />
             </div>
           ) : item.category === 'pdf' && blobUrl ? (
-            // PDF Preview
+            // 6. PDF Interactive Canvas Frame
             <iframe
               src={blobUrl}
               title={item.name}
               className="w-full h-full rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white"
             />
-          ) : item.category === 'media' && blobUrl ? (
-            // Audio/Video Preview
-            item.mimeType.startsWith('video/') ? (
-              <video controls src={blobUrl} className="max-h-[70vh] max-w-full rounded-2xl shadow-xl" />
-            ) : (
-              <div className="p-8 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-4 max-w-md w-full text-center">
-                <div className="w-16 h-16 rounded-full bg-amber-500/10 text-amber-500 mx-auto flex items-center justify-center">
-                  <FileText className="w-8 h-8" />
-                </div>
-                <audio controls src={blobUrl} className="w-full" />
-              </div>
-            )
-          ) : textContent !== null ? (
-            // Code / Text / Markdown / CSV Preview
-            <div className="w-full h-full bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-4 font-mono text-xs text-zinc-800 dark:text-zinc-200 overflow-auto whitespace-pre leading-relaxed shadow-inner">
-              {textContent}
-            </div>
           ) : (
-            // Fallback
-            <div className="text-center p-8 space-y-3">
-              <div className="w-16 h-16 rounded-3xl bg-zinc-200 dark:bg-zinc-800 text-zinc-400 mx-auto flex items-center justify-center">
-                <FileText className="w-8 h-8" />
+            // 7. Binary Fallback
+            <div className="text-center p-8 space-y-4">
+              <div className="w-20 h-20 rounded-3xl bg-zinc-200 dark:bg-zinc-800 text-zinc-400 mx-auto flex items-center justify-center shadow-inner">
+                <FileText className="w-10 h-10" />
               </div>
-              <h4 className="text-sm font-bold text-zinc-800 dark:text-zinc-200">
-                Binary File Preview Not Available Directly
-              </h4>
-              <p className="text-xs text-zinc-400 max-w-sm">
-                You can download this file or launch it inside a specialized FileCraft tool workspace.
-              </p>
+              <div className="space-y-1">
+                <h4 className="text-base font-extrabold text-zinc-800 dark:text-zinc-200">
+                  Binary File Preview
+                </h4>
+                <p className="text-xs text-zinc-400 max-w-sm mx-auto">
+                  Download this file or launch it directly inside the specialized FileCraft studio tools.
+                </p>
+              </div>
               {blobUrl && (
                 <a
                   href={blobUrl}
                   download={item.name}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold shadow-md hover:bg-blue-700 transition-colors"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-extrabold shadow-lg shadow-rose-500/20 transition-all cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download {item.name}</span>
@@ -231,18 +288,18 @@ export function DriveQuickLookModal({ item, onClose }: DriveQuickLookModalProps)
 
         {/* Footer Toolbar: Quick Launch Options */}
         {tools.length > 0 && (
-          <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
             <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider whitespace-nowrap pl-2 mr-1">
-              Open With:
+              Open In Tool:
             </span>
             {tools.map((t, idx) => (
               <Link
                 key={idx}
                 href={t.href}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-semibold text-zinc-700 dark:text-zinc-300 shadow-2xs whitespace-nowrap transition-all"
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-rose-500 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-bold text-zinc-700 dark:text-zinc-300 shadow-2xs whitespace-nowrap transition-all"
               >
                 <span>{t.label}</span>
-                <ExternalLink className="w-3 h-3 text-blue-500" />
+                <ExternalLink className="w-3.5 h-3.5 text-rose-500" />
               </Link>
             ))}
           </div>
@@ -251,3 +308,4 @@ export function DriveQuickLookModal({ item, onClose }: DriveQuickLookModalProps)
     </div>
   );
 }
+

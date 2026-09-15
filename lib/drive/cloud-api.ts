@@ -1,4 +1,4 @@
-import { DriveItem, DriveCategory, DriveFolderColor, DriveStats, DriveBreadcrumb } from './drive-types';
+import { DriveItem, DriveCategory, DriveFolderColor, DriveStats, DriveBreadcrumb, DriveViewSection } from './drive-types';
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
 
@@ -14,7 +14,7 @@ function getAuthHeaders(): Record<string, string> {
 }
 
 export async function fetchCloudItems(options: {
-  section?: 'my-drive' | 'starred' | 'recent' | 'trash' | 'category';
+  section?: DriveViewSection;
   parentId?: string | null;
   category?: DriveCategory;
   query?: string;
@@ -256,6 +256,132 @@ export async function getCloudFileBlob(id: string): Promise<Blob | null> {
   } catch {
     return null;
   }
+}
+
+export async function addCollaboratorApi(
+  itemId: string,
+  email: string,
+  role: string = 'viewer'
+): Promise<DriveItem> {
+  const res = await fetch('/api/drive/share/collaborator', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ itemId, email, role }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to add collaborator');
+  }
+
+  const data = await res.json();
+  return data.item;
+}
+
+export async function removeCollaboratorApi(itemId: string, email: string): Promise<DriveItem> {
+  const res = await fetch('/api/drive/share/collaborator', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ itemId, email }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to remove collaborator');
+  }
+
+  const data = await res.json();
+  return data.item;
+}
+
+export async function updateShareConfigApi(
+  itemId: string,
+  config: any
+): Promise<DriveItem> {
+  const res = await fetch('/api/drive/share/link', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ itemId, ...config }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to update share link');
+  }
+
+  const data = await res.json();
+  return data.item;
+}
+
+export async function fetchDriveCommentsApi(itemId: string): Promise<any[]> {
+  const res = await fetch(`/api/drive/comments?itemId=${encodeURIComponent(itemId)}`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.comments || [];
+}
+
+export async function addDriveCommentApi(itemId: string, content: string): Promise<any> {
+  const res = await fetch('/api/drive/comments', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ itemId, content }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to post comment');
+  }
+
+  const data = await res.json();
+  return data.comment;
+}
+
+export async function fetchDriveActivitiesApi(itemId?: string): Promise<any[]> {
+  const url = itemId ? `/api/drive/activity?itemId=${encodeURIComponent(itemId)}` : '/api/drive/activity';
+  const res = await fetch(url, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) return [];
+  const data = await res.json();
+  return data.activities || [];
+}
+
+export async function createBatchFoldersApi(
+  paths: string[],
+  baseParentId: string | null = null
+): Promise<Record<string, string>> {
+  const res = await fetch('/api/drive/folder/batch', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify({ paths, baseParentId }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to create folder tree');
+  }
+
+  const data = await res.json();
+  return data.folderMap || {};
 }
 
 /**

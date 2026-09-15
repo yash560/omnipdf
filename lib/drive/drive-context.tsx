@@ -30,6 +30,8 @@ import {
 import { useAuth } from '@/lib/auth/auth-context';
 import saveAs from 'file-saver';
 
+import { chunkedUploader } from './chunked-uploader';
+
 interface DriveContextType {
   // Navigation & View
   currentFolderId: string | null;
@@ -52,6 +54,7 @@ interface DriveContextType {
   selectedIds: string[];
   previewItem: DriveItem | null;
   detailsItem: DriveItem | null;
+  shareModalItem: DriveItem | null;
   isUploading: boolean;
   uploadProgress: number;
   authRequired: boolean;
@@ -79,7 +82,10 @@ interface DriveContextType {
   downloadItem: (item: DriveItem) => Promise<void>;
   openPreview: (item: DriveItem) => void;
   closePreview: () => void;
+  openShareModal: (item: DriveItem) => void;
+  closeShareModal: () => void;
   setDetailsItem: (item: DriveItem | null) => void;
+  loadItems: () => Promise<void>;
   refreshDrive: () => Promise<void>;
 }
 
@@ -102,6 +108,7 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [previewItem, setPreviewItem] = useState<DriveItem | null>(null);
   const [detailsItem, setDetailsItem] = useState<DriveItem | null>(null);
+  const [shareModalItem, setShareModalItem] = useState<DriveItem | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [authRequired, setAuthRequired] = useState(false);
@@ -166,7 +173,6 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
     loadItems();
   }, [loadItems]);
 
-  // Derived folders and files lists
   const folders = items.filter((i) => i.type === 'folder');
   const files = items.filter((i) => i.type === 'file');
 
@@ -218,35 +224,35 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
     return folder;
   };
 
+  // Upload files using 2GB+ Resumable Chunked Multipart Engine
   const uploadFiles = async (fileList: File[] | FileList) => {
     const list = Array.from(fileList);
     if (list.length === 0) return;
 
-    setIsUploading(true);
-    setUploadProgress(15);
-
-    try {
-      await uploadCloudFiles(list, currentFolderId);
-      setUploadProgress(100);
-      await loadItems();
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
+    await chunkedUploader.uploadFiles(
+      list.map((f) => ({ file: f, parentId: currentFolderId })),
+      currentFolderId,
+      () => {
+        loadItems();
+      }
+    );
   };
 
+  // Upload directory structure preserving nested folders
   const uploadDirectory = async (directoryItems: { path: string; file: File }[]) => {
     if (directoryItems.length === 0) return;
-    setIsUploading(true);
-    setUploadProgress(20);
-    try {
-      await uploadCloudDirectoryStructure(directoryItems, currentFolderId);
-      setUploadProgress(100);
-      await loadItems();
-    } finally {
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
+
+    await chunkedUploader.uploadFiles(
+      directoryItems.map((item) => ({
+        file: item.file,
+        relativePath: item.path,
+        parentId: currentFolderId,
+      })),
+      currentFolderId,
+      () => {
+        loadItems();
+      }
+    );
   };
 
   const renameItem = async (id: string, newName: string) => {
@@ -320,7 +326,6 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
       if (blob) {
         saveAs(blob, item.name);
       } else {
-        // Direct browser download
         const url = getCloudFileUrl(item.id) + '?download=1';
         window.open(url, '_blank');
       }
@@ -334,6 +339,14 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
 
   const closePreview = () => {
     setPreviewItem(null);
+  };
+
+  const openShareModal = (item: DriveItem) => {
+    setShareModalItem(item);
+  };
+
+  const closeShareModal = () => {
+    setShareModalItem(null);
   };
 
   return (
@@ -357,6 +370,7 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
         selectedIds,
         previewItem,
         detailsItem,
+        shareModalItem,
         isUploading,
         uploadProgress,
         authRequired,
@@ -380,7 +394,10 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
         downloadItem,
         openPreview,
         closePreview,
+        openShareModal,
+        closeShareModal,
         setDetailsItem,
+        loadItems,
         refreshDrive: loadItems,
       }}
     >

@@ -20,7 +20,8 @@ import {
   ShieldCheck, 
   Sparkles,
   ChevronRight,
-  PieChart
+  PieChart,
+  Users
 } from 'lucide-react';
 import { DriveCategory } from '@/lib/drive/drive-types';
 import { formatBytes } from '@/lib/drive/drive-helpers';
@@ -230,6 +231,26 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
               <Clock className="w-4 h-4 text-blue-400" />
               <span>Recent</span>
             </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => selectSection('shared')}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+              viewSection === 'shared'
+                ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
+                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Users className="w-4 h-4 text-purple-400" />
+              <span>Shared with Me</span>
+            </div>
+            {stats && (stats.sharedWithMeCount || 0) > 0 && (
+              <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full ${viewSection === 'shared' ? 'bg-black/20 text-white' : 'bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400'}`}>
+                {stats.sharedWithMeCount}
+              </span>
+            )}
           </button>
 
           <button

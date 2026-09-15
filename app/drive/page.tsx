@@ -8,6 +8,8 @@ import { DriveGrid } from '@/components/drive/DriveGrid';
 import { DriveTable } from '@/components/drive/DriveTable';
 import { DriveQuickLookModal } from '@/components/drive/DriveQuickLookModal';
 import { DriveDetailsDrawer } from '@/components/drive/DriveDetailsDrawer';
+import { DriveUploadManager } from '@/components/drive/DriveUploadManager';
+import { DriveShareModal } from '@/components/drive/DriveShareModal';
 import { DriveAuthGate } from '@/components/drive/DriveAuthGate';
 import {
   NewFolderModal,
@@ -24,8 +26,53 @@ import {
   Sparkles, 
   Inbox,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Users
 } from 'lucide-react';
+
+// Helper to recursively traverse dropped files and nested folder trees
+async function traverseFileSystemEntry(
+  entry: any,
+  path = ''
+): Promise<{ path: string; file: File }[]> {
+  if (entry.isFile) {
+    return new Promise((resolve) => {
+      entry.file(
+        (file: File) => {
+          resolve([{ path: path ? `${path}/${file.name}` : file.name, file }]);
+        },
+        () => resolve([])
+      );
+    });
+  } else if (entry.isDirectory) {
+    const dirReader = entry.createReader();
+    const entries: any[] = [];
+
+    const readBatch = async (): Promise<any[]> => {
+      return new Promise((resolve) => {
+        dirReader.readEntries(
+          (batch: any[]) => {
+            if (!batch || batch.length === 0) {
+              resolve(entries);
+            } else {
+              entries.push(...batch);
+              readBatch().then(resolve);
+            }
+          },
+          () => resolve(entries)
+        );
+      });
+    };
+
+    const allEntries = await readBatch();
+    const currentPath = path ? `${path}/${entry.name}` : entry.name;
+    const results = await Promise.all(
+      allEntries.map((subEntry) => traverseFileSystemEntry(subEntry, currentPath))
+    );
+    return results.flat();
+  }
+  return [];
+}
 
 function DriveWorkspaceInner() {
   const {
@@ -39,6 +86,9 @@ function DriveWorkspaceInner() {
     selectedCategory,
     previewItem,
     closePreview,
+    shareModalItem,
+    closeShareModal,
+    loadItems,
     uploadFiles,
     uploadDirectory,
     trashSelected,
@@ -74,7 +124,7 @@ function DriveWorkspaceInner() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [trashSelected, selectAll, clearSelection]);
 
-  // Global Drag & Drop to Upload
+  // Global Drag & Drop to Upload (Handles both individual 2GB+ files & deep nested directory trees)
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOverScreen(true);
@@ -89,20 +139,41 @@ function DriveWorkspaceInner() {
     e.preventDefault();
     setIsDragOverScreen(false);
 
-    if (e.dataTransfer.items) {
+    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
       const itemsList = Array.from(e.dataTransfer.items);
-      const filesToUpload: File[] = [];
+      const directoryEntries: { path: string; file: File }[] = [];
+      const flatFiles: File[] = [];
 
       for (const it of itemsList) {
+        if (typeof (it as any).webkitGetAsEntry === 'function') {
+          const entry = (it as any).webkitGetAsEntry();
+          if (entry) {
+            if (entry.isDirectory) {
+              const nested = await traverseFileSystemEntry(entry);
+              directoryEntries.push(...nested);
+              continue;
+            } else if (entry.isFile) {
+              const f = it.getAsFile();
+              if (f) flatFiles.push(f);
+              continue;
+            }
+          }
+        }
+
         if (it.kind === 'file') {
           const f = it.getAsFile();
-          if (f) filesToUpload.push(f);
+          if (f) flatFiles.push(f);
         }
       }
 
-      if (filesToUpload.length > 0) {
-        await uploadFiles(filesToUpload);
+      if (directoryEntries.length > 0) {
+        await uploadDirectory(directoryEntries);
       }
+      if (flatFiles.length > 0) {
+        await uploadFiles(flatFiles);
+      }
+    } else if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await uploadFiles(Array.from(e.dataTransfer.files));
     }
   };
 
@@ -126,10 +197,10 @@ function DriveWorkspaceInner() {
           </div>
           <div className="text-center">
             <h2 className="text-2xl font-black tracking-tight mb-1">
-              Drop Files to Upload to FileCraft Cloud Drive
+              Drop Files & Folders to Upload to FileCraft Cloud Drive
             </h2>
             <p className="text-sm text-blue-100 font-medium">
-              Files will be synchronized securely to your MongoDB Cloud Storage in real-time.
+              Files and nested directory structures will be synchronized securely via 2MB chunked streams.
             </p>
           </div>
         </div>
@@ -156,7 +227,11 @@ function DriveWorkspaceInner() {
             /* Empty State */
             <div className="h-full flex flex-col items-center justify-center text-center p-8 max-w-md mx-auto space-y-5 py-24">
               <div className="w-18 h-18 rounded-3xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 shadow-inner">
-                <Inbox className="w-9 h-9" />
+                {viewSection === 'shared' ? (
+                  <Users className="w-9 h-9 text-indigo-500" />
+                ) : (
+                  <Inbox className="w-9 h-9" />
+                )}
               </div>
               <div>
                 <h3 className="text-base font-extrabold text-zinc-900 dark:text-zinc-100 mb-1.5">
@@ -166,6 +241,8 @@ function DriveWorkspaceInner() {
                     ? 'No Starred Items Yet'
                     : viewSection === 'recent'
                     ? 'No Recent Documents'
+                    : viewSection === 'shared'
+                    ? 'No Shared Items Yet'
                     : selectedCategory
                     ? `No ${selectedCategory.toUpperCase()} Files Found`
                     : 'Your Cloud Drive is Ready'}
@@ -173,11 +250,13 @@ function DriveWorkspaceInner() {
                 <p className="text-xs text-zinc-500 dark:text-zinc-400 leading-relaxed">
                   {viewSection === 'trash'
                     ? 'Deleted files and folders will appear here until permanently emptied.'
-                    : 'Drag & drop any files anywhere on the screen, or click the buttons below to upload to Cloud.'}
+                    : viewSection === 'shared'
+                    ? 'Files and folders shared with you by teammates or collaborators will appear here.'
+                    : 'Drag & drop any files or folders anywhere on the screen, or click the button below to start.'}
                 </p>
               </div>
 
-              {viewSection !== 'trash' && (
+              {viewSection !== 'trash' && viewSection !== 'shared' && (
                 <div className="flex flex-wrap items-center justify-center gap-2.5 pt-2">
                   <button
                     type="button"
@@ -207,6 +286,9 @@ function DriveWorkspaceInner() {
       {/* Right Metadata Inspector Drawer */}
       <DriveDetailsDrawer />
 
+      {/* Floating 2GB+ Resumable Upload Manager */}
+      <DriveUploadManager />
+
       {/* Modals & Dialogs */}
       <NewFolderModal
         isOpen={newFolderOpen}
@@ -226,6 +308,15 @@ function DriveWorkspaceInner() {
       <EmptyTrashModal
         isOpen={emptyTrashConfirmOpen}
         onClose={() => setEmptyTrashConfirmOpen(false)}
+      />
+
+      {/* Multi-Account Share & Collaboration Modal */}
+      <DriveShareModal
+        item={shareModalItem}
+        onClose={closeShareModal}
+        onItemUpdated={() => {
+          loadItems();
+        }}
       />
 
       {/* Quick Look Preview Modal */}

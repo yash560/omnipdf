@@ -17,7 +17,8 @@ import {
   RotateCcw,
   Wrench,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Share2
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -41,6 +42,7 @@ export function DriveContextMenu({
   const {
     viewSection,
     openPreview,
+    openShareModal,
     downloadItem,
     duplicateItem,
     toggleStar,
@@ -145,6 +147,21 @@ export function DriveContextMenu({
           >
             <Download className="w-4 h-4 text-emerald-500" />
             <span>{isFolder ? 'Download Folder as ZIP' : 'Download File'}</span>
+          </button>
+        )}
+
+        {/* Share & Collaborate */}
+        {viewSection !== 'trash' && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              openShareModal(item);
+            }}
+            className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-semibold cursor-pointer"
+          >
+            <Share2 className="w-4 h-4 text-rose-500" />
+            <span>Share & Collaborate</span>
           </button>
         )}
 

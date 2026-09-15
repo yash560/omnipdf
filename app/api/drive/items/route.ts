@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     const query = searchParams.get('q') || undefined;
 
     const [items, breadcrumbs] = await Promise.all([
-      getCloudItems(auth.userId, { section, parentId, category, query }),
+      getCloudItems(auth.userId, { section, parentId, category, query, userEmail: auth.email }),
       getCloudBreadcrumbs(auth.userId, parentId),
     ]);
 
