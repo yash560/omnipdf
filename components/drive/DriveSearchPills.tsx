@@ -27,13 +27,13 @@ export function DriveSearchPills({
   onOpenVaultModal,
 }: DriveSearchPillsProps) {
   return (
-    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1.5 px-1 pr-6 mb-4 select-none" style={{ touchAction: 'pan-x' }}>
+    <div className="flex flex-wrap items-center gap-2 py-1.5 px-1 mb-4 select-none">
       <div className="flex items-center gap-1.5 text-3xs font-extrabold uppercase tracking-wider text-zinc-400 shrink-0 px-1">
         <Sparkles className="w-3.5 h-3.5 text-rose-500" />
         <span>Recommended:</span>
       </div>
 
-      <div className="flex items-center gap-1.5 shrink-0">
+      <div className="flex flex-wrap items-center gap-1.5">
         {SEARCH_PILLS.map((pill, i) => {
           const isSelected = activeQuery.toLowerCase() === pill.query.toLowerCase();
           return (

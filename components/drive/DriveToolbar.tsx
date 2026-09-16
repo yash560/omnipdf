@@ -613,7 +613,7 @@ export function DriveToolbar({
       </div>
 
       {/* Dedicated Mobile Action Dock (Visible ONLY on < md screens: Select, Sort, Vault, Layout) */}
-      <div className="flex md:hidden items-center justify-between gap-1.5 overflow-x-auto no-scrollbar pt-1.5 pb-0.5 border-t border-zinc-100 dark:border-zinc-800/60" style={{ touchAction: 'pan-x' }}>
+      <div className="flex flex-wrap md:hidden items-center justify-between gap-1.5 pt-1.5 pb-0.5 border-t border-zinc-100 dark:border-zinc-800/60">
         {/* Mobile Select Menu */}
         <div className="relative shrink-0">
           <button
@@ -820,10 +820,9 @@ export function DriveToolbar({
         </div>
       </div>
 
-
       {/* Tag & Category Filter Pills */}
       {(availableTags.length > 0 || selectedTag || selectedAiCategory || searchTerm) && (
-        <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+        <div className="flex flex-wrap items-center gap-1.5 py-1">
           <span className="text-3xs font-bold text-zinc-400 shrink-0 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-amber-500" />
             <span>AI Filters:</span>

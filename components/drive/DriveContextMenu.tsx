@@ -59,6 +59,7 @@ export function DriveContextMenu({
     triggerBatchAction,
     triggerAutoLabel,
     bulkDownloadZip,
+    openQuickTools,
   } = useDrive();
 
   const [colorMenuOpen, setColorMenuOpen] = useState(false);
@@ -265,6 +266,35 @@ export function DriveContextMenu({
               >
                 <Eye className="w-4 h-4 text-blue-500" />
                 <span>Preview (Quick Look)</span>
+              </button>
+            )}
+
+            {/* In-Place Quick Tools */}
+            {!isFolder && viewSection !== 'trash' && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  openQuickTools(item);
+                }}
+                className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-gradient-to-r from-rose-500/10 to-indigo-500/10 hover:from-rose-500/20 hover:to-indigo-500/20 text-rose-600 dark:text-rose-400 font-bold cursor-pointer"
+              >
+                <Wrench className="w-4 h-4" />
+                <span>
+                  {item.category === 'image'
+                    ? '⚡ Quick Crop & Resize...'
+                    : item.category === 'pdf'
+                    ? '⚡ Quick Rotate & Split...'
+                    : item.category === 'spreadsheet'
+                    ? '⚡ Quick Clean & Convert...'
+                    : item.category === 'code' || item.category === 'document'
+                    ? '⚡ Quick Edit & Format...'
+                    : item.category === 'media'
+                    ? '⚡ Quick Trim Media...'
+                    : item.category === 'archive'
+                    ? '⚡ Extract to Drive Folder...'
+                    : '⚡ Quick In-Place Tools...'}
+                </span>
               </button>
             )}
 

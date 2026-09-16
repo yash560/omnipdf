@@ -6,7 +6,7 @@ import { useDrive } from '@/lib/drive/drive-context';
 import {
   Archive,
   FolderPlus,
-  File,
+  File as FileIcon,
   Folder,
   Download,
   CheckCircle2,
@@ -130,7 +130,7 @@ export function ArchiveQuickStudio({ blob, fileName, onProcessedBlobChange }: Ar
                   {entry.isDir ? (
                     <Folder className="w-4 h-4 text-amber-500 shrink-0" />
                   ) : (
-                    <File className="w-4 h-4 text-blue-400 shrink-0" />
+                    <FileIcon className="w-4 h-4 text-blue-400 shrink-0" />
                   )}
                   <span className="truncate">{entry.path}</span>
                 </div>

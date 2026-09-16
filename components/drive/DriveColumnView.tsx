@@ -24,6 +24,7 @@ import {
   Sparkles,
   Share2,
   ExternalLink,
+  Wrench,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -57,6 +58,7 @@ export function DriveColumnView({ onOpenRenameModal, onOpenMoveModal }: DriveCol
     fetchFolderChildren,
     prefetchFolder,
     folderCache,
+    openQuickTools,
   } = useDrive();
 
   const [columns, setColumns] = useState<ColumnState[]>([]);
@@ -364,18 +366,18 @@ export function DriveColumnView({ onOpenRenameModal, onOpenMoveModal }: DriveCol
             <button
               type="button"
               onClick={() => openPreview(selectedInspectorItem)}
-              className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-xs shadow-xs transition-colors cursor-pointer"
+              className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-bold text-xs shadow-xs transition-colors cursor-pointer"
             >
               <Eye className="w-3.5 h-3.5" />
               <span>Preview</span>
             </button>
             <button
               type="button"
-              onClick={() => downloadItem(selectedInspectorItem)}
-              className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs transition-colors cursor-pointer"
+              onClick={() => openQuickTools(selectedInspectorItem)}
+              className="flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Download</span>
+              <Wrench className="w-3.5 h-3.5" />
+              <span>Quick Tools</span>
             </button>
             <button
               type="button"

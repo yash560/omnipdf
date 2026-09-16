@@ -19,14 +19,15 @@ import {
   MessageSquare,
   History,
   Send,
-  CheckCircle2
+  CheckCircle2,
+  Wrench
 } from 'lucide-react';
 import Link from 'next/link';
 import { DriveRelatedItems } from './DriveRelatedItems';
 import { DriveThumbnail } from './DriveThumbnail';
 
 export function DriveDetailsDrawer() {
-  const { detailsItem, setDetailsItem, changeFolderColor, openShareModal } = useDrive();
+  const { detailsItem, setDetailsItem, changeFolderColor, openShareModal, openQuickTools } = useDrive();
   const { openDrawer, setActiveFile } = useAI();
   const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'activity'>('details');
 
@@ -258,11 +259,38 @@ export function DriveDetailsDrawer() {
             </div>
 
             {/* Tool Shortcuts */}
-            {tools.length > 0 && (
+            {!isFolder && (
               <div className="space-y-1.5 text-xs pt-2 border-t border-zinc-100 dark:border-zinc-800">
                 <div className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
                   Quick Actions
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => openQuickTools(detailsItem)}
+                  className="w-full flex items-center justify-between p-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer"
+                >
+                  <div className="flex items-center gap-2">
+                    <Wrench className="w-3.5 h-3.5" />
+                    <span>
+                      {detailsItem.category === 'image'
+                        ? 'Crop, Resize & Adjust'
+                        : detailsItem.category === 'pdf'
+                        ? 'Rotate, Split & Watermark'
+                        : detailsItem.category === 'spreadsheet'
+                        ? 'Clean & Convert Data'
+                        : detailsItem.category === 'code' || detailsItem.category === 'document'
+                        ? 'Edit & Format Code'
+                        : detailsItem.category === 'media'
+                        ? 'Trim & Cut Media'
+                        : detailsItem.category === 'archive'
+                        ? 'Extract to Drive Folder'
+                        : 'Open In-Place Tools'}
+                    </span>
+                  </div>
+                  <Sparkles className="w-3.5 h-3.5" />
+                </button>
+
                 {tools.slice(0, 2).map((t, idx) => (
                   <Link
                     key={idx}

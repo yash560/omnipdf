@@ -6,6 +6,7 @@ import { getCloudFileBlob } from '@/lib/drive/cloud-api';
 import { getFileBlob } from '@/lib/drive/drive-db';
 import { formatBytes, getFileCraftToolsForItem } from '@/lib/drive/drive-helpers';
 import { useAI } from '@/lib/ai/ai-context';
+import { useDrive } from '@/lib/drive/drive-context';
 import { DriveArchiveViewer } from './DriveArchiveViewer';
 import { DriveSpreadsheetViewer } from './DriveSpreadsheetViewer';
 import { DriveCodeViewer } from './DriveCodeViewer';
@@ -19,7 +20,9 @@ import {
   ZoomIn, 
   ZoomOut, 
   RotateCw,
-  Share2
+  Share2,
+  Wrench,
+  Crop
 } from 'lucide-react';
 import Link from 'next/link';
 import { DriveRelatedItems } from './DriveRelatedItems';
@@ -32,6 +35,7 @@ interface DriveQuickLookModalProps {
 
 export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLookModalProps) {
   const { openDrawer, setActiveFile } = useAI();
+  const { openQuickTools } = useDrive();
   const [blob, setBlob] = useState<Blob | null>(null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [textContent, setTextContent] = useState<string | null>(null);
@@ -154,6 +158,33 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
               <span>Related</span>
             </button>
 
+            {/* In-Place Quick Tools Launcher */}
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                openQuickTools(item);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-xs font-extrabold shadow-xs transition-all cursor-pointer"
+            >
+              <Wrench className="w-3.5 h-3.5" />
+              <span>
+                {item.category === 'image'
+                  ? 'Crop & Edit'
+                  : item.category === 'pdf'
+                  ? 'Rotate & Split'
+                  : item.category === 'spreadsheet'
+                  ? 'Clean & Convert'
+                  : item.category === 'code' || item.category === 'document'
+                  ? 'Edit Text'
+                  : item.category === 'media'
+                  ? 'Trim Media'
+                  : item.category === 'archive'
+                  ? 'Extract'
+                  : 'Quick Tools'}
+              </span>
+            </button>
+
             {/* Share */}
             {onOpenShare && (
               <button
@@ -258,6 +289,17 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
                   title="Rotate"
                 >
                   <RotateCw className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    onClose();
+                    openQuickTools(item, 'crop');
+                  }}
+                  className="p-1.5 hover:bg-rose-500/80 rounded-xl transition-colors text-rose-400 hover:text-white flex items-center gap-1 font-bold text-xs"
+                  title="Crop & Edit Image"
+                >
+                  <Crop className="w-4 h-4" />
+                  <span>Crop</span>
                 </button>
               </div>
 

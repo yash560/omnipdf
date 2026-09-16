@@ -24,6 +24,7 @@ import { DriveSmartDossiersModal } from '@/components/drive/DriveSmartDossiersMo
 import { DriveKeyboardShortcutsModal } from '@/components/drive/DriveKeyboardShortcutsModal';
 import { DriveBulkActionBar } from '@/components/drive/DriveBulkActionBar';
 import { DriveBulkTagModal } from '@/components/drive/DriveBulkTagModal';
+import { DriveQuickToolsModal } from '@/components/drive/quick-tools/DriveQuickToolsModal';
 import {
   NewFolderModal,
   RenameModal,
@@ -697,6 +698,9 @@ function DriveWorkspaceInner() {
         isOpen={isKeyboardShortcutsOpen}
         onClose={() => setIsKeyboardShortcutsOpen(false)}
       />
+
+      {/* In-Place Quick Tools (Crop, Rotate, Split, Clean & Transform) Modal */}
+      <DriveQuickToolsModal />
     </div>
   );
 }
