@@ -9,6 +9,8 @@
   --color-brand-500: #3b82f6;
   --color-brand-600: #2563eb;
   --color-brand-700: #1d4ed8;
+  --text-2xs: 0.6875rem;
+  --text-3xs: 0.625rem;
 }
 
 :root {

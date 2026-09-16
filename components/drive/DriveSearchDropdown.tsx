@@ -25,15 +25,97 @@ interface SearchIntent {
   description: string;
   count?: number;
   category?: string;
+  match?: (it: DriveItem) => boolean;
 }
 
-const PREDICTIVE_INTENTS: SearchIntent[] = [
-  { label: 'Salary Slips & Payslips', query: 'salary slip', icon: '💼', description: '24 monthly earnings and payslip records', count: 24, category: 'Career' },
-  { label: 'Vehicle Registration & Insurance', query: 'vehicle insurance', icon: '🚗', description: 'Amaze, Pulsar, Activa policies & RC cards', count: 35, category: 'Vehicles' },
-  { label: 'Property Tax & Registry Deeds', query: 'property tax', icon: '🏠', description: '54 Ishan Park & Sapphire Complex municipal receipts', count: 71, category: 'Property' },
-  { label: 'Aadhaar, PAN & KYC IDs', query: 'aadhaar pan', icon: '🛂', description: 'Verified government identity proofs & passbooks', count: 69, category: 'Identity' },
-  { label: 'Experience & Relieving Letters', query: 'relieving letter', icon: '📜', description: 'Service certificates and offer letters across companies', count: 18, category: 'Career' },
-  { label: 'Expiring Documents Radar', query: 'expiry', icon: '⚠️', description: 'Items with approaching renewal deadlines', category: 'Urgent' },
+const RAW_INTENTS: SearchIntent[] = [
+  {
+    label: 'Salary Slips & Payslips',
+    query: 'salary slip',
+    icon: '💼',
+    description: 'Monthly earnings and payslip records',
+    category: 'Career',
+    match: (it: DriveItem) => {
+      const n = it.name.toLowerCase();
+      const tags = (it.tags || []).map((t) => t.toLowerCase());
+      return n.includes('salary') || n.includes('payslip') || tags.includes('salary slip');
+    },
+  },
+  {
+    label: 'Vehicle Registration & Insurance',
+    query: 'vehicle insurance',
+    icon: '🚗',
+    description: 'Vehicle policies & RC cards',
+    category: 'Vehicles',
+    match: (it: DriveItem) => {
+      const n = it.name.toLowerCase();
+      const tags = (it.tags || []).map((t) => t.toLowerCase());
+      return (
+        (it.aiCategory || '').toLowerCase().includes('vehicle') ||
+        tags.includes('amaze') ||
+        tags.includes('pulsar') ||
+        tags.includes('activa') ||
+        n.includes('rc') ||
+        n.includes('insurance')
+      );
+    },
+  },
+  {
+    label: 'Property Tax & Registry Deeds',
+    query: 'property tax',
+    icon: '🏠',
+    description: 'Property deeds & municipal tax receipts',
+    category: 'Property',
+    match: (it: DriveItem) => {
+      const n = it.name.toLowerCase();
+      const tags = (it.tags || []).map((t) => t.toLowerCase());
+      return (
+        (it.aiCategory || '').toLowerCase().includes('property') ||
+        tags.includes('property') ||
+        n.includes('tax') ||
+        n.includes('registry')
+      );
+    },
+  },
+  {
+    label: 'Aadhaar, PAN & KYC IDs',
+    query: 'aadhaar pan',
+    icon: '🛂',
+    description: 'Verified government identity proofs & passbooks',
+    category: 'Identity',
+    match: (it: DriveItem) => {
+      const n = it.name.toLowerCase();
+      const tags = (it.tags || []).map((t) => t.toLowerCase());
+      return (
+        tags.includes('aadhaar') ||
+        tags.includes('pan card') ||
+        tags.includes('voter id') ||
+        tags.includes('passbook') ||
+        n.includes('aadhaar') ||
+        n.includes('pan') ||
+        n.includes('voter')
+      );
+    },
+  },
+  {
+    label: 'Experience & Relieving Letters',
+    query: 'relieving letter',
+    icon: '📜',
+    description: 'Service certificates and offer letters',
+    category: 'Career',
+    match: (it: DriveItem) => {
+      const n = it.name.toLowerCase();
+      return n.includes('relieving') || n.includes('offer') || n.includes('experience');
+    },
+  },
+  {
+    label: 'Expiring Documents Radar',
+    query: 'expiry',
+    icon: '⚠️',
+    description: 'Items with approaching renewal deadlines',
+    category: 'Urgent',
+    match: (it: DriveItem) => it.expiryStatus === 'expiring_soon' || it.expiryStatus === 'expired',
+  },
 ];
 
 interface DriveSearchDropdownProps {
@@ -77,15 +159,24 @@ export function DriveSearchDropdown({
       .slice(0, 5);
   }, [items, cleanQuery]);
 
-  // 2. Filtered Suggested Intents
+  // 2. Dynamically Filtered & Counted Suggested Intents
   const suggestedIntents = useMemo(() => {
-    if (!cleanQuery) return PREDICTIVE_INTENTS.slice(0, 4);
-    return PREDICTIVE_INTENTS.filter((intent) => 
+    const accessible = (items || []).filter((it) => !it.isTrash);
+    const enriched = RAW_INTENTS.map((intent) => {
+      const count = intent.match ? accessible.filter(intent.match).length : 0;
+      return {
+        ...intent,
+        count: count > 0 ? count : undefined,
+      };
+    });
+
+    if (!cleanQuery) return enriched.slice(0, 4);
+    return enriched.filter((intent) => 
       intent.label.toLowerCase().includes(cleanQuery) ||
       intent.query.toLowerCase().includes(cleanQuery) ||
       intent.description.toLowerCase().includes(cleanQuery)
     );
-  }, [cleanQuery]);
+  }, [items, cleanQuery]);
 
   if (!isOpen) return null;
 
