@@ -78,6 +78,11 @@ export function CloudShareModal({
       return;
     }
 
+    if (!session.pdfData) {
+      alert('Document is still loading — please wait a moment and try again.');
+      return;
+    }
+
     setIsEncrypting(true);
 
     try {

@@ -11,7 +11,10 @@ export interface SessionVersion {
 export interface StudioSession {
   id: string;
   filename: string;
-  pdfData: ArrayBuffer | Uint8Array;
+  // Absent on list/metadata-only fetches (e.g. dashboard, inactive tabs) — the
+  // server stores bytes in GridFS separately and only returns them for the
+  // session actually being opened, via getSessionFromDB(id).
+  pdfData?: ArrayBuffer | Uint8Array;
   size: number;
   pageCount: number;
   thumbnailUrl?: string;

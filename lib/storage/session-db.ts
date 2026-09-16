@@ -1,155 +1,137 @@
-import { StudioSession, SessionVersion } from '@/types/session';
+import { StudioSession } from '@/types/session';
 
-const DB_NAME = 'OmniPDF_Studio_DB';
-const DB_VERSION = 1;
-const STORE_NAME = 'sessions';
+/**
+ * Server-backed studio session store (replaces the old IndexedDB implementation).
+ * Same function names/signatures as before so callers (CanvasStudio, SessionDrawer,
+ * DashboardClient, edit/page.tsx) don't need to change how they call this module —
+ * only how they handle the fact that list/metadata results no longer carry pdfData.
+ *
+ * Design: PDF bytes are uploaded once per session id (GridFS, via POST /api/sessions).
+ * Every subsequent save for that same id is a metadata-only PATCH (annotations,
+ * currentPage, zoom, versions...) so autosave on every edit doesn't re-upload the file.
+ */
 
-function openDB(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    if (typeof window === 'undefined') {
-      reject(new Error('IndexedDB is only available in browser environment'));
-      return;
-    }
+// Session ids known to already have their PDF bytes stored server-side this page load.
+const uploadedIds = new Set<string>();
 
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+async function ensureAuthed(): Promise<void> {
+  await fetch('/api/auth/guest', { method: 'POST', credentials: 'include' }).catch(() => {});
+}
 
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-        store.createIndex('lastModified', 'lastModified', { unique: false });
-        store.createIndex('filename', 'filename', { unique: false });
-      }
-    };
+async function apiFetch(input: string, init?: RequestInit): Promise<Response> {
+  let res = await fetch(input, { ...init, credentials: 'include' });
+  if (res.status === 401) {
+    await ensureAuthed();
+    res = await fetch(input, { ...init, credentials: 'include' });
+  }
+  return res;
+}
 
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-
-    request.onerror = () => {
-      reject(request.error);
-    };
-  });
+function metaOnly(session: StudioSession) {
+  const { pdfData, ...meta } = session;
+  return meta;
 }
 
 /**
- * Save or update an entire session with its PDF bytes and annotation tree to IndexedDB
+ * Save or update a session. First save for a given id uploads the PDF bytes
+ * (multipart); subsequent saves for the same id PATCH metadata only.
  */
 export async function saveSessionToDB(session: StudioSession): Promise<void> {
   try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
+    const stamped: StudioSession = { ...session, lastModified: Date.now() };
 
-      // Clone session to ensure clean storage
-      const record = {
-        ...session,
-        lastModified: Date.now(),
-      };
+    if (!uploadedIds.has(stamped.id)) {
+      if (!stamped.pdfData) {
+        console.error('Cannot create session on server without pdfData:', stamped.id);
+        return;
+      }
+      const form = new FormData();
+      const bytes =
+        stamped.pdfData instanceof Uint8Array ? stamped.pdfData : new Uint8Array(stamped.pdfData);
+      form.append('file', new Blob([bytes as BlobPart], { type: 'application/pdf' }), stamped.filename);
+      form.append('meta', JSON.stringify(metaOnly(stamped)));
 
-      const request = store.put(record);
+      const res = await apiFetch('/api/sessions', { method: 'POST', body: form });
+      if (!res.ok) throw new Error(`Session create failed: ${res.status}`);
+      uploadedIds.add(stamped.id);
+      return;
+    }
 
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
+    const res = await apiFetch(`/api/sessions/${stamped.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(metaOnly(stamped)),
     });
+    if (!res.ok) throw new Error(`Session update failed: ${res.status}`);
   } catch (err) {
-    console.error('Failed to save session to IndexedDB:', err);
+    console.error('Failed to save session:', err);
   }
 }
 
 /**
- * Retrieve all active and draft sessions sorted by last modified descending
+ * Metadata for all of the current user's sessions, sorted by lastModified desc.
+ * Does NOT include pdfData — call getSessionFromDB(id) to load a specific
+ * session's bytes when the user actually opens it.
  */
 export async function getAllSessionsFromDB(): Promise<StudioSession[]> {
   try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readonly');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.getAll();
-
-      request.onsuccess = () => {
-        const results = (request.result || []) as StudioSession[];
-        results.sort((a, b) => b.lastModified - a.lastModified);
-        resolve(results);
-      };
-
-      request.onerror = () => reject(request.error);
-    });
+    const res = await apiFetch('/api/sessions');
+    if (!res.ok) return [];
+    const { sessions } = (await res.json()) as { sessions: StudioSession[] };
+    for (const s of sessions) uploadedIds.add(s.id);
+    return sessions;
   } catch (err) {
-    console.error('Failed to load sessions from IndexedDB:', err);
+    console.error('Failed to load sessions:', err);
     return [];
   }
 }
 
 /**
- * Retrieve a specific session by ID
+ * Retrieve one session's full record, including its PDF bytes.
  */
 export async function getSessionFromDB(id: string): Promise<StudioSession | null> {
   try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readonly');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(id);
+    const metaRes = await apiFetch(`/api/sessions/${id}`);
+    if (!metaRes.ok) return null;
+    const meta = (await metaRes.json()) as StudioSession;
 
-      request.onsuccess = () => {
-        resolve(request.result || null);
-      };
+    const fileRes = await apiFetch(`/api/sessions/${id}/file`);
+    if (!fileRes.ok) return null;
+    const pdfData = await fileRes.arrayBuffer();
 
-      request.onerror = () => reject(request.error);
-    });
+    uploadedIds.add(id);
+    return { ...meta, pdfData };
   } catch (err) {
-    console.error('Failed to get session from DB:', err);
+    console.error('Failed to get session:', err);
     return null;
   }
 }
 
-/**
- * Delete a session from IndexedDB
- */
 export async function deleteSessionFromDB(id: string): Promise<void> {
   try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.delete(id);
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    const res = await apiFetch(`/api/sessions/${id}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`Session delete failed: ${res.status}`);
+    uploadedIds.delete(id);
   } catch (err) {
-    console.error('Failed to delete session from DB:', err);
+    console.error('Failed to delete session:', err);
   }
 }
 
-/**
- * Clear all sessions from IndexedDB
- */
 export async function clearAllSessionsFromDB(): Promise<void> {
   try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.clear();
-
-      request.onsuccess = () => resolve();
-      request.onerror = () => reject(request.error);
-    });
+    const res = await apiFetch('/api/sessions', { method: 'DELETE' });
+    if (!res.ok) throw new Error(`Clear sessions failed: ${res.status}`);
+    uploadedIds.clear();
   } catch (err) {
     console.error('Failed to clear sessions:', err);
   }
 }
 
 /**
- * Export all workspace metadata and annotation snapshots as a backup file
+ * Export all workspace metadata and annotation snapshots as a backup file.
  */
 export async function exportWorkspaceBackup(): Promise<Blob> {
   const sessions = await getAllSessionsFromDB();
-  // Strip raw array buffers for portable JSON export
   const exportable = sessions.map((s) => ({
     id: s.id,
     filename: s.filename,

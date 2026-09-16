@@ -22,11 +22,12 @@ import { CloudShareModal } from './CloudShareModal';
 import { AiPageAssistantModal } from './AiPageAssistantModal';
 import { getPdfJs, renderAllPageThumbnails, downloadBytes, safeCloneBytes, fileToArrayBuffer } from '@/lib/pdf/core';
 import { exportAnnotatedPdf } from '@/lib/pdf/canvas-exporter';
-import { 
-  saveSessionToDB, 
-  getAllSessionsFromDB, 
-  deleteSessionFromDB, 
-  clearAllSessionsFromDB 
+import {
+  saveSessionToDB,
+  getAllSessionsFromDB,
+  getSessionFromDB,
+  deleteSessionFromDB,
+  clearAllSessionsFromDB
 } from '@/lib/storage/session-db';
 
 interface CanvasStudioProps {
@@ -92,6 +93,7 @@ export function CanvasStudio({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const pdfDocRef = useRef<any>(null);
+  const fetchingSessionIdsRef = useRef<Set<string>>(new Set());
 
   // Drawing & Resizing state
   const [isDrawing, setIsDrawing] = useState(false);
@@ -129,6 +131,7 @@ export function CanvasStudio({
           setZoom(target.zoom || 1.0);
           setHistory([target.annotations || []]);
           setHistoryIndex(0);
+          loadFullSession(target.id);
           return;
         }
       }
@@ -144,6 +147,7 @@ export function CanvasStudio({
           setZoom(existingSession.zoom || 1.0);
           setHistory([existingSession.annotations || []]);
           setHistoryIndex(0);
+          loadFullSession(existingSession.id);
         } else {
           const initialSession: StudioSession = {
             id: initialSessionId || `sess-${Date.now()}`,
@@ -179,6 +183,7 @@ export function CanvasStudio({
         setZoom(targetSession.zoom || 1.0);
         setHistory([targetSession.annotations || []]);
         setHistoryIndex(0);
+        loadFullSession(targetSession.id);
       }
     }
 
@@ -186,10 +191,32 @@ export function CanvasStudio({
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [effectivePdfData, effectiveFilename, initialSessionId]);
 
   // Current active session object
   const activeSession = sessions.find((s) => s.id === activeSessionId) || sessions[0];
+
+  // Sessions list from the server only carries metadata (annotations, zoom, etc.)
+  // — pdfData is fetched separately, once, the first time a session is actually
+  // opened, and merged into `sessions` in place so tab-switching back to it is free.
+  const loadFullSession = useCallback(
+    async (id: string) => {
+      const existing = sessions.find((s) => s.id === id);
+      if (existing?.pdfData) return;
+      if (fetchingSessionIdsRef.current.has(id)) return;
+      fetchingSessionIdsRef.current.add(id);
+      try {
+        const full = await getSessionFromDB(id);
+        if (full) {
+          setSessions((prev) => prev.map((s) => (s.id === id ? { ...s, ...full } : s)));
+        }
+      } finally {
+        fetchingSessionIdsRef.current.delete(id);
+      }
+    },
+    [sessions]
+  );
 
   // Debounced Auto-Save to IndexedDB
   const triggerAutoSave = useCallback(
@@ -270,6 +297,7 @@ export function CanvasStudio({
     setHistory([target.annotations || []]);
     setHistoryIndex(0);
     setSelectedId(null);
+    loadFullSession(id);
   };
 
   // Close Session Tab
@@ -356,7 +384,10 @@ export function CanvasStudio({
   useEffect(() => {
     let isMounted = true;
     async function loadDoc() {
-      if (!activeSession?.pdfData) return;
+      if (!activeSession?.pdfData) {
+        setLoading(true);
+        return;
+      }
 
       try {
         setLoading(true);
@@ -389,7 +420,7 @@ export function CanvasStudio({
     return () => {
       isMounted = false;
     };
-  }, [activeSession?.id]);
+  }, [activeSession?.id, activeSession?.pdfData]);
 
   // Render current page to canvas when currentPage or zoom or pageRotations change
   useEffect(() => {
