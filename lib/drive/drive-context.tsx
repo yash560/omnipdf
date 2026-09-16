@@ -157,12 +157,25 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [viewLayout, setViewLayout] = useState<DriveViewLayout>('grid');
   const [sortOption, setSortOption] = useState<DriveSortOption>({ field: 'updatedAt', order: 'desc' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedAiCategory, setSelectedAiCategory] = useState<string | null>(null);
   const [activePerson, setActivePerson] = useState<string | undefined>(undefined);
   const [activeVehicle, setActiveVehicle] = useState<string | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<{ tag: string; count: number }[]>([]);
   const [availableAiCategories, setAvailableAiCategories] = useState<{ category: string; count: number }[]>([]);
+
+  // Instant clear, 280ms debounce for typing
+  useEffect(() => {
+    if (!searchTerm) {
+      setDebouncedSearchTerm('');
+      return;
+    }
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const [items, setItems] = useState<DriveItem[]>([]);
   const [folderCache, setFolderCache] = useState<Record<string, DriveItem[]>>({});
@@ -254,16 +267,18 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     try {
-      if (searchTerm || selectedTag || selectedAiCategory || activePerson || activeVehicle) {
+      const isSearchActive = Boolean(debouncedSearchTerm || selectedTag || selectedAiCategory || activePerson || activeVehicle);
+
+      if (isSearchActive) {
         const searchResult = await searchCloudItemsApi({
-          query: searchTerm,
+          query: debouncedSearchTerm,
           tag: selectedTag || undefined,
           aiCategory: selectedAiCategory || undefined,
           person: activePerson,
           vehicle: activeVehicle,
           category: selectedCategory || undefined,
           section: viewSection,
-          parentId: (searchTerm || selectedTag || selectedAiCategory || activePerson || activeVehicle) ? undefined : currentFolderId,
+          parentId: isSearchActive ? undefined : currentFolderId,
           sort: sortOption.field === 'updatedAt' ? 'date' : (sortOption.field as any),
           isVaultUnlocked,
         });
@@ -288,11 +303,11 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
             [currentFolderId || 'root']: cloudData.items,
           }));
         }
+        loadStats();
       }
 
       hasLoadedInitialRef.current = true;
       setHasLoadedInitial(true);
-      loadStats();
     } catch (error) {
       console.error('Failed to load drive items from cloud:', error);
     } finally {
@@ -304,7 +319,7 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     currentFolderId,
     viewSection,
     selectedCategory,
-    searchTerm,
+    debouncedSearchTerm,
     selectedTag,
     selectedAiCategory,
     activePerson,

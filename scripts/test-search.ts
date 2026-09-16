@@ -39,15 +39,16 @@ async function testSearch() {
   console.log(`Loaded ${allItems.length} total drive items for user ${user.name} (${user.email})\n`);
 
   const testQueries = [
+    'yogesh pan',
+    'pan yogesh',
+    'pan card yogesh',
+    'dad pan',
+    'dad aadhar',
     'salary slip',
-    'dad adhar', // typo intended
+    'dad adhar',
     'amaze rc',
     'car insurance',
-    'shreya passprt', // typo intended
-    'property tax ishan park',
-    'pulsar 150',
-    'offer letter',
-    'pan card',
+    'shreya passport',
   ];
 
   for (const q of testQueries) {

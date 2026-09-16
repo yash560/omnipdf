@@ -1,34 +1,67 @@
 import { DriveItem, SearchFilterOptions, SearchResult, DriveCategory } from './drive-types';
 import { getOcrSnippet } from '../ai/ocr-indexer';
 
-// Semantic Concept Dictionaries for Intent Expansion
+// Comprehensive Semantic Concept Dictionaries for Intent Expansion
 const CONCEPT_EXPANSIONS: Record<string, string[]> = {
-  identity: ['aadhaar', 'aadhar', 'pan', 'passport', 'voter', 'driving', 'licence', 'license', 'dl', 'kyc', 'uidai', 'epic'],
-  id: ['aadhaar', 'aadhar', 'pan', 'passport', 'voter', 'driving', 'licence', 'license', 'dl', 'kyc', 'uidai'],
-  kyc: ['aadhaar', 'aadhar', 'pan', 'passport', 'voter', 'driving', 'licence', 'license', 'dl', 'bank'],
-  salary: ['payslip', 'pay slip', 'earnings', 'compensation', 'payroll', 'whydonate', 'psymate', 'hyperbeans', 'dct', 'outworks', 'income'],
-  payslip: ['salary', 'earnings', 'compensation', 'payroll', 'income proof'],
-  work: ['salary', 'payslip', 'offer letter', 'relieving', 'experience', 'resume', 'whydonate', 'psymate', 'dct', 'repsoft', 'molog'],
-  job: ['offer letter', 'relieving', 'experience', 'resume', 'salary', 'recommendation', 'joining'],
-  career: ['resume', 'cv', 'offer letter', 'experience', 'relieving', 'recommendation'],
-  vehicle: ['amaze', 'pulsar', 'activa', 'star city', 'tvs', 'honda', 'bajaj', 'rc', 'puc', 'insurance', 'car', 'bike'],
-  car: ['amaze', 'honda amaze', 'rc', 'puc', 'insurance', 'vehicle', 'car bills'],
-  bike: ['pulsar', 'activa', 'star city', 'tvs', 'bajaj', 'rc', 'puc', 'insurance'],
-  dad: ['yogesh', 'yogesh jain', 'father'],
-  father: ['yogesh', 'yogesh jain', 'dad'],
-  yash: ['yash jain', 'yaash', 'my'],
-  mom: ['simpal', 'simpal jain', 'mother'],
-  mother: ['simpal', 'simpal jain', 'mom'],
-  shreya: ['shreya jain', 'sister'],
-  bank: ['sbi', 'icici', 'cheque', 'passbook', 'statement', 'debit', 'credit', 'account'],
-  cheque: ['cancelled cheque', 'sbi', 'icici', 'bank', 'check'],
-  tax: ['pan card', 'tax invoice', 'income tax', 'municipal tax', 'tds', 'form 16', 'gst'],
+  // Identity Proofs (Strict specific variants)
+  pan: ['pancard', 'pan card', 'pan number', 'nsdl', 'uti', 'form 49a'],
+  pancard: ['pan', 'pan card', 'pan number', 'nsdl', 'uti', 'form 49a'],
+  aadhaar: ['aadhar', 'adhaar', 'adhar', 'uidai', 'uid', 'eaadhaar', 'e aadhaar'],
+  aadhar: ['aadhaar', 'adhaar', 'adhar', 'uidai', 'uid', 'eaadhaar', 'e aadhaar'],
+  adhar: ['aadhaar', 'aadhar', 'adhaar', 'uidai', 'uid', 'eaadhaar', 'e aadhaar'],
+  adhaar: ['aadhaar', 'aadhar', 'adhar', 'uidai', 'uid', 'eaadhaar', 'e aadhaar'],
+  uidai: ['aadhaar', 'aadhar', 'adhaar', 'adhar'],
+  voter: ['voter id', 'epic', 'election commission', 'voter card', 'voter id card'],
+  passport: ['passport', 'passport photo', 'republic of india'],
+  driving: ['driving licence', 'driving license', 'license', 'licence', 'dl'],
+  license: ['driving license', 'driving licence', 'licence', 'dl'],
+  licence: ['driving licence', 'driving license', 'license', 'dl'],
+  dl: ['driving licence', 'driving license', 'license', 'licence'],
+
+  // High-level categories (Only when user explicitly searches the generic category)
+  identity: ['aadhaar', 'aadhar', 'pan', 'passport', 'voter', 'driving', 'dl', 'kyc', 'uidai', 'epic'],
+  id: ['aadhaar', 'aadhar', 'pan', 'passport', 'voter', 'driving', 'dl', 'kyc', 'uidai'],
+  kyc: ['aadhaar', 'aadhar', 'pan', 'passport', 'voter', 'driving', 'dl'],
+
+  // People & Family Relationships (Asymmetric: generic terms -> specific name, but specific names -> only that person)
+  dad: ['yogesh', 'yogesh jain'],
+  father: ['yogesh', 'yogesh jain'],
+  yogesh: ['yogesh jain'],
+  mom: ['simpal', 'simpal jain'],
+  mother: ['simpal', 'simpal jain'],
+  simpal: ['simpal jain'],
+  shreya: ['shreya jain'],
+  sister: ['shreya', 'shreya jain'],
+  yash: ['yash jain', 'yaash'],
+
+  // Vehicles (Strict separation between car and bike)
+  amaze: ['honda amaze', 'amaze bills', 'honda'],
+  car: ['amaze', 'honda amaze', 'car bills'],
+  pulsar: ['pulsar 150', 'bajaj pulsar'],
+  activa: ['honda activa'],
+  bike: ['pulsar', 'activa', 'star city', 'tvs', 'bajaj'],
+  vehicle: ['amaze', 'pulsar', 'activa', 'star city', 'tvs', 'honda', 'bajaj', 'rc', 'puc', 'insurance'],
+  rc: ['registration certificate', 'rc book', 'rc registration', 'certificate of registration'],
+  puc: ['pollution under control', 'pollution', 'emission'],
+
+  // Career & Work
+  salary: ['payslip', 'pay slip', 'earnings', 'compensation', 'payroll'],
+  payslip: ['salary', 'pay slip', 'earnings', 'compensation', 'payroll'],
+  offer: ['offer letter', 'job offer', 'appointment letter', 'joining letter'],
+  relieving: ['relieving letter', 'experience letter', 'service certificate'],
+  resume: ['cv', 'curriculum vitae', 'profile', 'bio'],
+
+  // Finance, Bank & Tax
+  bank: ['sbi', 'icici', 'cheque', 'passbook', 'statement', 'debit', 'credit', 'account', 'hdfc'],
+  cheque: ['cancelled cheque', 'sbi', 'icici', 'check'],
+  tax: ['tax invoice', 'income tax', 'municipal tax', 'tds', 'form 16', 'gst'],
   bills: ['invoice', 'receipt', 'tax invoice', 'electricity', 'amaze bills', 'expenses'],
   invoice: ['bill', 'tax invoice', 'receipt', 'payment', 'purchase'],
-  insurance: ['policy', 'coverage', 'schedule', 'premium', 'pulsar insurance', 'amaze insurance', 'lic', 'mediclaim'],
-  property: ['registry', 'electricity', 'municipal', 'flat', 'house', 'land', 'deed', 'ishan park', 'sapphire'],
-  education: ['degree', 'mtech', 'btech', 'certificate', 'diploma', 'marksheet', 'school', 'college'],
-  resume: ['cv', 'curriculum vitae', 'profile', 'bio', 'internshala'],
+  insurance: ['policy', 'coverage', 'schedule', 'premium', 'lic', 'mediclaim', 'policy schedule'],
+
+  // Property & Education
+  property: ['ishan park', 'sapphire', 'registry', 'municipal tax', 'deed', 'flat', 'house'],
+  education: ['degree', 'mtech', 'btech', 'certificate', 'diploma', 'marksheet', 'school', 'college', 'vit'],
 };
 
 /**
@@ -78,7 +111,7 @@ function fuzzySimilarity(s1: string, s2: string): number {
 }
 
 /**
- * Master Hybrid Semantic, OCR & Fuzzy Search Algorithm
+ * Master Hybrid Semantic, OCR & Multi-Token Conjunction Search Algorithm
  */
 export function searchDriveItems(
   items: DriveItem[],
@@ -86,18 +119,20 @@ export function searchDriveItems(
 ): SearchResult {
   const rawQuery = (options.query || '').trim().toLowerCase();
   const queryTokens = tokenize(rawQuery);
+  const numTokens = queryTokens.length;
 
-  // Expand query tokens with semantic concepts
-  const expandedConcepts = new Set<string>();
+  // Build per-token concept dictionary
+  const tokenExpansions: Map<string, string[]> = new Map();
   queryTokens.forEach((token) => {
-    expandedConcepts.add(token);
+    const synonyms = new Set<string>();
+    synonyms.add(token);
     if (CONCEPT_EXPANSIONS[token]) {
-      CONCEPT_EXPANSIONS[token].forEach((syn) => expandedConcepts.add(syn.toLowerCase()));
+      CONCEPT_EXPANSIONS[token].forEach((s) => synonyms.add(s.toLowerCase()));
     }
+    tokenExpansions.set(token, Array.from(synonyms));
   });
 
-  const expandedList = Array.from(expandedConcepts);
-  const scoredItems: { item: DriveItem; score: number; matchedTerms: Set<string> }[] = [];
+  const scoredItems: { item: DriveItem; score: number; matchedTerms: Set<string>; matchedTokenCount: number }[] = [];
 
   for (const item of items) {
     // 1. Hard filters & Section constraints
@@ -164,7 +199,7 @@ export function searchDriveItems(
 
     // If query is empty, match all filtered items with base score
     if (!rawQuery) {
-      scoredItems.push({ item, score: item.isStarred ? 10 : 1, matchedTerms: new Set() });
+      scoredItems.push({ item, score: item.isStarred ? 10 : 1, matchedTerms: new Set(), matchedTokenCount: 0 });
       continue;
     }
 
@@ -179,36 +214,56 @@ export function searchDriveItems(
     const itemSummary = (item.aiSummary || '').toLowerCase();
     const itemAiCategory = (item.aiCategory || '').toLowerCase();
     const itemOcrText = (item.ocrText || '').toLowerCase();
+    const combinedItemText = `${itemName} ${itemPath} ${itemTags.join(' ')} ${itemKeywords.join(' ')} ${itemSummary} ${itemAiCategory} ${itemOcrText}`;
 
-    // A. Full Exact String Match
+    // A. Full Exact Query Phrase Match
     if (itemName === rawQuery) {
-      score += 100;
+      score += 200;
       matchedTerms.add(item.name);
     } else if (itemName.includes(rawQuery)) {
-      score += 60;
+      score += 120;
       matchedTerms.add(rawQuery);
     }
 
-    // OCR Full Text Exact Match
+    if (itemPath.includes(rawQuery)) {
+      score += 80;
+      matchedTerms.add(`Path: "${rawQuery}"`);
+    }
+
     if (itemOcrText.includes(rawQuery)) {
-      score += 70;
+      score += 90;
       matchedTerms.add(`OCR: "${rawQuery}"`);
     }
 
-    // B. Token-by-Token Match & Fuzzy Comparison
-    for (const token of queryTokens) {
-      // Direct token in filename
-      if (itemName.includes(token)) {
-        score += 35;
+    // B. Token-by-Token Match & Conjunction Verification
+    const nameWords = tokenize(itemName);
+    const pathWords = tokenize(itemPath);
+    const tagWords = itemTags.flatMap((t) => tokenize(t));
+    const allItemWords = tokenize(combinedItemText);
+    let matchedTokenCount = 0;
+
+    for (let i = 0; i < queryTokens.length; i++) {
+      const token = queryTokens[i];
+      const expansions = tokenExpansions.get(token) || [token];
+      let tokenMatchedInItem = false;
+      let tokenScore = 0;
+
+      // 1. Filename match
+      if (nameWords.includes(token)) {
+        tokenScore += 45;
+        tokenMatchedInItem = true;
         matchedTerms.add(token);
-      } else {
-        // Fuzzy token match against filename words
-        const nameWords = tokenize(itemName);
+      } else if (token.length >= 4 && itemName.includes(token)) {
+        tokenScore += 35;
+        tokenMatchedInItem = true;
+        matchedTerms.add(token);
+      } else if (token.length >= 4) {
         for (const word of nameWords) {
-          if (word.length >= 3 && token.length >= 3) {
+          if (word.length >= 4) {
             const sim = fuzzySimilarity(token, word);
-            if (sim >= 0.75) {
-              score += Math.round(sim * 25);
+            if (sim >= 0.82) {
+              tokenScore += Math.round(sim * 30);
+              tokenMatchedInItem = true;
               matchedTerms.add(word);
               break;
             }
@@ -216,77 +271,114 @@ export function searchDriveItems(
         }
       }
 
-      // Tag exact or partial match
-      for (const tag of itemTags) {
-        if (tag === token || tag.includes(token)) {
-          score += 40;
-          matchedTerms.add(tag);
-        } else if (tag.length >= 3 && token.length >= 3) {
-          const sim = fuzzySimilarity(token, tag);
-          if (sim >= 0.8) {
-            score += 20;
+      // 2. Tags match
+      if (!tokenMatchedInItem) {
+        for (const tag of itemTags) {
+          const tWords = tokenize(tag);
+          if (tWords.includes(token) || tag === token) {
+            tokenScore += 40;
+            tokenMatchedInItem = true;
             matchedTerms.add(tag);
+            break;
+          } else if (token.length >= 4 && tag.includes(token)) {
+            tokenScore += 30;
+            tokenMatchedInItem = true;
+            matchedTerms.add(tag);
+            break;
           }
         }
       }
 
-      // Path / Folder context match
-      if (itemPath.includes(token)) {
-        score += 25;
-        matchedTerms.add(token);
-      }
-
-      // AI Category match
-      if (itemAiCategory.includes(token)) {
-        score += 30;
-        matchedTerms.add(item.aiCategory || token);
-      }
-
-      // AI Summary match
-      if (itemSummary.includes(token)) {
-        score += 20;
-        matchedTerms.add(token);
-      }
-
-      // Semantic keywords match
-      for (const kw of itemKeywords) {
-        if (kw === token || kw.includes(token)) {
-          score += 30;
-          matchedTerms.add(kw);
+      // 3. Path / Folder context match
+      if (!tokenMatchedInItem) {
+        if (pathWords.includes(token)) {
+          tokenScore += 30;
+          tokenMatchedInItem = true;
+          matchedTerms.add(token);
+        } else if (token.length >= 4 && itemPath.includes(token)) {
+          tokenScore += 25;
+          tokenMatchedInItem = true;
+          matchedTerms.add(token);
         }
       }
 
-      // OCR Deep Text Token Match
-      if (itemOcrText.includes(token)) {
-        score += 35;
-        matchedTerms.add(token);
+      // 4. AI Category & Keywords
+      if (!tokenMatchedInItem) {
+        if (itemAiCategory.includes(token)) {
+          tokenScore += 25;
+          tokenMatchedInItem = true;
+          matchedTerms.add(item.aiCategory || token);
+        }
+        for (const kw of itemKeywords) {
+          if (kw === token || (token.length >= 4 && kw.includes(token))) {
+            tokenScore += 25;
+            tokenMatchedInItem = true;
+            matchedTerms.add(kw);
+            break;
+          }
+        }
+      }
+
+      // 5. OCR Deep Text Token Match
+      if (!tokenMatchedInItem && itemOcrText) {
+        if (token.length <= 3) {
+          const ocrWords = tokenize(itemOcrText);
+          if (ocrWords.includes(token)) {
+            tokenScore += 30;
+            tokenMatchedInItem = true;
+            matchedTerms.add(token);
+          }
+        } else if (itemOcrText.includes(token)) {
+          tokenScore += 30;
+          tokenMatchedInItem = true;
+          matchedTerms.add(token);
+        }
+      }
+
+      // 6. If token wasn't directly matched, check concept expansions
+      if (!tokenMatchedInItem) {
+        for (const concept of expansions) {
+          if (concept === token) continue;
+          if (concept.length <= 3) {
+            if (allItemWords.includes(concept)) {
+              tokenScore += 25;
+              tokenMatchedInItem = true;
+              matchedTerms.add(concept);
+              break;
+            }
+          } else if (combinedItemText.includes(concept)) {
+            tokenScore += 25;
+            tokenMatchedInItem = true;
+            matchedTerms.add(concept);
+            break;
+          }
+        }
+      }
+
+      if (tokenMatchedInItem) {
+        matchedTokenCount++;
+        score += tokenScore;
       }
     }
 
-    // C. Semantic Concept Expansion Matches
-    for (const concept of expandedList) {
-      if (queryTokens.includes(concept)) continue; // already scored above
+    // C. Multi-Token Conjunction Filtering & Multiplier Logic
+    if (numTokens >= 2) {
+      const matchRatio = matchedTokenCount / numTokens;
 
-      if (itemName.includes(concept)) {
-        score += 25;
-        matchedTerms.add(concept);
+      // Strict filter: If user searched 2+ tokens, require at least 50% match
+      if (matchRatio < 0.5) {
+        continue; // Discard completely irrelevant items that only hit 1 word out of 3+
       }
-      if (itemTags.some((t) => t.includes(concept))) {
-        score += 25;
-        matchedTerms.add(concept);
+
+      // If item matched ALL query tokens (100% conjunction)
+      if (matchedTokenCount === numTokens) {
+        score += 350; // Massive conjunction bonus
+      } else {
+        // Partial token match: heavily discount so full matches win unconditionally
+        score = Math.round(score * 0.45);
       }
-      if (itemKeywords.some((k) => k.includes(concept))) {
-        score += 20;
-        matchedTerms.add(concept);
-      }
-      if (itemPath.includes(concept)) {
-        score += 15;
-        matchedTerms.add(concept);
-      }
-      if (itemOcrText.includes(concept)) {
-        score += 15;
-        matchedTerms.add(concept);
-      }
+    } else if (matchedTokenCount === 0 && score === 0) {
+      continue;
     }
 
     // D. Starred & Recency Boosts
@@ -307,6 +399,7 @@ export function searchDriveItems(
         },
         score,
         matchedTerms,
+        matchedTokenCount,
       });
     }
   }
@@ -314,8 +407,21 @@ export function searchDriveItems(
   // 3. Sorting & Ranking
   const sortMode = options.sort || (rawQuery ? 'relevance' : 'date');
 
-  scoredItems.sort((a, b) => {
+  // If multi-token query and we have full conjunction matches, strictly keep full matches
+  let candidateItems = scoredItems;
+  if (numTokens >= 2) {
+    const fullMatches = scoredItems.filter((s) => s.matchedTokenCount === numTokens);
+    if (fullMatches.length > 0) {
+      candidateItems = fullMatches;
+    }
+  }
+
+  candidateItems.sort((a, b) => {
     if (sortMode === 'relevance') {
+      // First sort by number of matched tokens (conjunction priority)
+      if (numTokens >= 2 && b.matchedTokenCount !== a.matchedTokenCount) {
+        return b.matchedTokenCount - a.matchedTokenCount;
+      }
       return b.score - a.score;
     }
     if (sortMode === 'date') {
@@ -335,7 +441,7 @@ export function searchDriveItems(
     return b.score - a.score;
   });
 
-  const finalItems = scoredItems.map((s) => s.item);
+  const finalItems = candidateItems.map((s) => s.item);
 
   // 4. Facet Aggregations
   const tagCounts = new Map<string, number>();
