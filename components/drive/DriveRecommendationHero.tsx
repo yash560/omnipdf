@@ -32,6 +32,7 @@ import {
   X,
   Compass,
 } from 'lucide-react';
+import { Tooltip } from './DriveTooltip';
 
 interface DriveRecommendationHeroProps {
   onOpenDossiersModal?: (dossier?: SmartDossier) => void;
@@ -287,14 +288,16 @@ export function DriveRecommendationHero({
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={(e) => handleDismiss(rec.id, e)}
-                      className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all"
-                      title="Dismiss suggestion"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                    </button>
+                    <Tooltip content="Dismiss this recommendation" side="left">
+                      <button
+                        type="button"
+                        onClick={(e) => handleDismiss(rec.id, e)}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-all cursor-pointer"
+                        aria-label="Dismiss suggestion"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </Tooltip>
                   </div>
 
                   <div className="mt-2 pt-2 border-t border-zinc-100 dark:border-zinc-700/50 flex items-center justify-between text-[11px] text-zinc-500 dark:text-zinc-400">

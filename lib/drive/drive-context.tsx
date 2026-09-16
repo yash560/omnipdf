@@ -88,7 +88,11 @@ interface DriveContextType {
   // Feature Modals
   isFolderChatOpen: boolean;
   setIsFolderChatOpen: (open: boolean) => void;
+  targetFolderForChat: DriveItem | null;
+  setTargetFolderForChat: (folder: DriveItem | null) => void;
+  openFolderChat: (folder?: DriveItem | null) => void;
   isExpiryRadarOpen: boolean;
+
   setIsExpiryRadarOpen: (open: boolean) => void;
   isDedupModalOpen: boolean;
   setIsDedupModalOpen: (open: boolean) => void;
@@ -239,7 +243,14 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Feature Modals
   const [isFolderChatOpen, setIsFolderChatOpen] = useState(false);
+  const [targetFolderForChat, setTargetFolderForChat] = useState<DriveItem | null>(null);
+
+  const openFolderChat = (folder?: DriveItem | null) => {
+    setTargetFolderForChat(folder || null);
+    setIsFolderChatOpen(true);
+  };
   const [isExpiryRadarOpen, setIsExpiryRadarOpen] = useState(false);
+
   const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
   const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
   const [quickToolsItem, setQuickToolsItem] = useState<DriveItem | null>(null);
@@ -1097,6 +1108,9 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         // Modals
         isFolderChatOpen,
         setIsFolderChatOpen,
+        targetFolderForChat,
+        setTargetFolderForChat,
+        openFolderChat,
         isExpiryRadarOpen,
         setIsExpiryRadarOpen,
         isDedupModalOpen,

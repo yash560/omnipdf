@@ -3,20 +3,40 @@ import { processUniversalChat, UniversalChatRequest } from '@/lib/ai/universal-c
 
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as UniversalChatRequest;
+    const rawBody = await req.json();
+    const customApiKey = req.headers.get('x-custom-api-key') || rawBody.customApiKey;
 
-    if (!body.messages || !Array.isArray(body.messages) || body.messages.length === 0) {
-      return NextResponse.json(
-        { error: 'Messages array is required and must not be empty.' },
-        { status: 400 }
-      );
+    // Normalize messages array
+    let messages = rawBody.messages;
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+      const singleText = rawBody.message || rawBody.query || rawBody.prompt;
+      if (typeof singleText === 'string' && singleText.trim().length > 0) {
+        messages = [{ role: 'user', content: singleText.trim() }];
+      } else {
+        return NextResponse.json(
+          { error: 'Messages array or valid message string is required.' },
+          { status: 400 }
+        );
+      }
     }
 
-    const responseText = await processUniversalChat(body);
+    const payload: UniversalChatRequest = {
+      messages,
+      fileContext: rawBody.fileContext || rawBody.context || rawBody.documentContext,
+      imageBase64: rawBody.imageBase64,
+      mimeType: rawBody.mimeType,
+      toolSlug: rawBody.toolSlug,
+      suite: rawBody.suite,
+      personaId: rawBody.personaId,
+      customApiKey,
+    };
+
+    const responseText = await processUniversalChat(payload);
 
     return NextResponse.json({
       success: true,
       text: responseText,
+      response: responseText,
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
@@ -30,3 +50,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+

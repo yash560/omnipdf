@@ -235,4 +235,6 @@ export interface UniversalChatRequest {
   toolSlug?: string;
   suite?: string;
   personaId?: AIPersonaId;
+  customApiKey?: string;
 }
+

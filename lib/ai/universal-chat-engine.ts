@@ -55,5 +55,8 @@ Always format output with rich Markdown (tables, bold headers, bullet lists, cod
     mimeType: request.mimeType || 'image/jpeg',
     temperature: 0.25,
     maxOutputTokens: 4096,
+    customApiKey: request.customApiKey,
+    fallbackContext: request.fileContext,
   });
 }
+

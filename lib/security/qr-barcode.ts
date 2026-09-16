@@ -1,59 +1,141 @@
-/**
- * QR Code Generator & Barcode Engine
- */
+import QRCode from 'qrcode';
+import JsBarcode from 'jsbarcode';
 
 export interface QrOptions {
   text: string;
-  size: number;
-  fgColor: string;
-  bgColor: string;
-  rounded: boolean;
-  ecc: 'L' | 'M' | 'Q' | 'H';
+  size?: number;
+  fgColor?: string;
+  bgColor?: string;
+  ecc?: 'L' | 'M' | 'Q' | 'H';
+  margin?: number;
+}
+
+export interface BarcodeOptions {
+  text: string;
+  format?: 'CODE128' | 'EAN13' | 'UPC' | 'CODE39' | 'ITF14';
+  width?: number;
+  height?: number;
+  displayValue?: boolean;
+  lineColor?: string;
+  background?: string;
+  fontSize?: number;
 }
 
 /**
- * Generate lightweight SVG QR code matrix
+ * Generate standard ISO/IEC 18004 compliant SVG QR code
  */
-export function generateQrSvg(options: QrOptions): string {
-  const size = options.size || 256;
+export async function generateQrSvg(options: QrOptions): Promise<string> {
   const text = options.text || 'https://thewebvale.com';
+  const size = options.size || 256;
+  const fgColor = options.fgColor || '#000000';
+  const bgColor = options.bgColor || '#ffffff';
+  const ecc = options.ecc || 'M';
+  const margin = options.margin ?? 2;
 
-  // Deterministic matrix calculation based on character codes
-  const gridCount = 25;
-  const cellSize = size / gridCount;
-  const rects: string[] = [];
+  const svgString = await QRCode.toString(text, {
+    type: 'svg',
+    errorCorrectionLevel: ecc,
+    margin,
+    color: {
+      dark: fgColor,
+      light: bgColor,
+    },
+    width: size,
+  });
 
-  const hash = Array.from(text).reduce((acc, c, i) => acc + c.charCodeAt(0) * (i + 1), 0);
+  return svgString;
+}
 
-  for (let r = 0; r < gridCount; r++) {
-    for (let c = 0; c < gridCount; c++) {
-      // Finder patterns in 3 corners
-      const isTopLeft = r < 7 && c < 7;
-      const isTopRight = r < 7 && c >= gridCount - 7;
-      const isBottomLeft = r >= gridCount - 7 && c < 7;
+/**
+ * Generate PNG Data URL for QR code (with optional center logo embedding)
+ */
+export async function generateQrDataUrl(
+  options: QrOptions,
+  logoDataUrl?: string
+): Promise<string> {
+  const text = options.text || 'https://thewebvale.com';
+  const size = options.size || 512;
+  const fgColor = options.fgColor || '#000000';
+  const bgColor = options.bgColor || '#ffffff';
+  const ecc = logoDataUrl ? 'H' : options.ecc || 'M';
+  const margin = options.margin ?? 2;
 
-      let isFilled = false;
+  const baseDataUrl = await QRCode.toDataURL(text, {
+    errorCorrectionLevel: ecc,
+    margin,
+    color: {
+      dark: fgColor,
+      light: bgColor,
+    },
+    width: size,
+  });
 
-      if (isTopLeft || isTopRight || isBottomLeft) {
-        const localR = isBottomLeft ? r - (gridCount - 7) : r;
-        const localC = isTopRight ? c - (gridCount - 7) : c;
-        if (localR === 0 || localR === 6 || localC === 0 || localC === 6 || (localR >= 2 && localR <= 4 && localC >= 2 && localC <= 4)) {
-          isFilled = true;
-        }
-      } else {
-        // Pseudo-random deterministic module pattern for text content
-        const seed = (r * 31 + c * 17 + hash) % 100;
-        isFilled = seed < 48;
-      }
-
-      if (isFilled) {
-        const x = c * cellSize;
-        const y = r * cellSize;
-        const rx = options.rounded ? cellSize * 0.35 : 0;
-        rects.push(`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${cellSize.toFixed(1)}" height="${cellSize.toFixed(1)}" rx="${rx.toFixed(1)}" fill="${options.fgColor}" />`);
-      }
-    }
+  if (!logoDataUrl || typeof window === 'undefined') {
+    return baseDataUrl;
   }
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><rect width="100%" height="100%" fill="${options.bgColor}" />${rects.join('')}</svg>`;
+  // Draw logo on center of canvas
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      resolve(baseDataUrl);
+      return;
+    }
+
+    const qrImg = new Image();
+    qrImg.onload = () => {
+      ctx.drawImage(qrImg, 0, 0);
+
+      const logo = new Image();
+      logo.onload = () => {
+        const logoSize = Math.round(size * 0.22);
+        const logoX = (size - logoSize) / 2;
+        const logoY = (size - logoSize) / 2;
+
+        // White circular or rounded badge behind logo
+        ctx.fillStyle = bgColor;
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, logoSize * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      logo.onerror = () => resolve(baseDataUrl);
+      logo.src = logoDataUrl;
+    };
+    qrImg.onerror = () => resolve(baseDataUrl);
+    qrImg.src = baseDataUrl;
+  });
+}
+
+/**
+ * Generate standard 1D Barcode SVG (Code128, EAN-13, UPC, Code39)
+ */
+export function generateBarcodeSvg(options: BarcodeOptions): string {
+  if (typeof document === 'undefined') return '';
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  
+  try {
+    JsBarcode(svg, options.text, {
+      format: options.format || 'CODE128',
+      width: options.width || 2,
+      height: options.height || 60,
+      displayValue: options.displayValue !== false,
+      lineColor: options.lineColor || '#000000',
+      background: options.background || '#ffffff',
+      fontSize: options.fontSize || 14,
+      margin: 10,
+    });
+
+    const serializer = new XMLSerializer();
+    return serializer.serializeToString(svg);
+  } catch (err) {
+    console.error('JsBarcode render error:', err);
+    throw new Error(`Invalid barcode format or checksum for "${options.text}"`);
+  }
 }

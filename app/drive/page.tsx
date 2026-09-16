@@ -134,6 +134,8 @@ function DriveWorkspaceInner() {
     // Modals
     isFolderChatOpen,
     setIsFolderChatOpen,
+    targetFolderForChat,
+    setTargetFolderForChat,
     isExpiryRadarOpen,
     setIsExpiryRadarOpen,
     isDedupModalOpen,
@@ -700,10 +702,18 @@ function DriveWorkspaceInner() {
       {/* "Chat with Folder" Multi-Document AI RAG Modal */}
       <DriveFolderChatModal
         isOpen={isFolderChatOpen}
-        onClose={() => setIsFolderChatOpen(false)}
-        folderName={currentFolderCrumb?.name || 'My Drive'}
-        items={items}
+        onClose={() => {
+          setIsFolderChatOpen(false);
+          setTargetFolderForChat(null);
+        }}
+        folderName={targetFolderForChat?.name || currentFolderCrumb?.name || 'My Drive'}
+        items={
+          targetFolderForChat
+            ? items.filter((it) => it.parentId === targetFolderForChat.id || it.id === targetFolderForChat.id)
+            : items
+        }
       />
+
 
       {/* Document Expiry Radar Modal */}
       <DriveExpiryRadarModal

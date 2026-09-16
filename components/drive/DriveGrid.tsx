@@ -9,6 +9,7 @@ import { DriveMobileActionSheet } from './DriveMobileActionSheet';
 import { DriveSwipeableItem } from './DriveSwipeableItem';
 import { DriveThumbnail } from './DriveThumbnail';
 import { triggerHaptic } from '@/lib/drive/haptics';
+import { Tooltip } from './DriveTooltip';
 import {
   Folder,
   FileText,
@@ -171,7 +172,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                         ? 'border-rose-500 bg-rose-500/10 ring-4 ring-rose-500/30 scale-[1.02] shadow-xl'
                         : isSelected
                         ? 'border-rose-500 bg-rose-500/10 dark:bg-rose-950/25 ring-2 ring-rose-500/20 shadow-md'
-                        : 'border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/90 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-2xs hover:shadow-sm'
+                        : 'border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-2xs hover:shadow-sm'
                     }`}
                   >
                     <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
@@ -216,18 +217,22 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
 
                     <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                       {folder.isVault && (
-                        <div className="p-0.5 sm:p-1 text-amber-500" title="Secure Vault Protected">
-                          <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                        </div>
+                        <Tooltip content="Protected in Secure PIN Vault" side="top">
+                          <div className="p-0.5 sm:p-1 text-amber-500" aria-label="Secure Vault Protected">
+                            <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                          </div>
+                        </Tooltip>
                       )}
-                      <button
-                        type="button"
-                        onClick={(e) => handleOpenItemOptions(folder, e)}
-                        className="p-1 sm:p-1.5 rounded-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-zinc-100/80 dark:bg-zinc-800/80 sm:bg-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"
-                        title="Folder Options"
-                      >
-                        <MoreVertical className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      </button>
+                      <Tooltip content="Folder Actions (Rename, Move, Share, Delete)" side="top">
+                        <button
+                          type="button"
+                          onClick={(e) => handleOpenItemOptions(folder, e)}
+                          className="p-1 sm:p-1.5 rounded-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-zinc-100/80 dark:bg-zinc-800/80 sm:bg-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"
+                          aria-label="Folder Options"
+                        >
+                          <MoreVertical className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        </button>
+                      </Tooltip>
                     </div>
                   </div>
                 </DriveSwipeableItem>
@@ -295,84 +300,98 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                       <DriveThumbnail item={file} view="grid" />
 
                       {/* Star Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          triggerHaptic('selection');
-                          toggleStar(file.id);
-                        }}
-                        className={`absolute top-1.5 sm:top-2 left-1.5 sm:left-2 p-1 sm:p-1.5 rounded-xl transition-all z-20 ${
-                          file.isStarred
-                            ? 'opacity-100 bg-amber-500/20 text-amber-500 shadow-2xs'
-                            : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-400 hover:text-amber-400 shadow-2xs'
-                        }`}
-                        title={file.isStarred ? 'Unstar' : 'Star'}
-                      >
-                        <Star className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${file.isStarred ? 'text-amber-400 fill-amber-400' : 'text-zinc-400'}`} />
-                      </button>
-
-                      {/* Selection Checkbox on File Card */}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          triggerHaptic('selection');
-                          toggleSelect(file.id, true);
-                        }}
-                        className={`absolute top-1.5 sm:top-2 left-7 sm:left-10 p-1 sm:p-1.5 rounded-xl transition-all z-20 ${
-                          isSelected
-                            ? 'opacity-100 bg-rose-500/20 border border-rose-500/40 shadow-2xs'
-                            : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-500 shadow-2xs'
-                        }`}
-                        title="Select File"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => {}}
-                          className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none block"
-                        />
-                      </button>
-
-                      {/* Status Badges: Vault & Expiry */}
-                      <div className="absolute top-1.5 sm:top-2 right-7 sm:right-10 flex items-center gap-1 z-10">
-                        {file.isVault && (
-                          <span className="p-0.5 sm:p-1 rounded-md bg-amber-500/20 text-amber-500 shadow-xs" title="Protected in Secure Vault">
-                            <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-                          </span>
-                        )}
-                        {file.expiryStatus === 'expired' && (
-                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50" title="Expired / Renewal Due" />
-                        )}
-                        {file.expiryStatus === 'expiring_soon' && (
-                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" title="Expiring Soon" />
-                        )}
-                      </div>
-
-                      {/* 3-Dot Action Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => handleOpenItemOptions(file, e)}
-                        className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 p-1 sm:p-1.5 rounded-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-2xs transition-all cursor-pointer z-20"
-                        title="File Options"
-                      >
-                        <MoreVertical className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                      </button>
-
-                      {/* Quick Preview Hover Pill (Desktop) */}
-                      <div className="hidden sm:flex absolute inset-0 bg-black/40 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-2">
+                      <Tooltip content={file.isStarred ? 'Remove from Starred' : 'Add to Starred'} side="right">
                         <button
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            openPreview(file);
+                            triggerHaptic('selection');
+                            toggleStar(file.id);
                           }}
-                          className="px-3 py-1.5 rounded-xl bg-white text-zinc-900 text-xs font-bold flex items-center gap-1.5 shadow-md hover:scale-105 transition-transform"
+                          className={`absolute top-1.5 sm:top-2 left-1.5 sm:left-2 p-1 sm:p-1.5 rounded-xl transition-all z-20 ${
+                            file.isStarred
+                              ? 'opacity-100 bg-amber-500/20 text-amber-500 shadow-2xs'
+                              : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-400 hover:text-amber-400 shadow-2xs'
+                          }`}
+                          aria-label={file.isStarred ? 'Unstar' : 'Star'}
                         >
-                          <Eye className="w-3.5 h-3.5 text-rose-500" />
-                          <span>Preview</span>
+                          <Star className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${file.isStarred ? 'text-amber-400 fill-amber-400' : 'text-zinc-400'}`} />
                         </button>
+                      </Tooltip>
+
+                      {/* Selection Checkbox on File Card */}
+                      <Tooltip content={isSelected ? 'Deselect file' : 'Select file'} side="right">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            triggerHaptic('selection');
+                            toggleSelect(file.id, true);
+                          }}
+                          className={`absolute top-1.5 sm:top-2 left-7 sm:left-10 p-1 sm:p-1.5 rounded-xl transition-all z-20 ${
+                            isSelected
+                              ? 'opacity-100 bg-rose-500/20 border border-rose-500/40 shadow-2xs'
+                              : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-500 shadow-2xs'
+                          }`}
+                          aria-label="Select File"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {}}
+                            className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none block"
+                          />
+                        </button>
+                      </Tooltip>
+
+                      {/* Status Badges: Vault & Expiry */}
+                      <div className="absolute top-1.5 sm:top-2 right-7 sm:right-10 flex items-center gap-1 z-10">
+                        {file.isVault && (
+                          <Tooltip content="Protected in Secure PIN Vault" side="left">
+                            <span className="p-0.5 sm:p-1 rounded-md bg-amber-500/20 text-amber-500 shadow-xs flex items-center justify-center">
+                              <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                            </span>
+                          </Tooltip>
+                        )}
+                        {file.expiryStatus === 'expired' && (
+                          <Tooltip content="⚠️ Document has expired / renewal is overdue" side="left">
+                            <span className="w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50" />
+                          </Tooltip>
+                        )}
+                        {file.expiryStatus === 'expiring_soon' && (
+                          <Tooltip content="⚠️ Document expiring soon (<30 days)" side="left">
+                            <span className="w-2 h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" />
+                          </Tooltip>
+                        )}
+                      </div>
+
+                      {/* 3-Dot Action Button */}
+                      <Tooltip content="More actions (Tools, Share, Rename, Trash)" side="left">
+                        <button
+                          type="button"
+                          onClick={(e) => handleOpenItemOptions(file, e)}
+                          className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 p-1 sm:p-1.5 rounded-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-2xs transition-all cursor-pointer z-20"
+                          aria-label="File Options"
+                        >
+                          <MoreVertical className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                        </button>
+                      </Tooltip>
+
+                      {/* Quick Preview Hover Pill (Desktop) */}
+                      <div className="hidden sm:flex absolute inset-0 bg-black/40 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-2">
+                        <Tooltip content="Open Quick Look Preview" shortcut="Space" side="top">
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openPreview(file);
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-white text-zinc-900 text-xs font-bold flex items-center gap-1.5 shadow-md hover:scale-105 transition-transform"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-rose-500" />
+                            <span>Preview</span>
+                          </button>
+                        </Tooltip>
                       </div>
                     </div>
 

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { User, Car, Tag, Check, X, Sparkles } from 'lucide-react';
+import { Tooltip } from './DriveTooltip';
 
 interface DriveFastFiltersProps {
   activePerson?: string;
@@ -46,19 +47,21 @@ export const DriveFastFilters: React.FC<DriveFastFiltersProps> = ({
         {people.map((p) => {
           const isActive = activePerson?.toLowerCase() === p.toLowerCase();
           return (
-            <button
-              key={p}
-              type="button"
-              onClick={() => onSelectPerson(isActive ? undefined : p)}
-              className={`px-2 sm:px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
-                isActive
-                  ? 'bg-blue-500 text-white border-blue-600 shadow-xs font-bold'
-                  : 'bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/80 hover:border-zinc-300 dark:hover:border-zinc-600'
-              }`}
-            >
-              {isActive && <Check className="w-2.5 h-2.5 stroke-[2.5]" />}
-              <span>{p}</span>
-            </button>
+            <Tooltip key={p} content={isActive ? `Clear filter for ${p}` : `Filter documents & dossiers for ${p}`} side="bottom">
+              <button
+                type="button"
+                onClick={() => onSelectPerson(isActive ? undefined : p)}
+                className={`px-2 sm:px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
+                  isActive
+                    ? 'bg-blue-500 text-white border-blue-600 shadow-xs font-bold'
+                    : 'bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/80 hover:border-zinc-300 dark:hover:border-zinc-600'
+                }`}
+                aria-label={`Filter by ${p}`}
+              >
+                {isActive && <Check className="w-2.5 h-2.5 stroke-[2.5]" />}
+                <span>{p}</span>
+              </button>
+            </Tooltip>
           );
         })}
       </div>
@@ -74,19 +77,21 @@ export const DriveFastFilters: React.FC<DriveFastFiltersProps> = ({
         {vehicles.map((v) => {
           const isActive = activeVehicle?.toLowerCase() === v.toLowerCase();
           return (
-            <button
-              key={v}
-              type="button"
-              onClick={() => onSelectVehicle(isActive ? undefined : v)}
-              className={`px-2 sm:px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
-                isActive
-                  ? 'bg-amber-500 text-white border-amber-600 shadow-xs font-bold'
-                  : 'bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/80 hover:border-zinc-300 dark:hover:border-zinc-600'
-              }`}
-            >
-              {isActive && <Check className="w-2.5 h-2.5 stroke-[2.5]" />}
-              <span>{v}</span>
-            </button>
+            <Tooltip key={v} content={isActive ? `Clear filter for ${v}` : `Filter RC, insurance & service records for ${v}`} side="bottom">
+              <button
+                type="button"
+                onClick={() => onSelectVehicle(isActive ? undefined : v)}
+                className={`px-2 sm:px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
+                  isActive
+                    ? 'bg-amber-500 text-white border-amber-600 shadow-xs font-bold'
+                    : 'bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/80 hover:border-zinc-300 dark:hover:border-zinc-600'
+                }`}
+                aria-label={`Filter by ${v}`}
+              >
+                {isActive && <Check className="w-2.5 h-2.5 stroke-[2.5]" />}
+                <span>{v}</span>
+              </button>
+            </Tooltip>
           );
         })}
       </div>
@@ -102,33 +107,38 @@ export const DriveFastFilters: React.FC<DriveFastFiltersProps> = ({
         {categories.map((c) => {
           const isActive = activeCategory === c.id;
           return (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => onSelectCategory(isActive ? undefined : c.id)}
-              className={`px-2 sm:px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
-                isActive
-                  ? 'bg-violet-600 text-white border-violet-700 shadow-xs font-bold'
-                  : 'bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/80 hover:border-zinc-300 dark:hover:border-zinc-600'
-              }`}
-            >
-              {isActive && <Check className="w-2.5 h-2.5 stroke-[2.5]" />}
-              <span>{c.label}</span>
-            </button>
+            <Tooltip key={c.id} content={isActive ? `Clear filter for ${c.label}` : `Filter by ${c.label}`} side="bottom">
+              <button
+                type="button"
+                onClick={() => onSelectCategory(isActive ? undefined : c.id)}
+                className={`px-2 sm:px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
+                  isActive
+                    ? 'bg-violet-600 text-white border-violet-700 shadow-xs font-bold'
+                    : 'bg-white dark:bg-zinc-800/80 text-zinc-700 dark:text-zinc-300 border-zinc-200 dark:border-zinc-700/80 hover:border-zinc-300 dark:hover:border-zinc-600'
+                }`}
+                aria-label={`Filter by ${c.label}`}
+              >
+                {isActive && <Check className="w-2.5 h-2.5 stroke-[2.5]" />}
+                <span>{c.label}</span>
+              </button>
+            </Tooltip>
           );
         })}
       </div>
 
       {/* Clear Filters Button */}
       {hasActiveFilters && (
-        <button
-          type="button"
-          onClick={onClearAll}
-          className="ml-auto px-2.5 py-1 text-xs font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition cursor-pointer shrink-0"
-        >
-          <X className="w-3 h-3" />
-          <span>Clear ({activeCount})</span>
-        </button>
+        <Tooltip content="Clear all active fast filters" side="left">
+          <button
+            type="button"
+            onClick={onClearAll}
+            className="ml-auto px-2.5 py-1 text-xs font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition cursor-pointer shrink-0"
+            aria-label="Clear all filters"
+          >
+            <X className="w-3 h-3" />
+            <span>Clear ({activeCount})</span>
+          </button>
+        </Tooltip>
       )}
     </div>
   );

@@ -1,7 +1,7 @@
-import { keyRotator } from './gemini-key-rotator';
+import { callGeminiWithRotation } from './gemini-client';
 
 export interface ChatMessage {
-  role: 'user' | 'model' | 'system';
+  role: 'user' | 'model' | 'assistant' | 'system';
   content: string;
 }
 
@@ -9,32 +9,29 @@ export async function streamFileChat(
   messages: ChatMessage[],
   fileContext: string
 ): Promise<string> {
-  const apiKey = keyRotator.getNextKey();
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const systemInstruction = `You are an expert AI file assistant. Answer questions based on the provided document context accurately, citing specific sections if appropriate. Format with clean markdown, lists, and tables where applicable.`;
 
-  const prompt = [
-    `You are an expert AI file assistant. Answer questions based on the following document context accurately, citing specific sections if appropriate:\n\n=== DOCUMENT CONTEXT ===\n${fileContext.substring(0, 50000)}\n=== END CONTEXT ===\n\n`,
-    ...messages.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`),
-  ].join('\n');
+  const lastUserMessage = messages[messages.length - 1]?.content || 'Summarize this file.';
+  const previousTurns = messages.slice(0, -1);
 
-  try {
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-      }),
-    });
-
-    if (!res.ok) {
-      if (res.status === 429) keyRotator.markRateLimited(apiKey);
-      if (res.status === 400 || res.status === 403) keyRotator.markPermanentFailure(apiKey);
-      throw new Error(`Gemini API responded with ${res.status}`);
+  let formattedPrompt = '';
+  if (previousTurns.length > 0) {
+    formattedPrompt += 'Conversation History:\n';
+    for (const msg of previousTurns) {
+      const roleName = msg.role === 'user' ? 'User' : 'Assistant';
+      formattedPrompt += `${roleName}: ${msg.content}\n`;
     }
-
-    const data = await res.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response generated.';
-  } catch (err: any) {
-    throw err;
+    formattedPrompt += '\nCurrent Request:\n' + lastUserMessage;
+  } else {
+    formattedPrompt = lastUserMessage;
   }
+
+  return await callGeminiWithRotation({
+    prompt: formattedPrompt,
+    systemInstruction,
+    fallbackContext: fileContext,
+    temperature: 0.25,
+    maxOutputTokens: 4096,
+  });
 }
+

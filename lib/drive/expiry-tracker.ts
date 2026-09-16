@@ -56,7 +56,7 @@ export function detectDocumentExpiry(item: Partial<DriveItem>): ExpiryAnalysis {
 
   // 3. Property Tax Fiscal Year Cycles (e.g., "2025-26", "2023-2024")
   if (combined.includes('property tax') || combined.includes('tax')) {
-    const taxMatch = combined.match(/20(2[0-9])[-_](2[0-9]|202[0-9])/);
+    const taxMatch = combined.match(/20(2[0-9])[-_](202[0-9]|2[0-9])/);
     if (taxMatch) {
       const endYearShort = parseInt(taxMatch[2].length === 4 ? taxMatch[2] : `20${taxMatch[2]}`, 10);
       const targetDate = new Date(endYearShort, 2, 31).getTime(); // March 31 end of fiscal year

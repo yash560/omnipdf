@@ -166,7 +166,11 @@ export function DriveSwipeableItem({
   return (
     <div className={`relative overflow-hidden rounded-2xl select-none ${className}`}>
       {/* Background Action Buttons Tray (Revealed on swipe left) */}
-      <div className="absolute inset-y-0 right-0 flex items-center justify-end z-0 px-2 gap-1.5 bg-zinc-100 dark:bg-zinc-800/90 rounded-2xl w-full">
+      <div
+        className={`absolute inset-y-0 right-0 flex items-center justify-end z-0 px-2 gap-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-2xl w-full transition-opacity duration-150 ${
+          translateX !== 0 || isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+        }`}
+      >
         {/* Star Button */}
         {onStar && (
           <button

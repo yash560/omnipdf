@@ -12,7 +12,8 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const section = (searchParams.get('section') || 'my-drive') as any;
-    const parentId = searchParams.get('parentId') || null;
+    const rawParentId = searchParams.get('parentId');
+    const parentId = (rawParentId === 'null' || !rawParentId) ? null : rawParentId;
     const category = (searchParams.get('category') || undefined) as DriveCategory | undefined;
     const query = searchParams.get('q') || undefined;
 

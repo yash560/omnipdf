@@ -7,20 +7,26 @@ interface GeminiRequestOptions {
   mimeType?: string;
   temperature?: number;
   maxOutputTokens?: number;
+  customApiKey?: string;
+  fallbackContext?: string;
 }
 
+const FALLBACK_MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-2.5-flash'];
+
 export async function callGeminiWithRotation(options: GeminiRequestOptions): Promise<string> {
-  const maxRetries = 5;
+  const maxRetries = 6;
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    const apiKey = keyRotator.getNextKey();
+    const apiKey = options.customApiKey || keyRotator.getNextKey();
     if (!apiKey) {
       throw new Error('No available Gemini API keys in rotation pool.');
     }
 
+    const modelName = FALLBACK_MODELS[attempt % FALLBACK_MODELS.length];
+
     try {
-      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
       const contents: any[] = [];
       const parts: any[] = [];
@@ -78,7 +84,7 @@ export async function callGeminiWithRotation(options: GeminiRequestOptions): Pro
 
       if (!response.ok) {
         const errorDetails = await response.text();
-        throw new Error(`Gemini API error (${response.status}): ${errorDetails}`);
+        throw new Error(`Gemini API error (${response.status} on ${modelName}): ${errorDetails}`);
       }
 
       const data = await response.json();
@@ -91,7 +97,7 @@ export async function callGeminiWithRotation(options: GeminiRequestOptions): Pro
       return text;
     } catch (err: any) {
       lastError = err;
-      console.warn(`[GeminiClient] Attempt ${attempt + 1} failed: ${err.message}`);
+      console.warn(`[GeminiClient] Attempt ${attempt + 1} with ${modelName} failed: ${err.message}`);
     }
   }
 

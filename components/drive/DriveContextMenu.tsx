@@ -62,7 +62,9 @@ export function DriveContextMenu({
     triggerAutoLabel,
     bulkDownloadZip,
     openQuickTools,
+    openFolderChat,
   } = useDrive();
+
 
   const [menuView, setMenuView] = useState<'main' | 'tools' | 'colors'>('main');
 
@@ -422,8 +424,24 @@ export function DriveContextMenu({
 
                 <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
 
+                {/* Chat with this Folder (AI RAG) */}
+                {isFolder && viewSection !== 'trash' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      openFolderChat(item);
+                    }}
+                    className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-violet-50/70 dark:bg-violet-950/30 text-violet-600 dark:text-violet-400 font-bold hover:bg-violet-100 dark:hover:bg-violet-900/50 cursor-pointer transition-colors"
+                  >
+                    <Sparkles className="w-4 h-4 text-violet-500" />
+                    <span>Chat with this Folder</span>
+                  </button>
+                )}
+
                 {/* Download / ZIP */}
                 {viewSection !== 'trash' && (
+
                   <button
                     type="button"
                     onClick={() => {

@@ -35,6 +35,7 @@ import {
 import { DriveCategory } from '@/lib/drive/drive-types';
 import { formatBytes } from '@/lib/drive/drive-helpers';
 import { DriveFolderTree } from './DriveFolderTree';
+import { Tooltip } from './DriveTooltip';
 
 interface DriveSidebarProps {
   onOpenNewFolderModal: () => void;
@@ -161,14 +162,16 @@ export function DriveSidebar({
 
         {/* New Item Dropdown Button */}
         <div className="relative">
-          <button
-            type="button"
-            onClick={() => setNewDropdownOpen(!newDropdownOpen)}
-            className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold text-sm shadow-lg shadow-rose-500/25 transition-all duration-200 active:scale-[0.98] cursor-pointer"
-          >
-            <Plus className="w-5 h-5" />
-            <span>New Upload</span>
-          </button>
+          <Tooltip content="Upload files, create folders, or upload directories" side="right">
+            <button
+              type="button"
+              onClick={() => setNewDropdownOpen(!newDropdownOpen)}
+              className="w-full flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold text-sm shadow-lg shadow-rose-500/25 transition-all duration-200 active:scale-[0.98] cursor-pointer"
+            >
+              <Plus className="w-5 h-5" />
+              <span>New Upload</span>
+            </button>
+          </Tooltip>
 
           {/* New Item Menu Popover */}
           {newDropdownOpen && (
@@ -178,40 +181,46 @@ export function DriveSidebar({
                 onClick={() => setNewDropdownOpen(false)}
               />
               <div className="absolute top-full left-0 mt-2 w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl p-1.5 z-30 space-y-1 animate-in fade-in zoom-in-95 duration-150">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewDropdownOpen(false);
-                    onOpenNewFolderModal();
-                    if (isMobileDrawer && onCloseMobileDrawer) onCloseMobileDrawer();
-                  }}
-                  className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
-                >
-                  <FolderPlus className="w-4 h-4 text-amber-500" />
-                  <span>New Folder</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewDropdownOpen(false);
-                    fileInputRef.current?.click();
-                  }}
-                  className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
-                >
-                  <Upload className="w-4 h-4 text-blue-500" />
-                  <span>Upload Files (2GB+)</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNewDropdownOpen(false);
-                    folderInputRef.current?.click();
-                  }}
-                  className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
-                >
-                  <FolderUp className="w-4 h-4 text-purple-500" />
-                  <span>Upload Entire Folder Tree</span>
-                </button>
+                <Tooltip content="Create a new organized folder in current directory" side="right">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewDropdownOpen(false);
+                      onOpenNewFolderModal();
+                      if (isMobileDrawer && onCloseMobileDrawer) onCloseMobileDrawer();
+                    }}
+                    className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
+                  >
+                    <FolderPlus className="w-4 h-4 text-amber-500" />
+                    <span>New Folder</span>
+                  </button>
+                </Tooltip>
+                <Tooltip content="Upload documents, PDFs, images or media (up to 2GB per file)" side="right">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewDropdownOpen(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
+                  >
+                    <Upload className="w-4 h-4 text-blue-500" />
+                    <span>Upload Files (2GB+)</span>
+                  </button>
+                </Tooltip>
+                <Tooltip content="Batch upload a full directory tree with preserved folder structure" side="right">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewDropdownOpen(false);
+                      folderInputRef.current?.click();
+                    }}
+                    className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
+                  >
+                    <FolderUp className="w-4 h-4 text-purple-500" />
+                    <span>Upload Entire Folder Tree</span>
+                  </button>
+                </Tooltip>
               </div>
             </>
           )}
@@ -235,25 +244,27 @@ export function DriveSidebar({
 
         {/* Primary Navigation Sections */}
         <nav className="space-y-1 text-xs font-semibold">
-          <button
-            type="button"
-            onClick={() => handleNavClick(() => selectSection('my-drive'))}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-              viewSection === 'my-drive'
-                ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
-                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <HardDrive className="w-4 h-4" />
-              <span>My Drive</span>
-            </div>
-            {stats && stats.totalFiles > 0 && (
-              <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${viewSection === 'my-drive' ? 'bg-black/20 text-white' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
-                {stats.totalFiles}
-              </span>
-            )}
-          </button>
+          <Tooltip content="View all root and nested files & folders" side="right">
+            <button
+              type="button"
+              onClick={() => handleNavClick(() => selectSection('my-drive'))}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                viewSection === 'my-drive'
+                  ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
+                  : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <HardDrive className="w-4 h-4" />
+                <span>My Drive</span>
+              </div>
+              {stats && stats.totalFiles > 0 && (
+                <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${viewSection === 'my-drive' ? 'bg-black/20 text-white' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
+                  {stats.totalFiles}
+                </span>
+              )}
+            </button>
+          </Tooltip>
 
           {/* Expandable Nested Folder Tree */}
           {viewSection === 'my-drive' && (
@@ -269,156 +280,171 @@ export function DriveSidebar({
 
           {/* Secure Vault Item */}
           <div className="relative group">
+            <Tooltip content={isVaultUnlocked ? 'Secure Vault unlocked (Click to view files)' : 'PIN-protected Secure Vault (Click to unlock)'} side="right">
+              <button
+                type="button"
+                onClick={() => handleNavClick(() => selectSection('vault'))}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                  viewSection === 'vault'
+                    ? 'bg-amber-500 text-white font-bold shadow-md shadow-amber-500/20'
+                    : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {isVaultUnlocked ? (
+                    <Shield className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+                  ) : (
+                    <Lock className="w-4 h-4 text-amber-500" />
+                  )}
+                  <span>Secure Vault</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${
+                    viewSection === 'vault' 
+                      ? 'bg-black/20 text-white' 
+                      : 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
+                  }`}>
+                    {isVaultUnlocked ? 'Unlocked' : 'PIN'}
+                  </span>
+                </div>
+              </button>
+            </Tooltip>
+            <Tooltip content="Configure Vault PIN & auto-lock settings" side="left">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openVaultModal('configure');
+                }}
+                aria-label="Configure Vault PIN & Auto-Lock Settings"
+                className={`absolute right-14 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-all cursor-pointer ${
+                  viewSection === 'vault'
+                    ? 'text-white/80 hover:text-white hover:bg-white/20'
+                    : 'text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 opacity-60 group-hover:opacity-100'
+                }`}
+              >
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
+          </div>
+
+          {/* Expiry Radar Item */}
+          <Tooltip content="Track expired and upcoming renewal deadlines" side="right">
             <button
               type="button"
-              onClick={() => handleNavClick(() => selectSection('vault'))}
+              onClick={() => handleNavClick(() => setIsExpiryRadarOpen(true))}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+            >
+              <div className="flex items-center gap-3">
+                <Calendar className="w-4 h-4 text-amber-400" />
+                <span>Expiry Radar</span>
+              </div>
+              {stats && (stats.expiringCount || stats.expiredCount) ? (
+                <span className="text-3xs font-mono px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold">
+                  {stats.expiredCount ? `${stats.expiredCount} Due` : 'Active'}
+                </span>
+              ) : null}
+            </button>
+          </Tooltip>
+
+          {/* Smart Dossiers */}
+          {onOpenDossiersModal && (
+            <Tooltip content="Auto-bundle related identity, vehicle & financial packages" side="right">
+              <button
+                type="button"
+                onClick={() => handleNavClick(onOpenDossiersModal)}
+                className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+              >
+                <div className="flex items-center gap-3">
+                  <Layers className="w-4 h-4 text-blue-500" />
+                  <span>Smart Dossiers</span>
+                </div>
+                <span className="text-3xs font-mono px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold">
+                  Auto
+                </span>
+              </button>
+            </Tooltip>
+          )}
+
+          {/* Duplicate Cleaner */}
+          <Tooltip content="Find and clean duplicate files across the drive" side="right">
+            <button
+              type="button"
+              onClick={() => handleNavClick(() => setIsDedupModalOpen(true))}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+            >
+              <div className="flex items-center gap-3">
+                <Copy className="w-4 h-4 text-blue-400" />
+                <span>Clean Duplicates</span>
+              </div>
+            </button>
+          </Tooltip>
+
+          <Tooltip content="View all starred items" side="right">
+            <button
+              type="button"
+              onClick={() => handleNavClick(() => selectSection('starred'))}
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-                viewSection === 'vault'
-                  ? 'bg-amber-500 text-white font-bold shadow-md shadow-amber-500/20'
+                viewSection === 'starred'
+                  ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
                   : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
               }`}
             >
               <div className="flex items-center gap-3">
-                {isVaultUnlocked ? (
-                  <Shield className="w-4 h-4 text-amber-500 fill-amber-500/20" />
-                ) : (
-                  <Lock className="w-4 h-4 text-amber-500" />
-                )}
-                <span>Secure Vault</span>
+                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                <span>Starred</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${
-                  viewSection === 'vault' 
-                    ? 'bg-black/20 text-white' 
-                    : 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
-                }`}>
-                  {isVaultUnlocked ? 'Unlocked' : 'PIN'}
+              {stats && stats.starredCount > 0 && (
+                <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${viewSection === 'starred' ? 'bg-black/20 text-white' : 'bg-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
+                  {stats.starredCount}
                 </span>
-              </div>
+              )}
             </button>
+          </Tooltip>
+
+          <Tooltip content="Files and dossiers shared with your account" side="right">
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                openVaultModal('configure');
-              }}
-              title="Configure Vault PIN & Auto-Lock Settings"
-              aria-label="Configure Vault PIN & Auto-Lock Settings"
-              className={`absolute right-14 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-all cursor-pointer ${
-                viewSection === 'vault'
-                  ? 'text-white/80 hover:text-white hover:bg-white/20'
-                  : 'text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 opacity-60 group-hover:opacity-100'
+              onClick={() => handleNavClick(() => selectSection('shared'))}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                viewSection === 'shared'
+                  ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
+                  : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
               }`}
             >
-              <Settings className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-3">
+                <Users className="w-4 h-4 text-purple-400" />
+                <span>Shared with Me</span>
+              </div>
+              {stats && (stats.sharedWithMeCount || 0) > 0 && (
+                <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${viewSection === 'shared' ? 'bg-black/20 text-white' : 'bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400'}`}>
+                  {stats.sharedWithMeCount}
+                </span>
+              )}
             </button>
-          </div>
+          </Tooltip>
 
-          {/* Expiry Radar Item */}
-          <button
-            type="button"
-            onClick={() => handleNavClick(() => setIsExpiryRadarOpen(true))}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-          >
-            <div className="flex items-center gap-3">
-              <Calendar className="w-4 h-4 text-amber-400" />
-              <span>Expiry Radar</span>
-            </div>
-            {stats && (stats.expiringCount || stats.expiredCount) ? (
-              <span className="text-3xs font-mono px-2 py-0.5 rounded-full bg-rose-100 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold">
-                {stats.expiredCount ? `${stats.expiredCount} Due` : 'Active'}
-              </span>
-            ) : null}
-          </button>
-
-          {/* Smart Dossiers */}
-          {onOpenDossiersModal && (
+          <Tooltip content="Recycle bin (files deleted in the last 30 days)" side="right">
             <button
               type="button"
-              onClick={() => handleNavClick(onOpenDossiersModal)}
-              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+              onClick={() => handleNavClick(() => selectSection('trash'))}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                viewSection === 'trash'
+                  ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
+                  : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+              }`}
             >
               <div className="flex items-center gap-3">
-                <Layers className="w-4 h-4 text-blue-500" />
-                <span>Smart Dossiers</span>
+                <Trash2 className="w-4 h-4 text-zinc-400" />
+                <span>Trash</span>
               </div>
-              <span className="text-3xs font-mono px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold">
-                Auto
-              </span>
+              {stats && stats.trashCount > 0 && (
+                <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${viewSection === 'trash' ? 'bg-black/20 text-white' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
+                  {stats.trashCount}
+                </span>
+              )}
             </button>
-          )}
-
-          {/* Duplicate Cleaner */}
-          <button
-            type="button"
-            onClick={() => handleNavClick(() => setIsDedupModalOpen(true))}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
-          >
-            <div className="flex items-center gap-3">
-              <Copy className="w-4 h-4 text-blue-400" />
-              <span>Clean Duplicates</span>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleNavClick(() => selectSection('starred'))}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-              viewSection === 'starred'
-                ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
-                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-              <span>Starred</span>
-            </div>
-            {stats && stats.starredCount > 0 && (
-              <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${viewSection === 'starred' ? 'bg-black/20 text-white' : 'bg-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
-                {stats.starredCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleNavClick(() => selectSection('shared'))}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-              viewSection === 'shared'
-                ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
-                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Users className="w-4 h-4 text-purple-400" />
-              <span>Shared with Me</span>
-            </div>
-            {stats && (stats.sharedWithMeCount || 0) > 0 && (
-              <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${viewSection === 'shared' ? 'bg-black/20 text-white' : 'bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400'}`}>
-                {stats.sharedWithMeCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleNavClick(() => selectSection('trash'))}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-              viewSection === 'trash'
-                ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
-                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <Trash2 className="w-4 h-4 text-zinc-400" />
-              <span>Trash</span>
-            </div>
-            {stats && stats.trashCount > 0 && (
-              <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${viewSection === 'trash' ? 'bg-black/20 text-white' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400'}`}>
-                {stats.trashCount}
-              </span>
-            )}
-          </button>
+          </Tooltip>
         </nav>
 
         {/* Categories Section */}
@@ -432,26 +458,27 @@ export function DriveSidebar({
               const isSelected = viewSection === 'category' && selectedCategory === cat.id;
               const count = stats?.categoryCount[cat.id] || 0;
               return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => handleNavClick(() => selectSection('category', cat.id))}
-                  className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-                    isSelected
-                      ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold border border-zinc-300 dark:border-zinc-700'
-                      : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon className={`w-3.5 h-3.5 ${cat.color}`} />
-                    <span>{cat.label}</span>
-                  </div>
-                  {count > 0 && (
-                    <span className="text-3xs font-mono text-zinc-400">
-                      {count}
-                    </span>
-                  )}
-                </button>
+                <Tooltip key={cat.id} content={`Filter by category: ${cat.label} (${count} items)`} side="right">
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick(() => selectSection('category', cat.id))}
+                    className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold border border-zinc-300 dark:border-zinc-700'
+                        : 'text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100/70 dark:hover:bg-zinc-900/60'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon className={`w-3.5 h-3.5 ${cat.color}`} />
+                      <span>{cat.label}</span>
+                    </div>
+                    {count > 0 && (
+                      <span className="text-3xs font-mono text-zinc-400">
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                </Tooltip>
               );
             })}
           </div>
@@ -461,54 +488,62 @@ export function DriveSidebar({
       {/* Storage & Shortcuts Footer */}
       <div className="pt-4 border-t border-zinc-200/80 dark:border-zinc-800/80 space-y-3">
         {/* Storage Bar */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300">
-            <div className="flex items-center gap-1.5">
-              <PieChart className="w-3.5 h-3.5 text-rose-500" />
-              <span>Cloud Storage</span>
+        <Tooltip content={`Storage used: ${formatBytes(totalUsed)} of 100 GB (${quotaPercent}%)`} side="top">
+          <div className="space-y-1.5 cursor-help">
+            <div className="flex items-center justify-between text-xs font-bold text-zinc-700 dark:text-zinc-300">
+              <div className="flex items-center gap-1.5">
+                <PieChart className="w-3.5 h-3.5 text-rose-500" />
+                <span>Cloud Storage</span>
+              </div>
+              <span className="font-mono text-3xs text-zinc-500">{formatBytes(totalUsed)}</span>
             </div>
-            <span className="font-mono text-3xs text-zinc-500">{formatBytes(totalUsed)}</span>
+            <div className="w-full h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-rose-500 via-amber-500 to-purple-600 rounded-full"
+                style={{ width: `${quotaPercent}%` }}
+              />
+            </div>
+            <p className="text-3xs text-zinc-400 leading-tight">
+              Encrypted Multi-Device Cloud Sync.
+            </p>
           </div>
-          <div className="w-full h-1.5 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-rose-500 via-amber-500 to-purple-600 rounded-full"
-              style={{ width: `${quotaPercent}%` }}
-            />
-          </div>
-          <p className="text-3xs text-zinc-400 leading-tight">
-            Encrypted Multi-Device Cloud Sync.
-          </p>
-        </div>
+        </Tooltip>
 
         {/* Settings and Support Quick Links */}
         <div className="grid grid-cols-2 gap-1.5 pt-1">
-          <Link
-            href="/settings"
-            className="p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-center gap-1.5 text-3xs font-semibold text-zinc-600 dark:text-zinc-400 transition"
-          >
-            <Settings className="w-3.5 h-3.5 text-zinc-500" />
-            <span>Settings</span>
-          </Link>
-          <Link
-            href="/support"
-            className="p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-center gap-1.5 text-3xs font-semibold text-zinc-600 dark:text-zinc-400 transition"
-          >
-            <LifeBuoy className="w-3.5 h-3.5 text-purple-500" />
-            <span>Support</span>
-          </Link>
+          <Tooltip content="Account settings, security & preferences" side="top">
+            <Link
+              href="/settings"
+              className="p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-center gap-1.5 text-3xs font-semibold text-zinc-600 dark:text-zinc-400 transition cursor-pointer"
+            >
+              <Settings className="w-3.5 h-3.5 text-zinc-500" />
+              <span>Settings</span>
+            </Link>
+          </Tooltip>
+          <Tooltip content="Help center, documentation & contact support" side="top">
+            <Link
+              href="/support"
+              className="p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-center gap-1.5 text-3xs font-semibold text-zinc-600 dark:text-zinc-400 transition cursor-pointer"
+            >
+              <LifeBuoy className="w-3.5 h-3.5 text-purple-500" />
+              <span>Support</span>
+            </Link>
+          </Tooltip>
         </div>
 
         {/* Shortcuts Button */}
-        <button
-          onClick={() => setIsKeyboardShortcutsOpen(true)}
-          className="w-full p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-between text-3xs text-zinc-500 dark:text-zinc-400 transition cursor-pointer"
-        >
-          <div className="flex items-center gap-1.5">
-            <HelpCircle className="w-3.5 h-3.5 text-violet-500 shrink-0" />
-            <span>Keyboard Shortcuts</span>
-          </div>
-          <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 font-mono text-3xs">?</kbd>
-        </button>
+        <Tooltip content="Keyboard Shortcuts Cheatsheet" shortcut="?" side="top">
+          <button
+            onClick={() => setIsKeyboardShortcutsOpen(true)}
+            className="w-full p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-between text-3xs text-zinc-500 dark:text-zinc-400 transition cursor-pointer"
+          >
+            <div className="flex items-center gap-1.5">
+              <HelpCircle className="w-3.5 h-3.5 text-violet-500 shrink-0" />
+              <span>Keyboard Shortcuts</span>
+            </div>
+            <kbd className="px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 font-mono text-3xs">?</kbd>
+          </button>
+        </Tooltip>
       </div>
     </aside>
   );

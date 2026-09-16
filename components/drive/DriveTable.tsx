@@ -8,6 +8,7 @@ import { DriveContextMenu } from './DriveContextMenu';
 import { DriveMobileActionSheet } from './DriveMobileActionSheet';
 import { DriveThumbnail } from './DriveThumbnail';
 import { triggerHaptic } from '@/lib/drive/haptics';
+import { Tooltip } from './DriveTooltip';
 import {
   Folder,
   FileText,
@@ -130,32 +131,36 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
               {/* Master Tri-State Checkbox Column */}
               <th className="w-10 px-3 py-3 text-center relative">
                 <div className="flex items-center justify-center gap-1">
-                  <input
-                    ref={headerCheckboxRef}
-                    type="checkbox"
-                    checked={isAllSelected}
-                    onChange={() => {
-                      triggerHaptic('selection');
-                      if (isAllSelected || isSomeSelected) {
-                        clearSelection();
-                      } else {
-                        selectAll();
-                      }
-                    }}
-                    title={isAllSelected ? 'Deselect All' : 'Select All'}
-                    className="w-4 h-4 rounded-sm border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500 cursor-pointer accent-rose-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setHeaderMenuOpen(!headerMenuOpen);
-                    }}
-                    className="p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
-                    title="Selection Options"
-                  >
-                    <ChevronDown className="w-3 h-3" />
-                  </button>
+                  <Tooltip content={isAllSelected ? 'Deselect All' : 'Select All'} shortcut="⌘A" side="bottom">
+                    <input
+                      ref={headerCheckboxRef}
+                      type="checkbox"
+                      checked={isAllSelected}
+                      onChange={() => {
+                        triggerHaptic('selection');
+                        if (isAllSelected || isSomeSelected) {
+                          clearSelection();
+                        } else {
+                          selectAll();
+                        }
+                      }}
+                      aria-label={isAllSelected ? 'Deselect All' : 'Select All'}
+                      className="w-4 h-4 rounded-sm border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500 cursor-pointer accent-rose-500"
+                    />
+                  </Tooltip>
+                  <Tooltip content="Selection options" side="bottom">
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setHeaderMenuOpen(!headerMenuOpen);
+                      }}
+                      className="p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+                      aria-label="Selection Options"
+                    >
+                      <ChevronDown className="w-3 h-3" />
+                    </button>
+                  </Tooltip>
                 </div>
 
                 {headerMenuOpen && (
@@ -216,7 +221,9 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
 
               {/* Star Column */}
               <th className="w-8 px-2 py-3 text-center">
-                <Star className="w-3.5 h-3.5 text-zinc-400 inline" />
+                <Tooltip content="Starred files and folders" side="bottom">
+                  <Star className="w-3.5 h-3.5 text-zinc-400 inline" />
+                </Tooltip>
               </th>
 
               {/* Name Column */}
@@ -224,10 +231,12 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                 onClick={() => handleSort('name')}
                 className="px-4 py-3 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
-                <div className="flex items-center gap-1.5">
-                  <span>Name</span>
-                  <ArrowUpDown className="w-3 h-3 text-zinc-400" />
-                </div>
+                <Tooltip content="Sort by file/folder name" side="bottom">
+                  <div className="flex items-center gap-1.5">
+                    <span>Name</span>
+                    <ArrowUpDown className="w-3 h-3 text-zinc-400" />
+                  </div>
+                </Tooltip>
               </th>
 
               {/* Category / Type Column */}
@@ -235,10 +244,12 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                 onClick={() => handleSort('category')}
                 className="hidden md:table-cell px-4 py-3 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
-                <div className="flex items-center gap-1.5">
-                  <span>Type</span>
-                  <ArrowUpDown className="w-3 h-3 text-zinc-400" />
-                </div>
+                <Tooltip content="Sort by file category" side="bottom">
+                  <div className="flex items-center gap-1.5">
+                    <span>Type</span>
+                    <ArrowUpDown className="w-3 h-3 text-zinc-400" />
+                  </div>
+                </Tooltip>
               </th>
 
               {/* Last Modified Column */}
@@ -246,10 +257,12 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                 onClick={() => handleSort('updatedAt')}
                 className="hidden sm:table-cell px-4 py-3 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors"
               >
-                <div className="flex items-center gap-1.5">
-                  <span>Last Modified</span>
-                  <ArrowUpDown className="w-3 h-3 text-zinc-400" />
-                </div>
+                <Tooltip content="Sort by last modified date" side="bottom">
+                  <div className="flex items-center gap-1.5">
+                    <span>Last Modified</span>
+                    <ArrowUpDown className="w-3 h-3 text-zinc-400" />
+                  </div>
+                </Tooltip>
               </th>
 
               {/* Size Column */}
@@ -257,10 +270,12 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                 onClick={() => handleSort('size')}
                 className="px-4 py-3 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors text-right"
               >
-                <div className="flex items-center justify-end gap-1.5">
-                  <span>Size</span>
-                  <ArrowUpDown className="w-3 h-3 text-zinc-400" />
-                </div>
+                <Tooltip content="Sort by storage size" side="bottom">
+                  <div className="flex items-center justify-end gap-1.5">
+                    <span>Size</span>
+                    <ArrowUpDown className="w-3 h-3 text-zinc-400" />
+                  </div>
+                </Tooltip>
               </th>
 
               {/* Actions Column */}
@@ -292,36 +307,42 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                 >
                   {/* Row Checkbox */}
                   <td className="px-3 py-3 text-center" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => {
-                        triggerHaptic('selection');
-                        toggleSelect(item.id, true);
-                      }}
-                      className="w-4 h-4 rounded-sm border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500 cursor-pointer accent-rose-500"
-                    />
+                    <Tooltip content={isSelected ? 'Deselect item' : 'Select item'} side="right">
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {
+                          triggerHaptic('selection');
+                          toggleSelect(item.id, true);
+                        }}
+                        aria-label={isSelected ? 'Deselect item' : 'Select item'}
+                        className="w-4 h-4 rounded-sm border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500 cursor-pointer accent-rose-500"
+                      />
+                    </Tooltip>
                   </td>
 
                   {/* Star Toggle */}
                   <td className="px-2 py-3 text-center">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        triggerHaptic('selection');
-                        toggleStar(item.id);
-                      }}
-                      className="p-1 rounded-md text-zinc-300 dark:text-zinc-600 hover:text-amber-400"
-                    >
-                      <Star
-                        className={`w-3.5 h-3.5 ${
-                          item.isStarred
-                            ? 'text-amber-400 fill-amber-400'
-                            : 'text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-400'
-                        }`}
-                      />
-                    </button>
+                    <Tooltip content={item.isStarred ? 'Remove from Starred' : 'Add to Starred'} side="top">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          triggerHaptic('selection');
+                          toggleStar(item.id);
+                        }}
+                        aria-label={item.isStarred ? 'Unstar item' : 'Star item'}
+                        className="p-1 rounded-md text-zinc-300 dark:text-zinc-600 hover:text-amber-400 cursor-pointer"
+                      >
+                        <Star
+                          className={`w-3.5 h-3.5 ${
+                            item.isStarred
+                              ? 'text-amber-400 fill-amber-400'
+                              : 'text-zinc-300 dark:text-zinc-600 group-hover:text-zinc-400'
+                          }`}
+                        />
+                      </button>
+                    </Tooltip>
                   </td>
 
                   {/* Name + Icon + Tags + Status */}
@@ -339,23 +360,29 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                       <div className="shrink-0 relative">
                         <DriveThumbnail item={item} view="table" />
                         {item.isVault && (
-                          <div className="absolute -top-1 -right-1 p-0.5 rounded-full bg-amber-500 text-white z-10">
-                            <Lock className="w-2 h-2" />
-                          </div>
+                          <Tooltip content="Protected in Secure PIN Vault" side="top">
+                            <div className="absolute -top-1 -right-1 p-0.5 rounded-full bg-amber-500 text-white z-10 shadow-xs">
+                              <Lock className="w-2 h-2" />
+                            </div>
+                          </Tooltip>
                         )}
                       </div>
                       <div className="min-w-0">
                         <div className="font-bold text-zinc-900 dark:text-zinc-100 truncate flex items-center gap-2">
                           <span>{item.name}</span>
                           {item.expiryStatus === 'expired' && (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/30">
-                              Expired
-                            </span>
+                            <Tooltip content="⚠️ Document has expired / renewal is overdue" side="top">
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/30 cursor-help">
+                                Expired
+                              </span>
+                            </Tooltip>
                           )}
                           {item.expiryStatus === 'expiring_soon' && (
-                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30">
-                              {item.expiryDaysLeft}d
-                            </span>
+                            <Tooltip content={`⚠️ Document expiring soon (${item.expiryDaysLeft} days remaining)`} side="top">
+                              <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30 cursor-help">
+                                {item.expiryDaysLeft}d
+                              </span>
+                            </Tooltip>
                           )}
                         </div>
 
@@ -374,17 +401,18 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                         {item.tags && item.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 pt-1">
                             {item.tags.slice(0, 3).map((tag) => (
-                              <button
-                                key={tag}
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setSelectedTag(tag);
-                                }}
-                                className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[9px] font-bold hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors"
-                              >
-                                #{tag}
-                              </button>
+                              <Tooltip key={tag} content={`Filter files with #${tag}`} side="top">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setSelectedTag(tag);
+                                  }}
+                                  className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[9px] font-bold hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                                >
+                                  #{tag}
+                                </button>
+                              </Tooltip>
                             ))}
                             {item.tags.length > 3 && (
                               <span className="text-[9px] text-zinc-400 font-bold self-center">
@@ -414,14 +442,16 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
 
                   {/* 3-Dot Context Trigger */}
                   <td className="px-4 py-3 text-center">
-                    <button
-                      type="button"
-                      onClick={(e) => handleOpenItemOptions(item, e)}
-                      className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-pointer"
-                      title="Item Options"
-                    >
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
+                    <Tooltip content="More actions (Tools, Share, Rename, Trash)" side="left">
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenItemOptions(item, e)}
+                        className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-pointer"
+                        aria-label="Item Options"
+                      >
+                        <MoreVertical className="w-4 h-4" />
+                      </button>
+                    </Tooltip>
                   </td>
                 </tr>
               );

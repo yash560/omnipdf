@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useDrive } from '@/lib/drive/drive-context';
 import { DriveSearchDropdown } from './DriveSearchDropdown';
+import { Tooltip } from './DriveTooltip';
 import {
   Search,
   X,
@@ -278,31 +279,35 @@ export function DriveToolbar({
         {/* Quick Tools on Top Row: Chat + Filters */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           {/* Chat with Folder / AI RAG */}
-          <button
-            type="button"
-            onClick={() => setIsFolderChatOpen(true)}
-            className="inline-flex items-center justify-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/40 hover:bg-violet-100 dark:hover:bg-violet-900/60 border border-violet-200/80 dark:border-violet-800/60 text-xs font-bold text-violet-700 dark:text-violet-300 transition-all cursor-pointer shadow-2xs shrink-0"
-            title="Chat with AI about files in this folder"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-violet-500 shrink-0" />
-            <span className="hidden sm:inline">Folder AI Chat</span>
-          </button>
+          <Tooltip content="Chat with Gemini AI across all documents in this folder" side="bottom">
+            <button
+              type="button"
+              onClick={() => setIsFolderChatOpen(true)}
+              className="inline-flex items-center justify-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/40 hover:bg-violet-100 dark:hover:bg-violet-900/60 border border-violet-200/80 dark:border-violet-800/60 text-xs font-bold text-violet-700 dark:text-violet-300 transition-all cursor-pointer shadow-2xs shrink-0"
+              aria-label="Folder AI Chat"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-violet-500 shrink-0" />
+              <span className="hidden sm:inline">Folder AI Chat</span>
+            </button>
+          </Tooltip>
 
           {/* Fast Filters Toggle */}
           {onToggleFastFilters && (
-            <button
-              type="button"
-              onClick={onToggleFastFilters}
-              className={`inline-flex items-center justify-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer shrink-0 ${
-                showFastFilters
-                  ? 'bg-blue-500 text-white border-blue-600 shadow-xs'
-                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
-              }`}
-              title="Toggle Fast Person/Vehicle Filters"
-            >
-              <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">Filters</span>
-            </button>
+            <Tooltip content="Toggle People, Vehicles & AI Category Quick Filters" side="bottom">
+              <button
+                type="button"
+                onClick={onToggleFastFilters}
+                className={`inline-flex items-center justify-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer shrink-0 ${
+                  showFastFilters
+                    ? 'bg-blue-500 text-white border-blue-600 shadow-xs'
+                    : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
+                }`}
+                aria-label="Toggle Fast Filters"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Filters</span>
+              </button>
+            </Tooltip>
           )}
         </div>
 
@@ -310,60 +315,65 @@ export function DriveToolbar({
         <div className="hidden md:flex items-center gap-1.5 shrink-0">
           {/* Secure Vault Status Toggle */}
           <div className="inline-flex items-center gap-1">
-            <button
-              type="button"
-              onClick={() => {
-                if (isVaultUnlocked) lockVault();
-                else openVaultModal('unlock');
-              }}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
-                isVaultUnlocked
-                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold'
-                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'
-              }`}
-              title={isVaultUnlocked ? 'Vault is Unlocked. Click to Lock Now.' : 'Unlock Secure Vault with PIN'}
-            >
-              {isVaultUnlocked ? (
-                <>
-                  <Unlock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                  <span className="hidden xl:inline">Vault Unlocked</span>
-                </>
-              ) : (
-                <>
-                  <Lock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                  <span className="hidden xl:inline">Vault Locked</span>
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={() => openVaultModal('configure')}
-              className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
-              title="Configure Vault PIN & Security Settings"
-              aria-label="Configure Vault PIN & Security Settings"
-            >
-              <Settings className="w-3.5 h-3.5" />
-            </button>
+            <Tooltip content={isVaultUnlocked ? 'Lock Secure PIN Vault now' : 'Unlock Secure PIN Vault to view protected documents'} side="bottom">
+              <button
+                type="button"
+                onClick={() => {
+                  if (isVaultUnlocked) lockVault();
+                  else openVaultModal('unlock');
+                }}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                  isVaultUnlocked
+                    ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold'
+                    : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'
+                }`}
+                aria-label={isVaultUnlocked ? 'Lock Secure Vault' : 'Unlock Secure Vault'}
+              >
+                {isVaultUnlocked ? (
+                  <>
+                    <Unlock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                    <span className="hidden xl:inline">Vault Unlocked</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                    <span className="hidden xl:inline">Vault Locked</span>
+                  </>
+                )}
+              </button>
+            </Tooltip>
+            <Tooltip content="Configure Vault PIN & auto-lock timeout" side="bottom">
+              <button
+                type="button"
+                onClick={() => openVaultModal('configure')}
+                className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                aria-label="Configure Vault PIN & Security Settings"
+              >
+                <Settings className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
           </div>
 
           {/* Master Select Dropdown Menu */}
           <div className="relative">
-            <button
-              type="button"
-              onClick={() => setSelectDropdownOpen(!selectDropdownOpen)}
-              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
-                hasSelection
-                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-bold'
-                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
-              }`}
-              title="Select items (All, Files, Folders, Starred, PDFs, etc.)"
-            >
-              <CheckSquare className="w-3.5 h-3.5 shrink-0" />
-              <span>
-                {hasSelection ? `${selectedIds.length} Selected` : 'Select'}
-              </span>
-              <ChevronDown className="w-3 h-3 text-zinc-400 shrink-0" />
-            </button>
+            <Tooltip content="Select All, Files Only, Folders Only, or Invert selection" shortcut="⌘A" side="bottom">
+              <button
+                type="button"
+                onClick={() => setSelectDropdownOpen(!selectDropdownOpen)}
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                  hasSelection
+                    ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-bold'
+                    : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
+                }`}
+                aria-label="Selection Modes"
+              >
+                <CheckSquare className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  {hasSelection ? `${selectedIds.length} Selected` : 'Select'}
+                </span>
+                <ChevronDown className="w-3 h-3 text-zinc-400 shrink-0" />
+              </button>
+            </Tooltip>
 
             {selectDropdownOpen && (
               <>
@@ -536,18 +546,20 @@ export function DriveToolbar({
 
           {/* Sort Dropdown */}
           <div className="relative">
-            <button
-              type="button"
-              onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
-              title="Sort items"
-            >
-              <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-              <span className="hidden xl:inline text-zinc-400 font-normal">Sort:</span>
-              <span className="truncate max-w-[100px] sm:max-w-[120px]">
-                {sortOptions.find((s) => s.field === sortOption.field && s.order === sortOption.order)?.label || 'Name'}
-              </span>
-            </button>
+            <Tooltip content="Sort drive items by name, date, size, or expiry" side="bottom">
+              <button
+                type="button"
+                onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+                aria-label="Sort items"
+              >
+                <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <span className="hidden xl:inline text-zinc-400 font-normal">Sort:</span>
+                <span className="truncate max-w-[100px] sm:max-w-[120px]">
+                  {sortOptions.find((s) => s.field === sortOption.field && s.order === sortOption.order)?.label || 'Name'}
+                </span>
+              </button>
+            </Tooltip>
 
             {sortDropdownOpen && (
               <>
@@ -583,42 +595,48 @@ export function DriveToolbar({
 
           {/* Grid vs List vs Columns View Toggle */}
           <div className="flex items-center p-0.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
-            <button
-              type="button"
-              onClick={() => setViewLayout('grid')}
-              title="Grid View"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                viewLayout === 'grid'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
-                  : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
-              }`}
-            >
-              <LayoutGrid className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewLayout('list')}
-              title="List View"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                viewLayout === 'list'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
-                  : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
-              }`}
-            >
-              <List className="w-3.5 h-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewLayout('columns')}
-              title="Cascading Columns View"
-              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
-                viewLayout === 'columns'
-                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
-                  : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
-              }`}
-            >
-              <Columns3 className="w-3.5 h-3.5" />
-            </button>
+            <Tooltip content="Grid View (Thumbnails & Cards)" side="bottom">
+              <button
+                type="button"
+                onClick={() => setViewLayout('grid')}
+                aria-label="Grid View"
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                  viewLayout === 'grid'
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
+                    : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+                }`}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Table / List View (Columns & Metadata)" side="bottom">
+              <button
+                type="button"
+                onClick={() => setViewLayout('list')}
+                aria-label="List View"
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                  viewLayout === 'list'
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
+                    : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+                }`}
+              >
+                <List className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
+            <Tooltip content="Miller Columns View (Hierarchical Tree)" side="bottom">
+              <button
+                type="button"
+                onClick={() => setViewLayout('columns')}
+                aria-label="Cascading Columns View"
+                className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                  viewLayout === 'columns'
+                    ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
+                    : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+                }`}
+              >
+                <Columns3 className="w-3.5 h-3.5" />
+              </button>
+            </Tooltip>
           </div>
         </div>
       </div>
@@ -1004,154 +1022,178 @@ export function DriveToolbar({
             <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 py-0.5">
               {/* 1-Click PDF Merge if 2+ PDFs are selected */}
               {selectedPdfCount >= 2 && viewSection !== 'trash' && (
-                <button
-                  type="button"
-                  onClick={handleMergePdfs}
-                  disabled={isMergingPdfs}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0 disabled:opacity-50"
-                  title="Merge selected PDF files into one document"
-                >
-                  {isMergingPdfs ? (
-                    <RotateCcw className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <Layers className="w-3.5 h-3.5" />
-                  )}
-                  <span>Merge {selectedPdfCount} PDFs</span>
-                </button>
+                <Tooltip content={`Merge ${selectedPdfCount} selected PDFs into a single document`} side="bottom">
+                  <button
+                    type="button"
+                    onClick={handleMergePdfs}
+                    disabled={isMergingPdfs}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0 disabled:opacity-50"
+                    aria-label="Merge selected PDFs"
+                  >
+                    {isMergingPdfs ? (
+                      <RotateCcw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Layers className="w-3.5 h-3.5" />
+                    )}
+                    <span>Merge {selectedPdfCount} PDFs</span>
+                  </button>
+                </Tooltip>
               )}
 
               {/* Copy Selected Info / Names to Clipboard */}
-              <button
-                type="button"
-                onClick={handleCopyInfo}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                title="Copy names and details of selected items to clipboard"
-              >
-                {copiedFeedback ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5 text-zinc-500" />
-                    <span className="hidden md:inline">Copy Info</span>
-                  </>
-                )}
-              </button>
+              <Tooltip content="Copy details of selected items to clipboard" side="bottom">
+                <button
+                  type="button"
+                  onClick={handleCopyInfo}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                  aria-label="Copy item info"
+                >
+                  {copiedFeedback ? (
+                    <>
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                      <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5 text-zinc-500" />
+                      <span className="hidden md:inline">Copy Info</span>
+                    </>
+                  )}
+                </button>
+              </Tooltip>
 
               {viewSection === 'trash' ? (
                 <>
-                  <button
-                    type="button"
-                    onClick={restoreSelected}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                    title="Restore selected items"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    <span>Restore</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={deleteSelectedPermanently}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                    title="Delete selected items permanently"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Delete Forever</span>
-                  </button>
+                  <Tooltip content="Restore selected items from recycle bin" side="bottom">
+                    <button
+                      type="button"
+                      onClick={restoreSelected}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      aria-label="Restore selected"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Restore</span>
+                    </button>
+                  </Tooltip>
+                  <Tooltip content="⚠️ Permanently delete selected items forever" side="bottom">
+                    <button
+                      type="button"
+                      onClick={deleteSelectedPermanently}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      aria-label="Permanently delete forever"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Delete Forever</span>
+                    </button>
+                  </Tooltip>
                 </>
               ) : (
                 <>
                   {/* Download ZIP */}
-                  <button
-                    type="button"
-                    onClick={() => bulkDownloadZip()}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                    title="Download selected as ZIP"
-                  >
-                    <Download className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="hidden md:inline">ZIP</span>
-                  </button>
+                  <Tooltip content="Download selected items as ZIP" side="bottom">
+                    <button
+                      type="button"
+                      onClick={() => bulkDownloadZip()}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      aria-label="Download selected as ZIP"
+                    >
+                      <Download className="w-3.5 h-3.5 text-emerald-500" />
+                      <span className="hidden md:inline">ZIP</span>
+                    </button>
+                  </Tooltip>
 
                   {/* Star All */}
-                  <button
-                    type="button"
-                    onClick={() => triggerBatchAction('star')}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                    title="Star selected items"
-                  >
-                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                    <span className="hidden sm:inline">Star</span>
-                  </button>
+                  <Tooltip content="Star all selected items" side="bottom">
+                    <button
+                      type="button"
+                      onClick={() => triggerBatchAction('star')}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      aria-label="Star selected"
+                    >
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      <span className="hidden sm:inline">Star</span>
+                    </button>
+                  </Tooltip>
 
                   {/* Unstar All */}
-                  <button
-                    type="button"
-                    onClick={() => triggerBatchAction('unstar')}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-600 dark:text-zinc-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                    title="Unstar selected items"
-                  >
-                    <StarOff className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Unstar</span>
-                  </button>
+                  <Tooltip content="Unstar all selected items" side="bottom">
+                    <button
+                      type="button"
+                      onClick={() => triggerBatchAction('unstar')}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-600 dark:text-zinc-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      aria-label="Unstar selected"
+                    >
+                      <StarOff className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Unstar</span>
+                    </button>
+                  </Tooltip>
 
                   {/* Lock in Vault */}
                   {viewSection !== 'vault' && (
-                    <button
-                      type="button"
-                      onClick={() => triggerBatchAction('vault')}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-amber-50 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                      title="Lock selected items in Secure Vault"
-                    >
-                      <Lock className="w-3.5 h-3.5" />
-                      <span className="hidden lg:inline">Vault</span>
-                    </button>
+                    <Tooltip content="Lock selected items in Secure PIN Vault" side="bottom">
+                      <button
+                        type="button"
+                        onClick={() => triggerBatchAction('vault')}
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-amber-50 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                        aria-label="Lock in Vault"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        <span className="hidden lg:inline">Vault</span>
+                      </button>
+                    </Tooltip>
                   )}
 
                   {/* Unlock from Vault */}
-                  <button
-                    type="button"
-                    onClick={() => triggerBatchAction('unvault')}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-emerald-50 text-emerald-600 dark:text-emerald-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                    title="Unlock / Remove from Secure Vault"
-                  >
-                    <Unlock className="w-3.5 h-3.5" />
-                    <span className="hidden lg:inline">Unlock</span>
-                  </button>
+                  <Tooltip content="Unlock / Remove selected items from Secure Vault" side="bottom">
+                    <button
+                      type="button"
+                      onClick={() => triggerBatchAction('unvault')}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-emerald-50 text-emerald-600 dark:text-emerald-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      aria-label="Unlock from Vault"
+                    >
+                      <Unlock className="w-3.5 h-3.5" />
+                      <span className="hidden lg:inline">Unlock</span>
+                    </button>
+                  </Tooltip>
 
                   {/* AI Auto-Label */}
-                  <button
-                    type="button"
-                    onClick={() => triggerAutoLabel(selectedIds)}
-                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                    title="Auto-label selected items with AI"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-purple-500" />
-                    <span className="hidden xl:inline">AI Label</span>
-                  </button>
+                  <Tooltip content="Auto-label selected items with AI metadata & tags" side="bottom">
+                    <button
+                      type="button"
+                      onClick={() => triggerAutoLabel(selectedIds)}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      aria-label="AI Auto-Label"
+                    >
+                      <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                      <span className="hidden xl:inline">AI Label</span>
+                    </button>
+                  </Tooltip>
 
                   {/* Move */}
-                  <button
-                    type="button"
-                    onClick={onOpenMoveModal}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                    title="Move to folder..."
-                  >
-                    <FolderInput className="w-3.5 h-3.5 text-blue-500" />
-                    <span>Move</span>
-                  </button>
+                  <Tooltip content="Move selected items to a folder..." side="bottom">
+                    <button
+                      type="button"
+                      onClick={onOpenMoveModal}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      aria-label="Move to folder"
+                    >
+                      <FolderInput className="w-3.5 h-3.5 text-blue-500" />
+                      <span>Move</span>
+                    </button>
+                  </Tooltip>
 
                   {/* Move to Trash */}
-                  <button
-                    type="button"
-                    onClick={trashSelected}
-                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-rose-50 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
-                    title="Move selected items to Trash"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Trash</span>
-                  </button>
+                  <Tooltip content="Move selected items to Trash" side="bottom">
+                    <button
+                      type="button"
+                      onClick={trashSelected}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-rose-50 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      aria-label="Move to Trash"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Trash</span>
+                    </button>
+                  </Tooltip>
                 </>
               )}
             </div>

@@ -27,8 +27,9 @@ import { DriveRelatedItems } from './DriveRelatedItems';
 import { DriveThumbnail } from './DriveThumbnail';
 
 export function DriveDetailsDrawer() {
-  const { detailsItem, setDetailsItem, changeFolderColor, openShareModal, openQuickTools } = useDrive();
+  const { detailsItem, setDetailsItem, changeFolderColor, openShareModal, openQuickTools, openFolderChat } = useDrive();
   const { openDrawer, setActiveFile } = useAI();
+
   const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'activity'>('details');
 
   const [comments, setComments] = useState<DriveComment[]>([]);
@@ -186,21 +187,24 @@ export function DriveDetailsDrawer() {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-rose-500" />
                 <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
-                  TheWebVale AI File Intelligence
+                  {isFolder ? 'Folder AI Multi-Doc RAG' : 'TheWebVale AI File Intelligence'}
                 </span>
               </div>
               <p className="text-[11px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
-                Instantly extract structured metrics, formulas, or audit clauses.
+                {isFolder 
+                  ? 'Ask questions, summarize documents, or extract renewal dates across this folder.' 
+                  : 'Instantly extract structured metrics, formulas, or audit clauses.'}
               </p>
               <button
                 type="button"
-                onClick={handleAskAI}
-                className="w-full py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-purple-600 hover:from-rose-600 hover:to-purple-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                onClick={isFolder ? () => openFolderChat(detailsItem) : handleAskAI}
+                className="w-full py-1.5 rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
-                <Bot className="w-3.5 h-3.5" />
-                <span>Chat with this File</span>
+                {isFolder ? <Sparkles className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+                <span>{isFolder ? 'Chat with this Folder' : 'Chat with this File'}</span>
               </button>
             </div>
+
 
             {/* Folder Color Picker */}
             {isFolder && (

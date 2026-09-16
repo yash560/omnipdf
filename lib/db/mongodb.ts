@@ -1,26 +1,32 @@
 import { MongoClient, Db } from 'mongodb';
 
-const MONGO_URI = 
-  process.env.MONGODB_URI || 
-  process.env.MONGO_URI || 
-  process.env.THEWEBVALE_MONGO_URI || 
-  '';
-
-const DB_NAME = process.env.MONGODB_DB || 'thewebvale';
-
 let cachedClient: MongoClient | null = null;
 let cachedDb: Db | null = null;
+
+function getMongoUri(): string {
+  return (
+    process.env.MONGODB_URI ||
+    process.env.MONGO_URI ||
+    process.env.THEWEBVALE_MONGO_URI ||
+    ''
+  );
+}
+
+function getDbName(): string {
+  return process.env.MONGODB_DB || 'thewebvale';
+}
 
 export async function getMongoClient(): Promise<MongoClient> {
   if (cachedClient) {
     return cachedClient;
   }
 
-  if (!MONGO_URI) {
+  const uri = getMongoUri();
+  if (!uri) {
     throw new Error('[FileCraft DB] Missing MONGODB_URI environment variable.');
   }
 
-  const client = new MongoClient(MONGO_URI, {
+  const client = new MongoClient(uri, {
     maxPoolSize: 10,
     serverSelectionTimeoutMS: 5000,
     socketTimeoutMS: 45000,
@@ -37,7 +43,7 @@ export async function getMongoDb(): Promise<Db> {
   }
 
   const client = await getMongoClient();
-  const db = client.db(DB_NAME);
+  const db = client.db(getDbName());
   cachedDb = db;
   return db;
 }
