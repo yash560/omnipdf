@@ -95,17 +95,19 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Folders Section */}
       {folders.length > 0 && (
         <div className="space-y-3">
-          <div className="text-3xs font-black uppercase tracking-wider text-zinc-400">
-            Folders ({folders.length})
+          <div className="flex items-center justify-between">
+            <span className="text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
+              Folders ({folders.length})
+            </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3.5">
             {folders.map((folder) => {
               const isSelected = selectedIds.includes(folder.id);
-              const colorConfig = FOLDER_COLORS[folder.color || 'default'];
+              const colorConfig = FOLDER_COLORS[folder.color || 'default'] || FOLDER_COLORS.default;
               const isDragTarget = dragOverFolderId === folder.id;
 
               return (
@@ -119,47 +121,46 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                   onClick={(e) => toggleSelect(folder.id, e.shiftKey || e.metaKey || e.ctrlKey)}
                   onDoubleClick={() => navigateToFolder(folder.id)}
                   onContextMenu={(e) => handleContextMenu(e, folder)}
-                  className={`group relative p-3.5 rounded-2xl border transition-all select-none cursor-pointer flex flex-col justify-between min-h-[92px] ${
+                  className={`group relative p-3 sm:p-3.5 rounded-2xl border transition-all select-none cursor-pointer flex items-center justify-between gap-3 ${
                     isDragTarget
-                      ? 'border-rose-500 bg-rose-500/10 ring-4 ring-rose-500/30 scale-105 shadow-xl'
+                      ? 'border-rose-500 bg-rose-500/10 ring-4 ring-rose-500/30 scale-[1.02] shadow-xl'
                       : isSelected
-                      ? 'border-rose-500 bg-rose-500/10 dark:bg-rose-950/20 ring-2 ring-rose-500/20 shadow-md'
-                      : 'border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-2xs hover:shadow-sm'
+                      ? 'border-rose-500 bg-rose-500/10 dark:bg-rose-950/25 ring-2 ring-rose-500/20 shadow-md'
+                      : 'border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/90 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-2xs hover:shadow-sm'
                   }`}
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className={`p-2 rounded-xl ${colorConfig.bgClass} ${colorConfig.textClass} shrink-0`}>
-                        <Folder className="w-5 h-5 fill-current" />
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className={`p-2 rounded-xl ${colorConfig.bgClass} ${colorConfig.textClass} shrink-0`}>
+                      <Folder className="w-5 h-5 fill-current" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-xs text-zinc-900 dark:text-zinc-100 truncate group-hover:text-rose-500 transition-colors">
+                        {folder.name}
                       </div>
-                      <div className="min-w-0">
-                        <div className="font-bold text-xs text-zinc-900 dark:text-zinc-100 truncate group-hover:text-rose-500 transition-colors">
-                          {folder.name}
-                        </div>
-                        <div className="text-3xs text-zinc-400">
-                          {folder.itemCount !== undefined ? `${folder.itemCount} items` : 'Folder'}
-                        </div>
+                      <div className="text-3xs text-zinc-400 font-mono">
+                        {folder.itemCount !== undefined ? `${folder.itemCount} items` : 'Folder'}
                       </div>
                     </div>
+                  </div>
 
-                    <div className="flex items-center">
-                      {folder.isVault && (
-                        <div className="p-1 text-amber-500" title="Secure Vault Item">
-                          <Lock className="w-3.5 h-3.5" />
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setContextItem(folder);
-                          setContextPos({ x: e.clientX, y: e.clientY });
-                        }}
-                        className="p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-opacity"
-                      >
-                        <MoreVertical className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {folder.isVault && (
+                      <div className="p-1 text-amber-500" title="Secure Vault Protected">
+                        <Lock className="w-3.5 h-3.5" />
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setContextItem(folder);
+                        setContextPos({ x: e.clientX, y: e.clientY });
+                      }}
+                      className="p-1 rounded-lg sm:opacity-0 group-hover:opacity-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-opacity cursor-pointer"
+                      title="Folder Options"
+                    >
+                      <MoreVertical className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               );
@@ -171,10 +172,12 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
       {/* Files Section */}
       {files.length > 0 && (
         <div className="space-y-3">
-          <div className="text-3xs font-black uppercase tracking-wider text-zinc-400">
-            Files ({files.length})
+          <div className="flex items-center justify-between">
+            <span className="text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
+              Files ({files.length})
+            </span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
             {files.map((file) => {
               const isSelected = selectedIds.includes(file.id);
 

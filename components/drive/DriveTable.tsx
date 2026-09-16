@@ -78,9 +78,15 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
   };
 
   return (
-    <div className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 overflow-hidden shadow-2xs">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs text-zinc-800 dark:text-zinc-200">
+    <div 
+      data-lenis-prevent
+      className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 overflow-hidden shadow-2xs"
+    >
+      <div 
+        className="overflow-x-auto" 
+        style={{ touchAction: 'pan-x pan-y', WebkitOverflowScrolling: 'touch' }}
+      >
+        <table className="w-full text-left text-xs text-zinc-800 dark:text-zinc-200 min-w-[580px]">
           <thead className="bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200/80 dark:border-zinc-800 text-3xs font-extrabold uppercase tracking-wider text-zinc-400 select-none">
             <tr>
               <th className="w-10 px-4 py-3 text-center">

@@ -28,8 +28,8 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
   if (selectedCount < 2) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 animate-in slide-in-from-bottom-6 duration-200">
-      <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-900/90 dark:bg-zinc-800/90 backdrop-blur-xl border border-white/10 shadow-2xl text-white">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-6 duration-200 max-w-[95vw]">
+      <div className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-zinc-900/95 dark:bg-zinc-800/95 backdrop-blur-xl border border-white/10 shadow-2xl text-white overflow-x-auto no-scrollbar">
         {/* Selection Count */}
         <div className="flex items-center gap-2 pr-3 border-r border-zinc-700/60 text-xs font-semibold">
           <CheckSquare className="w-4 h-4 text-rose-400" />
