@@ -194,9 +194,9 @@ export function CloudShareModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-modal-backdrop">
         <div
-          className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 overflow-hidden max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-150"
+          className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 overflow-hidden max-h-[90vh] flex flex-col animate-modal-pop"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -220,7 +220,7 @@ export function CloudShareModal({
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="p-1.5 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors btn-press cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -230,7 +230,7 @@ export function CloudShareModal({
           <div className="my-4 space-y-4 overflow-y-auto flex-1 pr-1 text-xs">
             {/* If Link is already generated */}
             {generatedLink ? (
-              <div className="space-y-4 animate-in fade-in duration-200">
+              <div className="space-y-4 animate-modal-pop">
                 <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-300 space-y-2">
                   <div className="flex items-center gap-2 font-bold text-sm">
                     <ShieldCheck className="w-5 h-5 text-emerald-500" />
@@ -255,7 +255,7 @@ export function CloudShareModal({
                     />
                     <button
                       onClick={handleCopyLink}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer shrink-0 active:scale-95"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm transition-all cursor-pointer shrink-0 btn-press"
                     >
                       {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                       <span>{copied ? 'Copied!' : 'Copy'}</span>
@@ -267,7 +267,7 @@ export function CloudShareModal({
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     onClick={handleWhatsAppShare}
-                    className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-95"
+                    className="p-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs btn-press"
                   >
                     <MessageCircle className="w-4 h-4" />
                     <span>Share on WhatsApp</span>
@@ -277,7 +277,7 @@ export function CloudShareModal({
                     href={generatedLink}
                     target="_blank"
                     rel="noreferrer"
-                    className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                    className="p-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs btn-press"
                   >
                     <ExternalLink className="w-4 h-4" />
                     <span>Test in New Tab</span>
@@ -293,7 +293,7 @@ export function CloudShareModal({
                         navigator.clipboard.writeText(passcode);
                         alert('Passcode copied to clipboard');
                       }}
-                      className="text-amber-700 dark:text-amber-400 underline font-bold cursor-pointer"
+                      className="text-amber-700 dark:text-amber-400 underline font-bold cursor-pointer btn-press"
                     >
                       Copy PIN
                     </button>
@@ -305,7 +305,7 @@ export function CloudShareModal({
                   <div className="pt-2">
                     <button
                       onClick={() => setInspectorOpen(true)}
-                      className="w-full py-2.5 px-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold flex items-center justify-center gap-2 transition-all cursor-pointer"
+                      className="w-full py-2.5 px-4 rounded-xl border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-bold flex items-center justify-center gap-2 transition-all cursor-pointer btn-press"
                     >
                       <Code className="w-4 h-4" />
                       <span>Inspect Open Security Proof & Code</span>
@@ -319,7 +319,7 @@ export function CloudShareModal({
                       setGeneratedLink(null);
                       setEncryptedPackage(null);
                     }}
-                    className="text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 underline cursor-pointer"
+                    className="text-xs text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 underline cursor-pointer btn-press"
                   >
                     ← Configure different permissions or re-encrypt
                   </button>
@@ -336,7 +336,7 @@ export function CloudShareModal({
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => setEncryptMode('fragment')}
-                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer btn-press ${
                         encryptMode === 'fragment'
                           ? 'border-purple-500 bg-purple-50/40 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 ring-2 ring-purple-500/20'
                           : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'
@@ -353,7 +353,7 @@ export function CloudShareModal({
 
                     <button
                       onClick={() => setEncryptMode('passcode')}
-                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer btn-press ${
                         encryptMode === 'passcode'
                           ? 'border-purple-500 bg-purple-50/40 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 ring-2 ring-purple-500/20'
                           : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'
@@ -376,7 +376,7 @@ export function CloudShareModal({
                         placeholder="Enter secret passcode or PIN (e.g. 849201 or MySecretPass)"
                         value={passcode}
                         onChange={(e) => setPasscode(e.target.value)}
-                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 outline-none focus:border-purple-500 font-mono"
+                        className="w-full px-3.5 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 outline-none focus:border-purple-500 font-mono transition-colors"
                       />
                     </div>
                   )}
@@ -389,7 +389,7 @@ export function CloudShareModal({
                   </label>
                   <div className="space-y-2">
                     {/* Allow Download */}
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 transition-colors">
                       <div className="flex items-center gap-2.5">
                         <Download className="w-4 h-4 text-zinc-500" />
                         <div>
@@ -410,7 +410,7 @@ export function CloudShareModal({
                     </div>
 
                     {/* Allow Print */}
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 transition-colors">
                       <div className="flex items-center gap-2.5">
                         <Printer className="w-4 h-4 text-zinc-500" />
                         <div>
@@ -431,7 +431,7 @@ export function CloudShareModal({
                     </div>
 
                     {/* Burn after read */}
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 transition-colors">
                       <div className="flex items-center gap-2.5">
                         <Flame className="w-4 h-4 text-rose-500" />
                         <div>
@@ -462,7 +462,7 @@ export function CloudShareModal({
                     <select
                       value={expiryOption}
                       onChange={(e) => setExpiryOption(e.target.value as any)}
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 outline-none cursor-pointer transition-colors"
                     >
                       <option value="1h">Expires in 1 Hour</option>
                       <option value="24h">Expires in 24 Hours</option>
@@ -485,7 +485,7 @@ export function CloudShareModal({
                           setWatermarkText(e.target.value);
                           setEnableWatermark(true);
                         }}
-                        className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 outline-none"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-zinc-300 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 outline-none transition-colors"
                       />
                     </div>
                   </div>
@@ -496,7 +496,7 @@ export function CloudShareModal({
                   <button
                     onClick={handleGenerateShareLink}
                     disabled={isEncrypting}
-                    className="w-full py-3 px-4 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
+                    className="w-full py-3 px-4 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs shadow-lg shadow-purple-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer btn-press disabled:opacity-50"
                   >
                     <Lock className="w-4 h-4" />
                     <span>{isEncrypting ? 'Encrypting with Web Crypto...' : 'Encrypt & Generate Secure Cloud Link'}</span>
@@ -507,7 +507,7 @@ export function CloudShareModal({
                 <div className="pt-1">
                   <button
                     onClick={handleDownloadSnapshot}
-                    className="w-full py-2 px-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 bg-zinc-50 dark:bg-zinc-800/40 text-zinc-600 dark:text-zinc-400 text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="w-full py-2 px-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 bg-zinc-50 dark:bg-zinc-800/40 text-zinc-600 dark:text-zinc-400 text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer btn-press"
                   >
                     <Download className="w-3.5 h-3.5" />
                     <span>Or export portable offline workspace (.filecraft)</span>
@@ -522,7 +522,7 @@ export function CloudShareModal({
             <span>Bank-Grade Encryption • Verified Confidentiality</span>
             <button
               onClick={onClose}
-              className="px-4 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 cursor-pointer"
+              className="px-4 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 cursor-pointer btn-press"
             >
               Done
             </button>

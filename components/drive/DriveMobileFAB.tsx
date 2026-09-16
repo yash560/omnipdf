@@ -80,7 +80,7 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
       {/* Backdrop overlay when open */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-2xs lg:hidden animate-in fade-in duration-150"
+          className="fixed inset-0 z-40 bg-black/50 backdrop-blur-2xs lg:hidden animate-modal-backdrop"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -88,7 +88,7 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
       {/* Floating Action Menu Buttons */}
       <div className="fixed bottom-6 right-4 z-40 flex flex-col items-end gap-2.5 lg:hidden select-none">
         {isOpen && (
-          <div className="flex flex-col items-end gap-2.5 mb-1 animate-in slide-in-from-bottom-3 fade-in duration-200">
+          <div className="flex flex-col items-end gap-2.5 mb-1 animate-floating-dock">
             {/* Smart Studio / Multi-Upload */}
             <button
               type="button"
@@ -97,7 +97,7 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
                 setIsOpen(false);
                 openSmartUpload('files');
               }}
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-xl text-xs font-black active:scale-95 transition-transform"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-xl text-xs font-black btn-press cursor-pointer"
             >
               <span>Smart Upload & Merge</span>
               <div className="w-8 h-8 rounded-xl bg-white/20 text-white flex items-center justify-center">
@@ -113,7 +113,7 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
                 setIsOpen(false);
                 openSmartUpload('camera');
               }}
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs font-bold text-zinc-800 dark:text-zinc-200 active:scale-95 transition-transform"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs font-bold text-zinc-800 dark:text-zinc-200 btn-press cursor-pointer"
             >
               <span>Scan Documents</span>
               <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
@@ -129,7 +129,7 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
                 fileInputRef.current?.click();
                 setIsOpen(false);
               }}
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs font-bold text-zinc-800 dark:text-zinc-200 active:scale-95 transition-transform"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs font-bold text-zinc-800 dark:text-zinc-200 btn-press cursor-pointer"
             >
               <span>Upload Files</span>
               <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
@@ -145,7 +145,7 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
                 setIsOpen(false);
                 onOpenNewFolderModal();
               }}
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs font-bold text-zinc-800 dark:text-zinc-200 active:scale-95 transition-transform"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs font-bold text-zinc-800 dark:text-zinc-200 btn-press cursor-pointer"
             >
               <span>New Folder</span>
               <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center">
@@ -161,7 +161,7 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
                 setIsOpen(false);
                 setIsFolderChatOpen(true);
               }}
-              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs font-bold text-zinc-800 dark:text-zinc-200 active:scale-95 transition-transform"
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs font-bold text-zinc-800 dark:text-zinc-200 btn-press cursor-pointer"
             >
               <span>Folder AI Chat</span>
               <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center">
@@ -175,10 +175,10 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
         <button
           type="button"
           onClick={toggleFAB}
-          className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-white transition-all transform active:scale-90 cursor-pointer ${
+          className={`w-14 h-14 rounded-full shadow-2xl flex items-center justify-center text-white transition-[transform,background-color,box-shadow] duration-200 active:scale-90 cursor-pointer ${
             isOpen
               ? 'bg-zinc-900 dark:bg-zinc-100 dark:text-zinc-900 rotate-45'
-              : 'bg-gradient-to-tr from-rose-600 to-rose-500 shadow-rose-500/30'
+              : 'bg-gradient-to-tr from-rose-600 to-rose-500 shadow-rose-500/30 hover:scale-105'
           }`}
           title="Quick Actions"
           aria-label="Quick Actions"

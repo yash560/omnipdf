@@ -145,9 +145,9 @@ interface DriveContextType {
   duplicateItem: (id: string) => Promise<void>;
   toggleStar: (id: string) => Promise<void>;
   changeFolderColor: (id: string, color: DriveFolderColor) => Promise<void>;
-  trashSelected: () => Promise<void>;
-  restoreSelected: () => Promise<void>;
-  deleteSelectedPermanently: () => Promise<void>;
+  trashSelected: (targetIdsOverride?: string[] | string) => Promise<void>;
+  restoreSelected: (targetIdsOverride?: string[] | string) => Promise<void>;
+  deleteSelectedPermanently: (targetIdsOverride?: string[] | string) => Promise<void>;
   emptyTrash: () => Promise<void>;
   downloadItem: (item: DriveItem) => Promise<void>;
   openPreview: (item: DriveItem) => void;
@@ -931,17 +931,18 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const trashSelected = async () => {
-    if (selectedIds.length === 0) return;
+  const trashSelected = async (targetIdsOverride?: string[] | string) => {
+    const rawIds = targetIdsOverride ? (Array.isArray(targetIdsOverride) ? targetIdsOverride : [targetIdsOverride]) : selectedIds;
+    if (!rawIds || rawIds.length === 0) return;
+    const targetIds = [...rawIds];
     const previousItems = items;
-    const targetIds = [...selectedIds];
-    clearSelection();
+    if (!targetIdsOverride) clearSelection();
 
     // Optimistic removal from current view
     if (viewSection !== 'trash') {
       setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
     } else {
-      setItems((prev) => prev.map((i) => (targetIds.includes(i.id) ? { ...i, isTrashed: true } : i)));
+      setItems((prev) => prev.map((i) => (targetIds.includes(i.id) ? { ...i, isTrash: true } : i)));
     }
     if (detailsItem && targetIds.includes(detailsItem.id)) {
       setDetailsItem(null);
@@ -956,11 +957,12 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const restoreSelected = async () => {
-    if (selectedIds.length === 0) return;
+  const restoreSelected = async (targetIdsOverride?: string[] | string) => {
+    const rawIds = targetIdsOverride ? (Array.isArray(targetIdsOverride) ? targetIdsOverride : [targetIdsOverride]) : selectedIds;
+    if (!rawIds || rawIds.length === 0) return;
+    const targetIds = [...rawIds];
     const previousItems = items;
-    const targetIds = [...selectedIds];
-    clearSelection();
+    if (!targetIdsOverride) clearSelection();
 
     // Optimistic removal from trash view
     if (viewSection === 'trash') {
@@ -979,11 +981,12 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const deleteSelectedPermanently = async () => {
-    if (selectedIds.length === 0) return;
+  const deleteSelectedPermanently = async (targetIdsOverride?: string[] | string) => {
+    const rawIds = targetIdsOverride ? (Array.isArray(targetIdsOverride) ? targetIdsOverride : [targetIdsOverride]) : selectedIds;
+    if (!rawIds || rawIds.length === 0) return;
+    const targetIds = [...rawIds];
     const previousItems = items;
-    const targetIds = [...selectedIds];
-    clearSelection();
+    if (!targetIdsOverride) clearSelection();
 
     setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
     if (detailsItem && targetIds.includes(detailsItem.id)) {

@@ -330,15 +330,47 @@ export async function duplicateDriveFile(id: string): Promise<DriveItem | null> 
 }
 
 /**
- * Move items to Trash
+ * Recursively collect all descendant item IDs in IndexedDB
+ */
+async function collectAllDescendantDriveIds(itemIds: string[]): Promise<string[]> {
+  const allIds = new Set<string>(itemIds);
+  let currentFolderIds = [...itemIds];
+
+  while (currentFolderIds.length > 0) {
+    const nextFolderIds: string[] = [];
+    for (const folderId of currentFolderIds) {
+      const it = await getDriveItem(folderId);
+      if (it?.type === 'folder' || !it) {
+        const children = await getFolderChildren(folderId, true);
+        for (const child of children) {
+          if (!allIds.has(child.id)) {
+            allIds.add(child.id);
+            if (child.type === 'folder') {
+              nextFolderIds.push(child.id);
+            }
+          }
+        }
+      }
+    }
+    currentFolderIds = nextFolderIds;
+  }
+
+  return Array.from(allIds);
+}
+
+/**
+ * Move items to Trash (recursively moves all nested files and subfolders)
  */
 export async function moveDriveItemsToTrash(itemIds: string[]): Promise<void> {
+  const allIdsToTrash = await collectAllDescendantDriveIds(itemIds);
+  if (allIdsToTrash.length === 0) return;
+
   const db = await openDriveDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(ITEMS_STORE, 'readwrite');
     const store = tx.objectStore(ITEMS_STORE);
 
-    for (const id of itemIds) {
+    for (const id of allIdsToTrash) {
       const req = store.get(id);
       req.onsuccess = () => {
         if (req.result) {
@@ -356,15 +388,18 @@ export async function moveDriveItemsToTrash(itemIds: string[]): Promise<void> {
 }
 
 /**
- * Restore items from Trash
+ * Restore items from Trash (recursively restores all nested files and subfolders)
  */
 export async function restoreDriveItemsFromTrash(itemIds: string[]): Promise<void> {
+  const allIdsToRestore = await collectAllDescendantDriveIds(itemIds);
+  if (allIdsToRestore.length === 0) return;
+
   const db = await openDriveDB();
   return new Promise((resolve, reject) => {
     const tx = db.transaction(ITEMS_STORE, 'readwrite');
     const store = tx.objectStore(ITEMS_STORE);
 
-    for (const id of itemIds) {
+    for (const id of allIdsToRestore) {
       const req = store.get(id);
       req.onsuccess = () => {
         if (req.result) {
@@ -385,28 +420,10 @@ export async function restoreDriveItemsFromTrash(itemIds: string[]): Promise<voi
  * Delete items permanently
  */
 export async function deleteDriveItemsPermanently(itemIds: string[]): Promise<void> {
+  const allIdsToDelete = await collectAllDescendantDriveIds(itemIds);
+  if (allIdsToDelete.length === 0) return;
+
   const db = await openDriveDB();
-  
-  // Recursively collect all descendant item IDs if deleting folders
-  const allIdsToDelete = new Set<string>(itemIds);
-  
-  async function collectDescendants(folderId: string) {
-    const children = await getFolderChildren(folderId, true);
-    for (const child of children) {
-      allIdsToDelete.add(child.id);
-      if (child.type === 'folder') {
-        await collectDescendants(child.id);
-      }
-    }
-  }
-
-  for (const id of itemIds) {
-    const it = await getDriveItem(id);
-    if (it?.type === 'folder') {
-      await collectDescendants(id);
-    }
-  }
-
   return new Promise((resolve, reject) => {
     const tx = db.transaction([ITEMS_STORE, BLOBS_STORE], 'readwrite');
     const itemStore = tx.objectStore(ITEMS_STORE);

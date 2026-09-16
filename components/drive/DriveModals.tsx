@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDrive } from '@/lib/drive/drive-context';
 import { DriveItem, DriveFolderColor, FOLDER_COLORS } from '@/lib/drive/drive-types';
-import { getFolderChildren } from '@/lib/drive/drive-db';
+import { fetchCloudItems } from '@/lib/drive/cloud-api';
 import { 
   X, 
   FolderPlus, 
@@ -51,8 +51,8 @@ export function NewFolderModal({ isOpen, onClose }: NewFolderModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-modal-backdrop">
+      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-5 animate-modal-pop">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-amber-500/10 text-amber-500">
@@ -65,7 +65,7 @@ export function NewFolderModal({ isOpen, onClose }: NewFolderModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 btn-press cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -96,7 +96,7 @@ export function NewFolderModal({ isOpen, onClose }: NewFolderModalProps) {
                   key={c}
                   type="button"
                   onClick={() => setSelectedColor(c)}
-                  className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 cursor-pointer ${
+                  className={`w-7 h-7 rounded-full border-2 transition-transform hover:scale-110 btn-press cursor-pointer ${
                     selectedColor === c ? 'ring-2 ring-rose-500 ring-offset-2 scale-110' : 'border-white dark:border-zinc-800'
                   }`}
                   style={{ backgroundColor: FOLDER_COLORS[c].hex }}
@@ -109,14 +109,14 @@ export function NewFolderModal({ isOpen, onClose }: NewFolderModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 btn-press cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!folderName.trim() || submitting}
-              className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-extrabold shadow-sm disabled:opacity-40 transition-all cursor-pointer"
+              className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-extrabold shadow-sm disabled:opacity-40 btn-press cursor-pointer"
             >
               Create Folder
             </button>
@@ -161,8 +161,8 @@ export function RenameModal({ item, onClose }: RenameModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-5 animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-modal-backdrop">
+      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-5 animate-modal-pop">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-blue-500/10 text-blue-500">
@@ -175,7 +175,7 @@ export function RenameModal({ item, onClose }: RenameModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 btn-press cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -199,14 +199,14 @@ export function RenameModal({ item, onClose }: RenameModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 btn-press cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={!name.trim() || submitting}
-              className="px-5 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-extrabold shadow-sm disabled:opacity-40 transition-all cursor-pointer"
+              className="px-5 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-extrabold shadow-sm disabled:opacity-40 btn-press cursor-pointer"
             >
               Save Name
             </button>
@@ -234,8 +234,13 @@ export function MoveModal({ isOpen, onClose }: MoveModalProps) {
   useEffect(() => {
     async function loadFolders() {
       if (isOpen) {
-        const rootFolders = (await getFolderChildren(null, false)).filter((i) => i.type === 'folder');
-        setFolderTree(rootFolders);
+        try {
+          const res = await fetchCloudItems({ parentId: null, section: 'my-drive' });
+          const rootFolders = (res.items || []).filter((i) => i.type === 'folder');
+          setFolderTree(rootFolders);
+        } catch {
+          setFolderTree([]);
+        }
         setSelectedTargetId(null);
       }
     }
@@ -255,8 +260,8 @@ export function MoveModal({ isOpen, onClose }: MoveModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-modal-backdrop">
+      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-modal-pop">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-purple-500/10 text-purple-500">
@@ -269,7 +274,7 @@ export function MoveModal({ isOpen, onClose }: MoveModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+            className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 btn-press cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -317,7 +322,7 @@ export function MoveModal({ isOpen, onClose }: MoveModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 btn-press cursor-pointer"
           >
             Cancel
           </button>
@@ -325,7 +330,7 @@ export function MoveModal({ isOpen, onClose }: MoveModalProps) {
             type="button"
             onClick={handleMove}
             disabled={submitting}
-            className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-extrabold shadow-sm transition-all cursor-pointer"
+            className="px-5 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 text-xs font-extrabold shadow-sm btn-press cursor-pointer"
           >
             Move Here
           </button>
@@ -360,8 +365,8 @@ export function EmptyTrashModal({ isOpen, onClose }: EmptyTrashModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-150">
-      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-modal-backdrop">
+      <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 shadow-2xl space-y-4 animate-modal-pop">
         <div className="w-12 h-12 rounded-2xl bg-rose-500/10 text-rose-500 flex items-center justify-center">
           <Trash2 className="w-6 h-6" />
         </div>
@@ -379,7 +384,7 @@ export function EmptyTrashModal({ isOpen, onClose }: EmptyTrashModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 btn-press cursor-pointer"
           >
             Cancel
           </button>
@@ -387,7 +392,7 @@ export function EmptyTrashModal({ isOpen, onClose }: EmptyTrashModalProps) {
             type="button"
             onClick={handleEmpty}
             disabled={submitting}
-            className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold shadow-sm transition-all cursor-pointer"
+            className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold shadow-sm btn-press cursor-pointer"
           >
             Empty Trash Now
           </button>

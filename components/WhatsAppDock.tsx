@@ -28,7 +28,7 @@ export function WhatsAppDock() {
     <div className="fixed bottom-6 right-6 z-50 flex items-center group">
       {/* Tooltip expanding inward to the left */}
       <div
-        className={`mr-3 px-3 py-1.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold shadow-xl transition-all duration-200 pointer-events-none hidden sm:flex items-center gap-1.5 ${
+        className={`mr-3 px-3 py-1.5 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 text-xs font-semibold shadow-xl transition-[opacity,transform] duration-200 pointer-events-none hidden sm:flex items-center gap-1.5 ${
           hovered ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2'
         }`}
       >
@@ -44,7 +44,7 @@ export function WhatsAppDock() {
         aria-label="Contact Yash Jain on WhatsApp"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white shadow-xl shadow-emerald-600/30 hover:shadow-2xl hover:shadow-emerald-600/40 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer border border-emerald-400/30"
+        className="relative flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-600 to-green-500 hover:from-emerald-500 hover:to-green-400 text-white shadow-xl shadow-emerald-600/30 hover:shadow-2xl hover:shadow-emerald-600/40 hover-lift btn-press cursor-pointer border border-emerald-400/30 focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:outline-hidden"
       >
         {/* Pulsing Beacon */}
         <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5">

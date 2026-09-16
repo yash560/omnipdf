@@ -58,7 +58,7 @@ export async function DELETE(req: NextRequest) {
     const body = await req.json();
     const { action, itemIds } = body;
 
-    if (action === 'empty-trash') {
+    if (action === 'empty-trash' || action === 'empty_trash') {
       await emptyCloudTrash(auth.userId);
       driveLiveBus.broadcast(auth.userId, 'item_deleted', { data: { action: 'empty-trash' } });
       return NextResponse.json({ success: true, message: 'Trash emptied' });

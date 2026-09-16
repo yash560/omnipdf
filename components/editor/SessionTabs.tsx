@@ -63,7 +63,7 @@ export function SessionTabs({
         <button
           onClick={onOpenSessionDrawer}
           title="View All Open Sessions & Unsaved Drafts"
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-[11px] font-bold shadow-xs cursor-pointer shrink-0"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-[11px] font-bold shadow-xs cursor-pointer shrink-0 btn-press"
         >
           <FolderOpen className="w-3.5 h-3.5 text-rose-500" />
           <span className="hidden sm:inline">Sessions</span>
@@ -81,7 +81,7 @@ export function SessionTabs({
             <div
               key={sess.id}
               onClick={() => onSelectSession(sess.id)}
-              className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 max-w-[200px] ${
+              className={`group relative flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer shrink-0 max-w-[200px] btn-press ${
                 isActive
                   ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs border border-zinc-200/90 dark:border-zinc-800'
                   : 'text-zinc-600 dark:text-zinc-400 hover:bg-white/60 dark:hover:bg-zinc-900/60 hover:text-zinc-900 dark:hover:text-white'
@@ -106,7 +106,7 @@ export function SessionTabs({
                     onCloseSession(sess.id);
                   }}
                   title="Close document tab"
-                  className="p-0.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="p-0.5 rounded-md hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer btn-press"
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -119,7 +119,7 @@ export function SessionTabs({
         <button
           onClick={() => fileInputRef.current?.click()}
           title="Open another PDF in a new tab"
-          className="flex items-center gap-1 p-1.5 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-900/80 transition-colors cursor-pointer shrink-0"
+          className="flex items-center gap-1 p-1.5 rounded-xl text-zinc-500 hover:text-zinc-900 dark:hover:text-white hover:bg-white/80 dark:hover:bg-zinc-900/80 transition-colors cursor-pointer shrink-0 btn-press"
         >
           <Plus className="w-4 h-4" />
           <span className="hidden md:inline text-[11px] font-bold">New Tab</span>
@@ -136,7 +136,7 @@ export function SessionTabs({
 
         <button
           onClick={onOpenShareModal}
-          className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 font-bold text-[11px] shadow-xs cursor-pointer transition-all active:scale-95"
+          className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 hover:bg-zinc-800 dark:hover:bg-zinc-100 font-bold text-[11px] shadow-xs cursor-pointer transition-all btn-press"
         >
           <Share2 className="w-3.5 h-3.5" />
           <span className="hidden sm:inline">Share Session</span>

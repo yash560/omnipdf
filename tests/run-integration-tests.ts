@@ -20,6 +20,7 @@ try {
 
 import { runAuthApiTests } from './integration/auth-api.test';
 import { runDriveCrudApiTests } from './integration/drive-crud-api.test';
+import { runDriveCascadingFolderDeletionTests } from './integration/drive-cascading-folder-deletion.test';
 import { runDriveFeaturesApiTests } from './integration/drive-features-api.test';
 import { runDriveShareApiTests } from './integration/drive-share-api.test';
 import { runSupportApiTests } from './integration/support-api.test';
@@ -37,6 +38,7 @@ async function main() {
   const testSuites = [
     { name: 'auth-api', fn: runAuthApiTests },
     { name: 'drive-crud-api', fn: runDriveCrudApiTests },
+    { name: 'drive-cascading-folder-deletion', fn: runDriveCascadingFolderDeletionTests },
     { name: 'drive-features-api', fn: runDriveFeaturesApiTests },
     { name: 'drive-share-api', fn: runDriveShareApiTests },
     { name: 'support-api', fn: runSupportApiTests },

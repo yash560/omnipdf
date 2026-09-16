@@ -143,16 +143,16 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/80 backdrop-blur-md animate-modal-backdrop">
       <div 
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         style={{
           transform: dragCurrentY ? `translateY(${dragCurrentY}px)` : undefined,
-          transition: dragCurrentY ? 'none' : 'transform 200ms ease-out',
+          transition: dragCurrentY ? 'none' : 'transform 200ms var(--ease-drawer)',
         }}
-        className="relative w-full max-w-5xl h-[92vh] sm:h-[88vh] bg-white dark:bg-zinc-900 border-t sm:border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-150"
+        className="relative w-full max-w-5xl h-[92vh] sm:h-[88vh] bg-white dark:bg-zinc-900 border-t sm:border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-modal-pop"
       >
         {/* Mobile Swipe-Down Handle */}
         <div className="sm:hidden w-full pt-2.5 pb-1 flex justify-center bg-zinc-50 dark:bg-zinc-950/80 cursor-grab">

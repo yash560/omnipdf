@@ -86,11 +86,11 @@ export function DriveDetailsDrawer() {
     <>
       {/* Mobile Drawer Backdrop */}
       <div 
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden animate-in fade-in duration-150"
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden animate-modal-backdrop"
         onClick={() => setDetailsItem(null)}
       />
 
-      <aside className="fixed lg:static top-0 right-0 bottom-0 z-50 lg:z-auto w-[300px] sm:w-80 shrink-0 border-l border-zinc-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 flex flex-col justify-between overflow-hidden shadow-2xl lg:shadow-none animate-in slide-in-from-right lg:animate-none duration-200">
+      <aside className="fixed lg:static top-0 right-0 bottom-0 z-50 lg:z-auto w-[300px] sm:w-80 shrink-0 border-l border-zinc-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 flex flex-col justify-between overflow-hidden shadow-2xl lg:shadow-none animate-drawer-right lg:animate-none">
         {/* Header */}
         <div className="p-4 border-b border-zinc-100 dark:border-zinc-800 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl text-xs font-bold">

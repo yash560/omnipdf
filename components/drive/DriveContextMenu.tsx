@@ -105,11 +105,11 @@ export function DriveContextMenu({
         }
         className={`${
           position ? 'fixed' : 'absolute right-2 top-8'
-        } w-64 max-w-[calc(100vw-24px)] rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 text-xs text-zinc-700 dark:text-zinc-300 animate-in fade-in zoom-in-95 duration-150 select-none`}
+        } w-64 max-w-[calc(100vw-24px)] rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 text-xs text-zinc-700 dark:text-zinc-300 animate-dropdown origin-top-left select-none`}
       >
         {/* Tools Subview */}
         {menuView === 'tools' ? (
-          <div className="animate-in fade-in slide-in-from-right-2 duration-150">
+          <div className="animate-drawer-right">
             <div className="flex items-center justify-between px-2 py-1.5 border-b border-zinc-100 dark:border-zinc-800 mb-1">
               <button
                 type="button"
@@ -624,8 +624,7 @@ export function DriveContextMenu({
                       type="button"
                       onClick={() => {
                         onClose();
-                        if (!selectedIds.includes(item.id)) toggleSelect(item.id, false);
-                        restoreSelected();
+                        restoreSelected(item.id);
                       }}
                       className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 font-bold text-emerald-600 dark:text-emerald-400 cursor-pointer"
                     >
@@ -636,8 +635,7 @@ export function DriveContextMenu({
                       type="button"
                       onClick={() => {
                         onClose();
-                        if (!selectedIds.includes(item.id)) toggleSelect(item.id, false);
-                        deleteSelectedPermanently();
+                        deleteSelectedPermanently(item.id);
                       }}
                       className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold text-rose-600 dark:text-rose-400 cursor-pointer"
                     >
@@ -650,8 +648,7 @@ export function DriveContextMenu({
                     type="button"
                     onClick={() => {
                       onClose();
-                      if (!selectedIds.includes(item.id)) toggleSelect(item.id, false);
-                      trashSelected();
+                      trashSelected(item.id);
                     }}
                     className="w-full flex items-center gap-2.5 p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold text-rose-600 dark:text-rose-400 cursor-pointer"
                   >

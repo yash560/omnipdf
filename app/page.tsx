@@ -120,7 +120,7 @@ export default function HomePage() {
                 <button
                   key={s.id}
                   onClick={() => setSelectedSuite(s.id)}
-                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all ${
+                  className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer btn-press ${
                     isActive
                       ? 'bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 shadow-md scale-105'
                       : 'bg-white dark:bg-zinc-900/80 border border-zinc-200/80 dark:border-zinc-800 text-zinc-600 dark:text-zinc-300 hover:border-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800'
@@ -158,7 +158,7 @@ export default function HomePage() {
         </div>
 
         {filteredTools.length === 0 && (
-          <div className="text-center py-16 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800">
+          <div className="text-center py-16 bg-white dark:bg-zinc-900 rounded-3xl border border-zinc-200 dark:border-zinc-800 animate-modal-pop">
             <Search className="w-10 h-10 text-zinc-400 mx-auto mb-3 opacity-50" />
             <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100">No tools found</h3>
             <p className="text-xs text-zinc-500 mt-1">Try searching for a different keyword or format.</p>
@@ -182,11 +182,11 @@ export default function HomePage() {
             {faqs.map((faq, i) => (
               <div
                 key={i}
-                className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs"
+                className="rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs transition-colors"
               >
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full p-4 text-left flex items-center justify-between gap-4 font-bold text-sm text-zinc-900 dark:text-zinc-100"
+                  className="w-full p-4 text-left flex items-center justify-between gap-4 font-bold text-sm text-zinc-900 dark:text-zinc-100 cursor-pointer btn-press"
                 >
                   <span>{faq.q}</span>
                   <ChevronDown
@@ -196,7 +196,7 @@ export default function HomePage() {
                   />
                 </button>
                 {openFaq === i && (
-                  <div className="px-4 pb-4 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed border-t border-zinc-100 dark:border-zinc-800 pt-3">
+                  <div className="px-4 pb-4 text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed border-t border-zinc-100 dark:border-zinc-800 pt-3 animate-stagger-fade">
                     {faq.a}
                   </div>
                 )}

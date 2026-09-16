@@ -1326,15 +1326,57 @@ export async function moveCloudItems(
   );
 }
 
+/**
+ * Recursively collect all descendant item IDs (children, grandchildren, etc.) for given item IDs.
+ */
+export async function collectAllDescendantIds(userId: string, itemIds: string[]): Promise<string[]> {
+  if (!itemIds || itemIds.length === 0) return [];
+  await ensureIndexes();
+  const db = await getMongoDb();
+  const col = db.collection<DriveItem>(ITEMS_COLLECTION);
+
+  const allIds = new Set<string>(itemIds);
+  let currentParentIds = [...itemIds];
+
+  while (currentParentIds.length > 0) {
+    const children = await col.find(
+      { userId, parentId: { $in: currentParentIds } },
+      { projection: { id: 1, type: 1 } }
+    ).toArray();
+
+    const nextParentIds: string[] = [];
+    for (const child of children) {
+      if (!allIds.has(child.id)) {
+        allIds.add(child.id);
+        if (child.type === 'folder' || !child.type) {
+          nextParentIds.push(child.id);
+        }
+      }
+    }
+    currentParentIds = nextParentIds;
+  }
+
+  return Array.from(allIds);
+}
+
 export async function trashCloudItems(userId: string, itemIds: string[]): Promise<void> {
   await ensureIndexes();
   const db = await getMongoDb();
   const col = db.collection<DriveItem>(ITEMS_COLLECTION);
 
+  const allIdsToTrash = await collectAllDescendantIds(userId, itemIds);
+  if (allIdsToTrash.length === 0) return;
+
+  const now = Date.now();
   await col.updateMany(
-    { id: { $in: itemIds }, userId },
-    { $set: { isTrash: true, trashedAt: Date.now(), updatedAt: Date.now() } }
+    { id: { $in: allIdsToTrash }, userId },
+    { $set: { isTrash: true, trashedAt: now, updatedAt: now } }
   );
+
+  const topItems = await col.find({ id: { $in: itemIds }, userId }).toArray();
+  for (const it of topItems) {
+    await recordDriveActivity(userId, it.id, it.name, it.type, 'trashed', 'Moved to trash');
+  }
 }
 
 export async function restoreCloudItems(userId: string, itemIds: string[]): Promise<void> {
@@ -1342,10 +1384,19 @@ export async function restoreCloudItems(userId: string, itemIds: string[]): Prom
   const db = await getMongoDb();
   const col = db.collection<DriveItem>(ITEMS_COLLECTION);
 
+  const allIdsToRestore = await collectAllDescendantIds(userId, itemIds);
+  if (allIdsToRestore.length === 0) return;
+
+  const now = Date.now();
   await col.updateMany(
-    { id: { $in: itemIds }, userId },
-    { $set: { isTrash: false, trashedAt: undefined, updatedAt: Date.now() } }
+    { id: { $in: allIdsToRestore }, userId },
+    { $set: { isTrash: false, trashedAt: undefined, updatedAt: now } }
   );
+
+  const topItems = await col.find({ id: { $in: itemIds }, userId }).toArray();
+  for (const it of topItems) {
+    await recordDriveActivity(userId, it.id, it.name, it.type, 'restored', 'Restored from trash');
+  }
 }
 
 export async function deleteCloudItemsPermanently(userId: string, itemIds: string[]): Promise<void> {
@@ -1354,37 +1405,44 @@ export async function deleteCloudItemsPermanently(userId: string, itemIds: strin
   const col = db.collection<DriveItem>(ITEMS_COLLECTION);
   const bucket = await getStorageBucket();
 
-  const allIdsToDelete = new Set<string>(itemIds);
+  const allIdsToDelete = await collectAllDescendantIds(userId, itemIds);
+  if (allIdsToDelete.length === 0) return;
 
-  async function collectChildren(folderIds: string[]) {
-    if (folderIds.length === 0) return;
-    const children = await col.find({ parentId: { $in: folderIds }, userId }).toArray();
-    const nextFolderIds: string[] = [];
-    for (const child of children) {
-      allIdsToDelete.add(child.id);
-      if (child.type === 'folder') {
-        nextFolderIds.push(child.id);
-      }
-    }
-    if (nextFolderIds.length > 0) {
-      await collectChildren(nextFolderIds);
-    }
-  }
+  // 1. Delete item documents from MongoDB
+  await col.deleteMany({ id: { $in: allIdsToDelete }, userId });
 
-  await collectChildren(itemIds);
-
-  const idsArray = Array.from(allIdsToDelete);
-  await col.deleteMany({ id: { $in: idsArray }, userId });
-
-  for (const id of idsArray) {
+  // 2. Delete binary files and chunks from GridFS bucket
+  for (const id of allIdsToDelete) {
     try {
       const files = await bucket.find({ filename: id }).toArray();
       for (const file of files) {
-        await bucket.delete(file._id);
+        await bucket.delete(file._id).catch(() => {});
       }
-    } catch (err) {
+    } catch {
       // ignore individual delete misses
     }
+  }
+
+  // 3. Clean up related thumbnails, comments, activity, and recommendations in background
+  try {
+    const thumbnailsCol = db.collection('filecraft_drive_thumbnails');
+    const commentsCol = db.collection(COMMENTS_COLLECTION);
+    const activityCol = db.collection(ACTIVITY_COLLECTION);
+    const feedbackCol = db.collection('filecraft_recommendation_feedback');
+
+    await Promise.allSettled([
+      thumbnailsCol.deleteMany({ itemId: { $in: allIdsToDelete } }),
+      commentsCol.deleteMany({ itemId: { $in: allIdsToDelete } }),
+      activityCol.deleteMany({ itemId: { $in: allIdsToDelete } }),
+      feedbackCol.deleteMany({
+        $or: [
+          { itemId: { $in: allIdsToDelete } },
+          { targetId: { $in: allIdsToDelete } },
+        ],
+      }),
+    ]);
+  } catch (err) {
+    console.warn('[ServerDrive] Non-blocking metadata cleanup notice:', err);
   }
 }
 

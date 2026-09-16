@@ -49,9 +49,9 @@ export function SessionDrawer({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-xs animate-modal-backdrop">
       <div
-        className="w-full max-w-md bg-white dark:bg-zinc-900 h-full border-l border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col animate-in slide-in-from-right duration-200"
+        className="w-full max-w-md bg-white dark:bg-zinc-900 h-full border-l border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col animate-drawer-right"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Drawer Header */}
@@ -72,7 +72,7 @@ export function SessionDrawer({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+            className="p-1.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer btn-press"
           >
             <X className="w-5 h-5" />
           </button>
@@ -95,10 +95,10 @@ export function SessionDrawer({
                     onSelectSession(sess.id);
                     onClose();
                   }}
-                  className={`group relative p-3.5 rounded-2xl border transition-all cursor-pointer ${
+                  className={`group relative p-3.5 rounded-2xl border transition-all cursor-pointer btn-press ${
                     isActive
                       ? 'bg-rose-50/40 dark:bg-rose-950/20 border-rose-500/60 ring-2 ring-rose-500/20 shadow-xs'
-                      : 'bg-zinc-50/80 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300'
+                      : 'bg-zinc-50/80 dark:bg-zinc-800/40 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3 mb-2">
@@ -124,7 +124,7 @@ export function SessionDrawer({
                         onDeleteSession(sess.id);
                       }}
                       title="Delete Draft"
-                      className="p-1 rounded-lg text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors opacity-0 group-hover:opacity-100"
+                      className="p-1 rounded-lg text-zinc-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors opacity-0 group-hover:opacity-100 cursor-pointer btn-press"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -161,7 +161,7 @@ export function SessionDrawer({
           <button
             onClick={handleExportAll}
             disabled={sessions.length === 0}
-            className="w-full py-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40"
+            className="w-full py-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors flex items-center justify-center gap-2 cursor-pointer btn-press disabled:opacity-40"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Export Workspace Backup (.json)</span>
@@ -170,7 +170,7 @@ export function SessionDrawer({
           {sessions.length > 0 && (
             <button
               onClick={onClearAll}
-              className="w-full py-2 px-4 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold transition-colors cursor-pointer"
+              className="w-full py-2 px-4 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-xs font-bold transition-colors cursor-pointer btn-press"
             >
               Clear All Drafts
             </button>

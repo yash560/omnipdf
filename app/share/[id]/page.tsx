@@ -187,7 +187,7 @@ export default function ShareRecipientPage() {
           )}
 
           {burnStatus === 'ready' && decryptedBlob && (
-            <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6 animate-in fade-in zoom-in-95 duration-200">
+            <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6 animate-modal-pop">
               <div className="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
                 <CheckCircle2 className="w-7 h-7" />
               </div>
@@ -203,7 +203,7 @@ export default function ShareRecipientPage() {
 
               <button
                 onClick={() => saveAs(decryptedBlob, burnFileName)}
-                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold text-sm shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold text-sm shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all btn-press cursor-pointer"
               >
                 <Download className="w-4 h-4" />
                 <span>Download Document</span>
@@ -212,7 +212,7 @@ export default function ShareRecipientPage() {
           )}
 
           {burnStatus === 'burned' && (
-            <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-4">
+            <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-4 animate-modal-pop">
               <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
               <h2 className="text-xl font-black text-zinc-900 dark:text-white">This Link Has Expired</h2>
               <p className="text-xs text-zinc-500 leading-relaxed">
@@ -222,7 +222,7 @@ export default function ShareRecipientPage() {
           )}
 
           {burnStatus === 'error' && (
-            <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-4">
+            <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-4 animate-modal-pop">
               <AlertTriangle className="w-10 h-10 text-rose-500 mx-auto" />
               <h2 className="text-xl font-black text-zinc-900 dark:text-white">Decryption Error</h2>
               <p className="text-xs text-zinc-500">{burnErrorMsg}</p>
@@ -239,7 +239,7 @@ export default function ShareRecipientPage() {
   if (passwordRequired) {
     return (
       <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col justify-center items-center px-4 py-16 font-sans">
-        <div className="w-full max-w-md mx-auto p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6 text-center animate-in fade-in zoom-in-95 duration-200">
+        <div className="w-full max-w-md mx-auto p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl space-y-6 text-center animate-modal-pop">
           <div className="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 flex items-center justify-center mx-auto shadow-sm">
             <Lock className="w-7 h-7" />
           </div>
@@ -261,7 +261,7 @@ export default function ShareRecipientPage() {
                 value={enteredPassword}
                 onChange={(e) => setEnteredPassword(e.target.value)}
                 placeholder="Enter password..."
-                className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500"
+                className="w-full pl-10 pr-4 py-3 rounded-xl bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-sm font-medium text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-rose-500 transition-colors"
                 autoFocus
               />
             </div>
@@ -273,7 +273,7 @@ export default function ShareRecipientPage() {
             <button
               type="submit"
               disabled={!enteredPassword.trim()}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold text-sm shadow-md shadow-rose-500/20 disabled:opacity-50 transition-all cursor-pointer"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-600 hover:to-amber-600 text-white font-bold text-sm shadow-md shadow-rose-500/20 disabled:opacity-50 transition-all cursor-pointer btn-press"
             >
               Unlock Document
             </button>

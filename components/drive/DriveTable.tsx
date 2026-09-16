@@ -166,7 +166,7 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                 {headerMenuOpen && (
                   <>
                     <div className="fixed inset-0 z-30" onClick={() => setHeaderMenuOpen(false)} />
-                    <div className="absolute left-2 top-10 w-48 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-40 p-1.5 text-left font-sans normal-case animate-in fade-in zoom-in-95 duration-150">
+                    <div className="absolute left-2 top-10 w-48 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-40 p-1.5 text-left font-sans normal-case animate-dropdown origin-top-left">
                       <button
                         type="button"
                         onClick={() => {

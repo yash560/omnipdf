@@ -438,8 +438,8 @@ function DriveWorkspaceInner() {
 
       {/* Mobile Slide-Over Sidebar Drawer */}
       {mobileSidebarOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden flex animate-in fade-in duration-150">
-          <div className="w-[280px] sm:w-[320px] h-full bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 shadow-2xl animate-in slide-in-from-left duration-200">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden flex animate-modal-backdrop">
+          <div className="w-[280px] sm:w-[320px] h-full bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 shadow-2xl animate-drawer-left">
             <DriveSidebar
               isMobileDrawer
               onCloseMobileDrawer={() => setMobileSidebarOpen(false)}

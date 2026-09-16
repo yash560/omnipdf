@@ -80,9 +80,9 @@ export function ProcessingModal({
       : null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-modal-backdrop">
       <div
-        className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 sm:p-8 text-center animate-in zoom-in-95 duration-200"
+        className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 sm:p-8 text-center animate-modal-pop"
         onClick={(e) => e.stopPropagation()}
       >
         {isProcessing ? (
@@ -100,16 +100,16 @@ export function ProcessingModal({
               <h3 className="text-lg font-extrabold text-zinc-900 dark:text-zinc-100 mb-1">
                 {actionTitle}
               </h3>
-              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 transition-all duration-200">
+              <p className="text-xs font-medium text-zinc-500 dark:text-zinc-400 transition-colors duration-200">
                 {statusText}
               </p>
             </div>
 
             {/* Progress Bar & Percentage */}
             <div className="space-y-2">
-              <div className="w-full h-3 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5 border border-zinc-200/60 dark:border-zinc-700/60">
+              <div className="w-full h-3 bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden p-0.5 border border-zinc-200/60 dark:border-zinc-700/60 animate-shimmer">
                 <div
-                  className="h-full bg-gradient-to-r from-rose-500 to-amber-500 rounded-full transition-all duration-300 shadow-xs"
+                  className="h-full bg-gradient-to-r from-rose-500 to-amber-500 rounded-full transition-[width] duration-300 shadow-xs"
                   style={{ width: `${Math.max(5, Math.min(100, progress))}%` }}
                 />
               </div>
@@ -120,7 +120,7 @@ export function ProcessingModal({
             </div>
           </div>
         ) : isComplete ? (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-stagger-fade">
             {/* Success Icon */}
             <div className="w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mx-auto shadow-lg shadow-emerald-500/10">
               <CheckCircle2 className="w-8 h-8 stroke-[2.2]" />
@@ -162,7 +162,7 @@ export function ProcessingModal({
               {onDownload && (
                 <button
                   onClick={onDownload}
-                  className="w-full sm:flex-1 py-3.5 px-5 rounded-2xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-extrabold text-sm shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer"
+                  className="w-full sm:flex-1 py-3.5 px-5 rounded-2xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white font-extrabold text-sm shadow-lg shadow-rose-500/25 flex items-center justify-center gap-2 btn-press cursor-pointer"
                 >
                   <Download className="w-4 h-4 stroke-[2.5]" />
                   <span>Download File</span>
@@ -172,7 +172,7 @@ export function ProcessingModal({
               <button
                 onClick={handleSaveToDrive}
                 disabled={isSavingToDrive || savedToDrive}
-                className={`w-full sm:w-auto py-3.5 px-4 rounded-2xl border font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-75 ${
+                className={`w-full sm:w-auto py-3.5 px-4 rounded-2xl border font-bold text-xs flex items-center justify-center gap-1.5 btn-press cursor-pointer disabled:opacity-75 ${
                   savedToDrive
                     ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400'
                     : 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-900/50 hover:bg-blue-100 dark:hover:bg-blue-900/60 text-blue-600 dark:text-blue-400'
@@ -192,7 +192,7 @@ export function ProcessingModal({
               {onReset && (
                 <button
                   onClick={onReset}
-                  className="w-full sm:w-auto py-3.5 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full sm:w-auto py-3.5 px-4 rounded-2xl border border-zinc-200 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-bold text-xs flex items-center justify-center gap-1.5 btn-press cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Reset</span>

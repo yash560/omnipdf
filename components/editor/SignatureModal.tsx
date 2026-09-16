@@ -130,9 +130,9 @@ export function SignatureModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-modal-backdrop">
       <div
-        className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 overflow-hidden animate-in zoom-in-95 duration-150"
+        className="w-full max-w-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-6 overflow-hidden animate-modal-pop"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -143,7 +143,7 @@ export function SignatureModal({
           </h3>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors btn-press cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -153,7 +153,7 @@ export function SignatureModal({
         <div className="flex items-center gap-2 p-1 bg-zinc-100 dark:bg-zinc-800/80 rounded-2xl my-4">
           <button
             onClick={() => setActiveTab('draw')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer btn-press ${
               activeTab === 'draw'
                 ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
@@ -164,7 +164,7 @@ export function SignatureModal({
           </button>
           <button
             onClick={() => setActiveTab('type')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer btn-press ${
               activeTab === 'type'
                 ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
@@ -175,7 +175,7 @@ export function SignatureModal({
           </button>
           <button
             onClick={() => setActiveTab('upload')}
-            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer btn-press ${
               activeTab === 'upload'
                 ? 'bg-white dark:bg-zinc-900 text-zinc-900 dark:text-white shadow-xs'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'
@@ -218,8 +218,8 @@ export function SignatureModal({
                     key={color}
                     onClick={() => setSignatureColor(color)}
                     style={{ backgroundColor: color }}
-                    className={`w-6 h-6 rounded-full border border-white dark:border-zinc-800 shadow-xs transition-transform cursor-pointer ${
-                      signatureColor === color ? 'scale-125 ring-2 ring-rose-500' : ''
+                    className={`w-6 h-6 rounded-full border border-white dark:border-zinc-800 shadow-xs transition-transform cursor-pointer btn-press ${
+                      signatureColor === color ? 'scale-125 ring-2 ring-rose-500' : 'hover:scale-110'
                     }`}
                   />
                 ))}
@@ -227,7 +227,7 @@ export function SignatureModal({
 
               <button
                 onClick={clearCanvas}
-                className="flex items-center gap-1 text-xs text-zinc-500 hover:text-rose-500 transition-colors font-semibold cursor-pointer"
+                className="flex items-center gap-1 text-xs text-zinc-500 hover:text-rose-500 transition-colors font-semibold cursor-pointer btn-press"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Clear</span>
@@ -243,7 +243,7 @@ export function SignatureModal({
               value={typedName}
               onChange={(e) => setTypedName(e.target.value)}
               placeholder="Enter your name"
-              className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-sm font-semibold text-zinc-900 dark:text-zinc-100 outline-none focus:border-rose-500"
+              className="w-full px-4 py-3 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/50 text-sm font-semibold text-zinc-900 dark:text-zinc-100 outline-none focus:border-rose-500 transition-colors"
             />
 
             {/* Cursive Previews */}
@@ -267,8 +267,8 @@ export function SignatureModal({
                   key={color}
                   onClick={() => setSignatureColor(color)}
                   style={{ backgroundColor: color }}
-                  className={`w-5 h-5 rounded-full border border-white dark:border-zinc-800 shadow-xs transition-transform cursor-pointer ${
-                    signatureColor === color ? 'scale-125 ring-2 ring-rose-500' : ''
+                  className={`w-5 h-5 rounded-full border border-white dark:border-zinc-800 shadow-xs transition-transform cursor-pointer btn-press ${
+                    signatureColor === color ? 'scale-125 ring-2 ring-rose-500' : 'hover:scale-110'
                   }`}
                 />
               ))}
@@ -277,7 +277,7 @@ export function SignatureModal({
         )}
 
         {activeTab === 'upload' && (
-          <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 cursor-pointer transition-colors">
+          <label className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-zinc-300 dark:border-zinc-700 rounded-2xl bg-zinc-50 dark:bg-zinc-950/60 hover:bg-zinc-100 dark:hover:bg-zinc-800/40 cursor-pointer transition-colors">
             <Upload className="w-8 h-8 text-zinc-400 mb-2" />
             <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200">
               Upload signature image (PNG, JPG)
@@ -298,14 +298,14 @@ export function SignatureModal({
         <div className="flex items-center justify-end gap-2 pt-5 mt-4 border-t border-zinc-200 dark:border-zinc-800">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-xl text-xs font-bold text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors btn-press cursor-pointer"
           >
             Cancel
           </button>
           {activeTab !== 'upload' && (
             <button
               onClick={handleApply}
-              className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-xs font-extrabold shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
+              className="flex items-center gap-1.5 px-5 py-2 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 text-white text-xs font-extrabold shadow-md hover:shadow-lg transition-all btn-press cursor-pointer"
             >
               <Check className="w-3.5 h-3.5" />
               <span>Use Signature</span>

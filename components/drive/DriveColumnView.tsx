@@ -336,7 +336,7 @@ export function DriveColumnView({ onOpenRenameModal, onOpenMoveModal }: DriveCol
 
       {/* Terminal Inspector / Preview Column */}
       {selectedInspectorItem && (
-        <div className="w-80 sm:w-96 shrink-0 h-full flex flex-col bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto p-5 space-y-5 animate-in slide-in-from-left duration-150">
+        <div className="w-80 sm:w-96 shrink-0 h-full flex flex-col bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto p-5 space-y-5 animate-drawer-left">
           {/* File Thumbnail / Preview Hero */}
           <div className="w-full aspect-video rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 flex flex-col items-center justify-center relative overflow-hidden group shadow-inner">
             <DriveThumbnail item={selectedInspectorItem} view="column" />

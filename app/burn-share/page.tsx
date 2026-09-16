@@ -95,7 +95,7 @@ export default function BurnSharePage() {
       </div>
 
       {files.length > 0 && (
-        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+        <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-6 animate-modal-pop">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
               <Lock className="w-4 h-4 text-red-500" />
@@ -116,10 +116,10 @@ export default function BurnSharePage() {
                 <button
                   key={t.mins}
                   onClick={() => setTtl(t.mins)}
-                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer btn-press ${
                     ttl === t.mins
                       ? 'border-red-500 bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400'
-                      : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300'
+                      : 'border-zinc-200 dark:border-zinc-700 text-zinc-600 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-600'
                   }`}
                 >
                   {t.label}
@@ -131,14 +131,14 @@ export default function BurnSharePage() {
           <button
             onClick={handleCreateShare}
             disabled={processing}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold text-sm shadow-md shadow-red-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white font-bold text-sm shadow-md shadow-red-500/20 flex items-center justify-center gap-2 transition-all btn-press cursor-pointer disabled:opacity-50"
           >
             <Flame className="w-4 h-4" />
             <span>Encrypt & Create Burn-After-Reading Link</span>
           </button>
 
           {shareUrl && (
-            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 space-y-3">
+            <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 space-y-3 animate-stagger-fade">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-red-700 dark:text-red-300">
                   Secure Single-Use Link
@@ -154,7 +154,7 @@ export default function BurnSharePage() {
                 />
                 <button
                   onClick={copyUrl}
-                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors"
+                  className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold text-xs rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer btn-press"
                 >
                   {copied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copied ? 'Copied' : 'Copy'}</span>

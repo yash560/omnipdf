@@ -37,7 +37,7 @@ export function PersonaSelector({ currentPersona, onSelectPersona, compact }: Pe
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        className={`inline-flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer ${
+        className={`inline-flex items-center gap-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-md font-semibold text-zinc-900 dark:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all cursor-pointer btn-press ${
           compact ? 'px-2.5 py-1 text-xs' : 'px-3.5 py-2 text-xs'
         }`}
       >
@@ -45,7 +45,7 @@ export function PersonaSelector({ currentPersona, onSelectPersona, compact }: Pe
           <ActiveIcon className="w-3.5 h-3.5" />
         </span>
         <span className="truncate max-w-[130px] font-bold">{active.name}</span>
-        <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
+        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
 
       {open && (
@@ -54,7 +54,7 @@ export function PersonaSelector({ currentPersona, onSelectPersona, compact }: Pe
             className="fixed inset-0 z-40"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+          <div className="absolute left-0 mt-2 w-64 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 animate-dropdown origin-top-left">
             <div className="px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
               Select AI Persona
             </div>
@@ -71,7 +71,7 @@ export function PersonaSelector({ currentPersona, onSelectPersona, compact }: Pe
                       onSelectPersona(id);
                       setOpen(false);
                     }}
-                    className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition-colors cursor-pointer ${
+                    className={`w-full flex items-start gap-2.5 p-2 rounded-xl text-left transition-colors cursor-pointer btn-press ${
                       isSelected
                         ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
                         : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'

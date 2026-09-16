@@ -62,10 +62,10 @@ export function ThumbnailSidebar({
             <div
               key={t.pageNumber}
               onClick={() => onSelectPage(t.pageNumber)}
-              className={`group relative flex flex-col items-center p-2 rounded-xl border transition-all cursor-pointer ${
+              className={`group relative flex flex-col items-center p-2 rounded-xl border transition-all cursor-pointer btn-press ${
                 isActive
                   ? 'border-rose-500 bg-rose-50/40 dark:bg-rose-950/20 ring-2 ring-rose-500/20 shadow-md'
-                  : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 hover:border-zinc-400'
+                  : 'border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-800/40 hover:border-zinc-400 dark:hover:border-zinc-600 hover:shadow-sm'
               }`}
             >
               {/* Top Page Number & Actions */}

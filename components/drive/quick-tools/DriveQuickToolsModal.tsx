@@ -157,9 +157,9 @@ export function DriveQuickToolsModal() {
     ['zip', 'tar', 'gz', '7z', 'rar'].includes(quickToolsItem.extension);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-modal-backdrop">
       <div
-        className="w-full max-w-6xl h-[92vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150"
+        className="w-full max-w-6xl h-[92vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-modal-pop"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}

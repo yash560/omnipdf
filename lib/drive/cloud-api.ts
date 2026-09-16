@@ -256,7 +256,7 @@ export async function emptyCloudTrashApi(): Promise<void> {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify({ action: 'empty_trash' }),
+    body: JSON.stringify({ action: 'empty-trash' }),
   });
 
   if (!res.ok) {

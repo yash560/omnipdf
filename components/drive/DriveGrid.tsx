@@ -152,8 +152,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                   item={folder}
                   onShare={() => openShareModal(folder)}
                   onTrash={() => {
-                    toggleSelect(folder.id, false);
-                    trashSelected();
+                    trashSelected(folder.id);
                   }}
                   onLongPress={() => handleOpenItemOptions(folder)}
                   onOpenOptions={() => handleOpenItemOptions(folder)}
@@ -268,8 +267,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                   onStar={() => toggleStar(file.id)}
                   onShare={() => openShareModal(file)}
                   onTrash={() => {
-                    toggleSelect(file.id, false);
-                    trashSelected();
+                    trashSelected(file.id);
                   }}
                   onLongPress={() => handleOpenItemOptions(file)}
                   onOpenOptions={() => handleOpenItemOptions(file)}

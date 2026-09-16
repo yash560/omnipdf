@@ -280,8 +280,8 @@ export const DriveVaultModal: React.FC<DriveVaultModalProps> = ({
     : newPin;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md rounded-3xl bg-white/95 dark:bg-zinc-900/95 border border-zinc-200/90 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-modal-backdrop">
+      <div className="relative w-full max-w-md rounded-3xl bg-white/95 dark:bg-zinc-900/95 border border-zinc-200/90 dark:border-zinc-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-modal-pop">
         {/* Modal Top Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-zinc-50/50 dark:bg-zinc-950/30">
           <div className="flex items-center gap-2.5">

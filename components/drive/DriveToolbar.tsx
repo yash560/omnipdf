@@ -394,7 +394,7 @@ export function DriveToolbar({
             {selectDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setSelectDropdownOpen(false)} />
-                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-40 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-40 p-1.5 animate-dropdown origin-top-right">
                   <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
                     Selection Modes ({items.length} total)
                   </div>
@@ -580,7 +580,7 @@ export function DriveToolbar({
             {sortDropdownOpen && (
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setSortDropdownOpen(false)} />
-                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-40 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-40 p-1.5 animate-dropdown origin-top-right">
                   <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
                     Sort By
                   </div>
@@ -677,7 +677,7 @@ export function DriveToolbar({
           {selectDropdownOpen && (
             <>
               <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-2xs" onClick={() => setSelectDropdownOpen(false)} />
-              <div className="fixed inset-x-3 top-28 max-h-[70vh] overflow-y-auto sm:absolute sm:inset-auto sm:left-0 sm:top-full sm:mt-2 sm:w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-2 animate-in fade-in zoom-in-95 duration-150">
+              <div className="fixed inset-x-3 top-28 max-h-[70vh] overflow-y-auto sm:absolute sm:inset-auto sm:left-0 sm:top-full sm:mt-2 sm:w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-2 animate-dropdown origin-top">
                 <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
                   Selection Modes ({items.length} total)
                 </div>
@@ -848,7 +848,7 @@ export function DriveToolbar({
           {sortDropdownOpen && (
             <>
               <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-2xs" onClick={() => setSortDropdownOpen(false)} />
-              <div className="fixed inset-x-3 top-28 max-h-[70vh] overflow-y-auto sm:absolute sm:inset-auto sm:left-0 sm:top-full sm:mt-2 sm:w-52 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-2 animate-in fade-in zoom-in-95 duration-150">
+              <div className="fixed inset-x-3 top-28 max-h-[70vh] overflow-y-auto sm:absolute sm:inset-auto sm:left-0 sm:top-full sm:mt-2 sm:w-52 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-2 animate-dropdown origin-top">
                 <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
                   Sort By
                 </div>
@@ -1083,8 +1083,8 @@ export function DriveToolbar({
                   <Tooltip content="Restore selected items from recycle bin" side="bottom">
                     <button
                       type="button"
-                      onClick={restoreSelected}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      onClick={() => restoreSelected()}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                       aria-label="Restore selected"
                     >
                       <RotateCcw className="w-3.5 h-3.5" />
@@ -1094,8 +1094,8 @@ export function DriveToolbar({
                   <Tooltip content="⚠️ Permanently delete selected items forever" side="bottom">
                     <button
                       type="button"
-                      onClick={deleteSelectedPermanently}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      onClick={() => deleteSelectedPermanently()}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                       aria-label="Permanently delete forever"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1110,7 +1110,7 @@ export function DriveToolbar({
                     <button
                       type="button"
                       onClick={() => bulkDownloadZip()}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                       aria-label="Download selected as ZIP"
                     >
                       <Download className="w-3.5 h-3.5 text-emerald-500" />
@@ -1123,7 +1123,7 @@ export function DriveToolbar({
                     <button
                       type="button"
                       onClick={() => triggerBatchAction('star')}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                       aria-label="Star selected"
                     >
                       <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
@@ -1136,7 +1136,7 @@ export function DriveToolbar({
                     <button
                       type="button"
                       onClick={() => triggerBatchAction('unstar')}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-600 dark:text-zinc-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-600 dark:text-zinc-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                       aria-label="Unstar selected"
                     >
                       <StarOff className="w-3.5 h-3.5" />
@@ -1150,7 +1150,7 @@ export function DriveToolbar({
                       <button
                         type="button"
                         onClick={() => triggerBatchAction('vault')}
-                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-amber-50 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                        className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-amber-50 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                         aria-label="Lock in Vault"
                       >
                         <Lock className="w-3.5 h-3.5" />
@@ -1164,7 +1164,7 @@ export function DriveToolbar({
                     <button
                       type="button"
                       onClick={() => triggerBatchAction('unvault')}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-emerald-50 text-emerald-600 dark:text-emerald-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-emerald-50 text-emerald-600 dark:text-emerald-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                       aria-label="Unlock from Vault"
                     >
                       <Unlock className="w-3.5 h-3.5" />
@@ -1177,7 +1177,7 @@ export function DriveToolbar({
                     <button
                       type="button"
                       onClick={() => triggerAutoLabel(selectedIds)}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                       aria-label="AI Auto-Label"
                     >
                       <Sparkles className="w-3.5 h-3.5 text-purple-500" />
@@ -1190,7 +1190,7 @@ export function DriveToolbar({
                     <button
                       type="button"
                       onClick={onOpenMoveModal}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                       aria-label="Move to folder"
                     >
                       <FolderInput className="w-3.5 h-3.5 text-blue-500" />
@@ -1202,8 +1202,8 @@ export function DriveToolbar({
                   <Tooltip content="Move selected items to Trash" side="bottom">
                     <button
                       type="button"
-                      onClick={trashSelected}
-                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-rose-50 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      onClick={() => trashSelected()}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-rose-50 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0 btn-press"
                       aria-label="Move to Trash"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

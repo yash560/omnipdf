@@ -42,7 +42,7 @@ export function DriveUploadManager() {
   const isAllComplete = completedFiles === totalFiles;
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 w-80 sm:w-96 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden animate-in slide-in-from-bottom-5 duration-300">
+    <div className="fixed bottom-5 right-5 z-50 w-80 sm:w-96 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl overflow-hidden animate-floating-dock">
       {/* Header */}
       <div 
         onClick={() => setIsExpanded(!isExpanded)}
@@ -73,7 +73,7 @@ export function DriveUploadManager() {
         <div className="flex items-center gap-1">
           <button 
             type="button" 
-            className="p-1 hover:bg-white/10 rounded-lg transition-colors text-zinc-400 hover:text-white"
+            className="p-1 hover:bg-white/10 rounded-lg transition-colors text-zinc-400 hover:text-white cursor-pointer btn-press"
           >
             {isExpanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
           </button>
@@ -84,7 +84,7 @@ export function DriveUploadManager() {
                 e.stopPropagation();
                 chunkedUploader.clearCompleted();
               }}
-              className="p-1 hover:bg-white/10 rounded-lg transition-colors text-zinc-400 hover:text-white"
+              className="p-1 hover:bg-white/10 rounded-lg transition-colors text-zinc-400 hover:text-white cursor-pointer btn-press"
             >
               <X className="w-4 h-4" />
             </button>

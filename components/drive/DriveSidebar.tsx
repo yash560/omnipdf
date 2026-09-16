@@ -177,7 +177,7 @@ export function DriveSidebar({
                 className="fixed inset-0 z-20"
                 onClick={() => setNewDropdownOpen(false)}
               />
-              <div className="absolute top-full left-0 mt-2 w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl p-1.5 z-30 space-y-1 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute top-full left-0 mt-2 w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl p-1.5 z-30 space-y-1 animate-dropdown origin-top">
                 <Tooltip content="Upload multiple files, merge to PDF, package to ZIP, or process batch" side="right">
                   <button
                     type="button"

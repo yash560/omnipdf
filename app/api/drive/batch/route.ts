@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getMongoDb } from '@/lib/db/mongodb';
 import { getAuthenticatedUser } from '@/lib/auth/get-server-user';
 import { driveLiveBus } from '@/lib/drive/live-bus';
+import { 
+  trashCloudItems, 
+  restoreCloudItems, 
+  deleteCloudItemsPermanently 
+} from '@/lib/drive/server-drive';
 
 export async function POST(req: NextRequest) {
   try {
@@ -21,6 +26,24 @@ export async function POST(req: NextRequest) {
     const col = db.collection('filecraft_drive_items');
     const filter = { id: { $in: itemIds }, userId: auth.userId };
 
+    if (action === 'trash') {
+      await trashCloudItems(auth.userId, itemIds);
+      driveLiveBus.broadcast(auth.userId, 'item_deleted', { data: { action: 'trash', itemIds } });
+      return NextResponse.json({ success: true, action: 'trash', modifiedCount: itemIds.length });
+    }
+
+    if (action === 'restore') {
+      await restoreCloudItems(auth.userId, itemIds);
+      driveLiveBus.broadcast(auth.userId, 'item_created', { data: { action: 'restore', itemIds } });
+      return NextResponse.json({ success: true, action: 'restore', modifiedCount: itemIds.length });
+    }
+
+    if (action === 'delete_permanent') {
+      await deleteCloudItemsPermanently(auth.userId, itemIds);
+      driveLiveBus.broadcast(auth.userId, 'item_deleted', { data: { action: 'delete_permanent', itemIds } });
+      return NextResponse.json({ success: true, action: 'delete_permanent', deletedCount: itemIds.length });
+    }
+
     let update: any = {};
 
     switch (action) {
@@ -29,12 +52,6 @@ export async function POST(req: NextRequest) {
         break;
       case 'unstar':
         update = { $set: { isStarred: false, updatedAt: Date.now() } };
-        break;
-      case 'trash':
-        update = { $set: { isTrash: true, trashedAt: Date.now(), updatedAt: Date.now() } };
-        break;
-      case 'restore':
-        update = { $set: { isTrash: false, trashedAt: null, updatedAt: Date.now() } };
         break;
       case 'vault':
         update = { $set: { isVault: true, updatedAt: Date.now() } };
@@ -68,14 +85,6 @@ export async function POST(req: NextRequest) {
           update = { $pullAll: { tags }, $set: { updatedAt: Date.now() } };
         }
         break;
-      case 'delete_permanent':
-        const delResult = await col.deleteMany(filter);
-        driveLiveBus.broadcast(auth.userId, 'item_deleted', { data: { action, itemIds } });
-        return NextResponse.json({
-          success: true,
-          action,
-          deletedCount: delResult.deletedCount,
-        });
       default:
         return NextResponse.json({ error: `Unknown batch action: ${action}` }, { status: 400 });
     }

@@ -125,8 +125,8 @@ export function DriveToolSearchModal() {
   if (!isToolSearchOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-60 flex items-start justify-center p-3 sm:p-6 pt-12 sm:pt-20 bg-black/75 backdrop-blur-md animate-in fade-in duration-150">
-      <div className="relative w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[82vh] animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-60 flex items-start justify-center p-3 sm:p-6 pt-12 sm:pt-20 bg-black/75 backdrop-blur-md animate-modal-backdrop">
+      <div className="relative w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[82vh] animate-modal-pop">
         
         {/* TOP SEARCH BAR */}
         <div className="p-4 sm:p-5 border-b border-zinc-200 dark:border-zinc-800 flex items-center gap-3 bg-zinc-50/80 dark:bg-zinc-950/80">

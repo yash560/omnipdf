@@ -23,9 +23,9 @@ export function OpenSecurityInspector({ audit, isOpen, onClose }: OpenSecurityIn
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-modal-backdrop">
       <div
-        className="w-full max-w-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150"
+        className="w-full max-w-3xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-modal-pop"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -51,7 +51,7 @@ export function OpenSecurityInspector({ audit, isOpen, onClose }: OpenSecurityIn
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors btn-press cursor-pointer"
           >
             ✕
           </button>
@@ -61,7 +61,7 @@ export function OpenSecurityInspector({ audit, isOpen, onClose }: OpenSecurityIn
         <div className="flex items-center border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 px-5 pt-2 gap-2 text-xs font-bold">
           <button
             onClick={() => setActiveTab('params')}
-            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer btn-press ${
               activeTab === 'params'
                 ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -73,7 +73,7 @@ export function OpenSecurityInspector({ audit, isOpen, onClose }: OpenSecurityIn
 
           <button
             onClick={() => setActiveTab('typescript')}
-            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer btn-press ${
               activeTab === 'typescript'
                 ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -85,7 +85,7 @@ export function OpenSecurityInspector({ audit, isOpen, onClose }: OpenSecurityIn
 
           <button
             onClick={() => setActiveTab('python')}
-            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer btn-press ${
               activeTab === 'python'
                 ? 'border-emerald-500 text-emerald-600 dark:text-emerald-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -183,7 +183,7 @@ export function OpenSecurityInspector({ audit, isOpen, onClose }: OpenSecurityIn
                 </span>
                 <button
                   onClick={() => handleCopyCode(audit.typescriptCode, 'ts')}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold cursor-pointer transition-all active:scale-95"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold cursor-pointer transition-all btn-press"
                 >
                   {copiedTab === 'ts' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedTab === 'ts' ? 'Copied' : 'Copy Code'}</span>
@@ -203,7 +203,7 @@ export function OpenSecurityInspector({ audit, isOpen, onClose }: OpenSecurityIn
                 </span>
                 <button
                   onClick={() => handleCopyCode(audit.pythonCode, 'py')}
-                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold cursor-pointer transition-all active:scale-95"
+                  className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold cursor-pointer transition-all btn-press"
                 >
                   {copiedTab === 'py' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                   <span>{copiedTab === 'py' ? 'Copied' : 'Copy Code'}</span>
@@ -223,7 +223,7 @@ export function OpenSecurityInspector({ audit, isOpen, onClose }: OpenSecurityIn
           </div>
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold text-xs hover:opacity-90 transition-opacity cursor-pointer"
+            className="px-5 py-2 rounded-xl bg-zinc-900 dark:bg-white text-white dark:text-zinc-900 font-bold text-xs hover:opacity-90 transition-opacity cursor-pointer btn-press"
           >
             Close Inspector
           </button>

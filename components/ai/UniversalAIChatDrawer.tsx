@@ -171,13 +171,19 @@ export function UniversalAIChatDrawer() {
 
       {/* Slide-Over Drawer Panel */}
       {isOpen && (
-        <aside
-          className={`fixed bottom-0 right-0 top-0 z-50 flex flex-col bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 shadow-2xl transition-all duration-300 ${
-            isExpanded
-              ? 'w-full md:w-[700px] lg:w-[850px]'
-              : 'w-full sm:w-[460px] md:w-[480px]'
-          }`}
-        >
+        <>
+          {/* Backdrop for mobile & focus containment */}
+          <div
+            className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs animate-modal-backdrop"
+            onClick={closeDrawer}
+          />
+          <aside
+            className={`fixed bottom-0 right-0 top-0 z-50 flex flex-col bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 shadow-2xl animate-drawer-right transition-[width] duration-300 ${
+              isExpanded
+                ? 'w-full md:w-[700px] lg:w-[850px]'
+                : 'w-full sm:w-[460px] md:w-[480px]'
+            }`}
+          >
           {/* Header */}
           <div className="p-4 bg-zinc-50 dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -436,6 +442,7 @@ export function UniversalAIChatDrawer() {
             </form>
           </div>
         </aside>
+      </>
       )}
     </>
   );

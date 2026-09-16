@@ -217,15 +217,15 @@ export function FileDropzone({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={() => inputRef.current?.click()}
-          className={`group relative flex flex-col items-center justify-center p-12 sm:p-16 border-2 border-dashed rounded-3xl cursor-pointer transition-all duration-300 text-center ${
+          className={`group relative flex flex-col items-center justify-center p-12 sm:p-16 border-2 border-dashed rounded-3xl cursor-pointer transition-[transform,border-color,background-color,box-shadow] duration-200 text-center ${
             isDragging
               ? 'border-rose-500 bg-rose-50/50 dark:bg-rose-950/20 scale-[0.99]'
-              : 'border-zinc-300 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 bg-white/60 dark:bg-zinc-900/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/80 shadow-sm hover:shadow-xl'
+              : 'border-zinc-300 dark:border-zinc-800 hover:border-zinc-400 dark:hover:border-zinc-700 bg-white/60 dark:bg-zinc-900/40 hover:bg-zinc-50 dark:hover:bg-zinc-900/80 shadow-xs hover:shadow-xl'
           }`}
         >
           {/* Main Action Button */}
           <div
-            className="w-20 h-20 rounded-3xl flex items-center justify-center text-white shadow-xl group-hover:scale-110 group-hover:-translate-y-1 transition-all duration-300 mb-6"
+            className="w-20 h-20 rounded-3xl flex items-center justify-center text-white shadow-xl group-hover:scale-105 group-hover:-translate-y-1 transition-transform duration-200 mb-6"
             style={{ backgroundColor: primaryColor }}
           >
             <UploadCloud className="w-10 h-10 stroke-[2.2]" />
@@ -240,7 +240,7 @@ export function FileDropzone({
 
           <button
             type="button"
-            className="px-8 py-3.5 rounded-2xl text-white font-bold text-sm shadow-lg hover:shadow-xl transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95"
+            className="px-8 py-3.5 rounded-2xl text-white font-bold text-sm shadow-lg hover:shadow-xl btn-press cursor-pointer"
             style={{ backgroundColor: primaryColor }}
           >
             Choose Files
@@ -253,9 +253,9 @@ export function FileDropzone({
         </div>
       ) : (
         /* Staged Files View with Previews & Reordering */
-        <div className="space-y-4">
+        <div className="space-y-4 animate-stagger-fade">
           {/* Header Controls */}
-          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xs">
             <div className="flex items-center gap-2 text-sm font-bold text-zinc-800 dark:text-zinc-200">
               <CheckCircle2 className="w-4 h-4 text-emerald-500" />
               <span>
@@ -268,7 +268,7 @@ export function FileDropzone({
               {multiple && (
                 <button
                   onClick={() => inputRef.current?.click()}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 btn-press cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add More</span>
@@ -277,7 +277,7 @@ export function FileDropzone({
 
               <button
                 onClick={() => onFilesChange([])}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/60 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50 dark:bg-rose-950/30 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950/60 btn-press cursor-pointer"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 <span>Clear</span>
@@ -300,7 +300,7 @@ export function FileDropzone({
                     moveFile(dragIdx, idx);
                   }
                 }}
-                className="group relative flex flex-col p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-sm hover:shadow-lg transition-all duration-200 hover:border-zinc-400 dark:hover:border-zinc-700 cursor-grab active:cursor-grabbing"
+                className="group relative flex flex-col p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs hover:shadow-lg hover-lift transition-[transform,box-shadow,border-color] duration-150 hover:border-zinc-400 dark:hover:border-zinc-700 cursor-grab active:cursor-grabbing"
               >
                 {/* Index badge */}
                 <div className="absolute top-2 left-2 z-10 w-6 h-6 rounded-full bg-zinc-900/80 dark:bg-white/90 text-white dark:text-zinc-900 text-[10px] font-extrabold flex items-center justify-center shadow">
@@ -308,18 +308,18 @@ export function FileDropzone({
                 </div>
 
                 {/* Card Controls */}
-                <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="absolute top-2 right-2 z-10 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                   <button
                     onClick={() => rotateFile(fileItem.id)}
                     title="Rotate 90°"
-                    className="p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 shadow-sm transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 shadow-xs btn-press cursor-pointer"
                   >
                     <RotateCw className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => removeFile(fileItem.id)}
                     title="Remove file"
-                    className="p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/60 shadow-sm transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg bg-white/90 dark:bg-zinc-800/90 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/60 shadow-xs btn-press cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -351,7 +351,7 @@ export function FileDropzone({
             {multiple && (
               <button
                 onClick={() => inputRef.current?.click()}
-                className="flex flex-col items-center justify-center p-4 aspect-[3/4] border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-zinc-400 dark:hover:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
+                className="flex flex-col items-center justify-center p-4 aspect-[3/4] border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-zinc-400 dark:hover:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 btn-press cursor-pointer"
               >
                 <Plus className="w-8 h-8 mb-2" />
                 <span className="text-xs font-bold">Add File</span>

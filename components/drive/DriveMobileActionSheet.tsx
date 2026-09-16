@@ -126,7 +126,7 @@ export function DriveMobileActionSheet({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs animate-in fade-in duration-200 select-none">
+    <div className="fixed inset-0 z-50 flex flex-col justify-end bg-black/60 backdrop-blur-xs animate-modal-backdrop select-none">
       {/* Click outside to dismiss */}
       <div className="flex-1" onClick={onClose} />
 
@@ -138,9 +138,9 @@ export function DriveMobileActionSheet({
         onTouchEnd={handleTouchEnd}
         style={{
           transform: dragCurrentY ? `translateY(${dragCurrentY}px)` : undefined,
-          transition: dragCurrentY ? 'none' : 'transform 200ms ease-out',
+          transition: dragCurrentY ? 'none' : 'transform 240ms var(--ease-drawer)',
         }}
-        className="w-full max-h-[88vh] bg-white dark:bg-zinc-900 border-t border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-250 pb-6"
+        className="w-full max-h-[88vh] bg-white dark:bg-zinc-900 border-t border-zinc-200/80 dark:border-zinc-800 rounded-t-3xl shadow-2xl flex flex-col overflow-hidden animate-bottom-sheet pb-6"
       >
         {/* Grab Handle Bar for Swipe-Down */}
         <div className="w-full pt-3 pb-2 flex justify-center cursor-grab active:cursor-grabbing">
@@ -419,7 +419,7 @@ export function DriveMobileActionSheet({
                   onClick={() => {
                     triggerHaptic('success');
                     onClose();
-                    restoreSelected();
+                    restoreSelected(item.id);
                   }}
                   className="w-full flex items-center gap-3 p-3.5 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition-colors cursor-pointer"
                 >
@@ -431,7 +431,7 @@ export function DriveMobileActionSheet({
                   onClick={() => {
                     triggerHaptic('error');
                     onClose();
-                    deleteSelectedPermanently();
+                    deleteSelectedPermanently(item.id);
                   }}
                   className="w-full flex items-center gap-3 p-3.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100/50 dark:hover:bg-rose-900/30 transition-colors cursor-pointer"
                 >
@@ -445,8 +445,7 @@ export function DriveMobileActionSheet({
                 onClick={() => {
                   triggerHaptic('warning');
                   onClose();
-                  if (!selectedIds.includes(item.id)) toggleSelect(item.id, false);
-                  trashSelected();
+                  trashSelected(item.id);
                 }}
                 className="w-full flex items-center gap-3 p-3.5 text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-100/50 dark:hover:bg-rose-900/30 transition-colors cursor-pointer"
               >

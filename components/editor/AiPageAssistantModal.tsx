@@ -241,9 +241,9 @@ export function AiPageAssistantModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/65 backdrop-blur-xs animate-modal-backdrop">
       <div
-        className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-in zoom-in-95 duration-150"
+        className="w-full max-w-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-modal-pop"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -269,7 +269,7 @@ export function AiPageAssistantModal({
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1.5 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors btn-press cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -279,7 +279,7 @@ export function AiPageAssistantModal({
         <div className="flex items-center border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/80 px-4 pt-2 gap-1 text-xs font-bold overflow-x-auto">
           <button
             onClick={() => { setActiveTab('autofill'); setResultMessage(null); }}
-            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer btn-press ${
               activeTab === 'autofill'
                 ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -291,7 +291,7 @@ export function AiPageAssistantModal({
 
           <button
             onClick={() => { setActiveTab('prompt'); setResultMessage(null); }}
-            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer btn-press ${
               activeTab === 'prompt'
                 ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -303,7 +303,7 @@ export function AiPageAssistantModal({
 
           <button
             onClick={() => { setActiveTab('redact'); setResultMessage(null); }}
-            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer btn-press ${
               activeTab === 'redact'
                 ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -315,7 +315,7 @@ export function AiPageAssistantModal({
 
           <button
             onClick={() => { setActiveTab('pool'); setResultMessage(null); }}
-            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer ${
+            className={`pb-2.5 px-3 border-b-2 flex items-center gap-1.5 transition-all cursor-pointer btn-press ${
               activeTab === 'pool'
                 ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                 : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
@@ -330,7 +330,7 @@ export function AiPageAssistantModal({
         <div className="p-5 overflow-y-auto flex-1 space-y-4 text-xs">
           {/* Result Alert if available */}
           {resultMessage && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 font-bold flex items-center gap-2 animate-in fade-in duration-150">
+            <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 text-emerald-900 dark:text-emerald-300 font-bold flex items-center gap-2 animate-modal-pop">
               <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
               <span>{resultMessage}</span>
             </div>
@@ -346,7 +346,7 @@ export function AiPageAssistantModal({
                 <div className="grid grid-cols-3 gap-2">
                   <button
                     onClick={() => handleApplyPreset('personal')}
-                    className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer btn-press ${
                       presetProfile === 'personal'
                         ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
                         : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'
@@ -357,7 +357,7 @@ export function AiPageAssistantModal({
 
                   <button
                     onClick={() => handleApplyPreset('invoice')}
-                    className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer btn-press ${
                       presetProfile === 'invoice'
                         ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
                         : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'
@@ -368,7 +368,7 @@ export function AiPageAssistantModal({
 
                   <button
                     onClick={() => handleApplyPreset('tax')}
-                    className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer ${
+                    className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all cursor-pointer btn-press ${
                       presetProfile === 'tax'
                         ? 'border-indigo-600 bg-indigo-50/50 dark:bg-indigo-950/20 text-indigo-700 dark:text-indigo-300'
                         : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'
@@ -387,7 +387,7 @@ export function AiPageAssistantModal({
                   rows={5}
                   value={userContext}
                   onChange={(e) => setUserContext(e.target.value)}
-                  className="w-full p-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 font-mono text-xs outline-none focus:border-indigo-600"
+                  className="w-full p-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 font-mono text-xs outline-none focus:border-indigo-600 transition-colors"
                   placeholder="Enter name, address, numbers, dates..."
                 />
               </div>
@@ -395,7 +395,7 @@ export function AiPageAssistantModal({
               <button
                 onClick={handleRunAutoFill}
                 disabled={loading}
-                className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer btn-press disabled:opacity-50"
               >
                 {loading ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -428,7 +428,7 @@ export function AiPageAssistantModal({
                         setUserPrompt(chip);
                         handleRunPromptEdit(chip);
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 text-zinc-700 dark:text-zinc-300 text-[11px] font-medium border border-zinc-200 dark:border-zinc-700 transition-colors cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-950/40 text-zinc-700 dark:text-zinc-300 text-[11px] font-medium border border-zinc-200 dark:border-zinc-700 transition-colors cursor-pointer btn-press"
                     >
                       {chip}
                     </button>
@@ -445,14 +445,14 @@ export function AiPageAssistantModal({
                   value={userPrompt}
                   onChange={(e) => setUserPrompt(e.target.value)}
                   placeholder="e.g. Add a yellow note in the margin summarizing paragraph 2, or add an approval seal..."
-                  className="w-full p-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 text-xs outline-none focus:border-indigo-600"
+                  className="w-full p-3 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80 text-zinc-900 dark:text-zinc-100 text-xs outline-none focus:border-indigo-600 transition-colors"
                 />
               </div>
 
               <button
                 onClick={() => handleRunPromptEdit()}
                 disabled={loading || !userPrompt.trim()}
-                className="w-full py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer btn-press disabled:opacity-50"
               >
                 {loading ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -498,7 +498,7 @@ export function AiPageAssistantModal({
                             isChecked ? prev.filter((p) => p !== pii) : [...prev, pii]
                           );
                         }}
-                        className={`p-2.5 rounded-xl border text-left text-xs font-bold flex items-center justify-between transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-xl border text-left text-xs font-bold flex items-center justify-between transition-all cursor-pointer btn-press ${
                           isChecked
                             ? 'border-rose-500 bg-rose-50/40 dark:bg-rose-950/20 text-rose-700 dark:text-rose-300'
                             : 'border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400'
@@ -515,7 +515,7 @@ export function AiPageAssistantModal({
               <button
                 onClick={handleRunPiiRedaction}
                 disabled={loading || selectedPii.length === 0}
-                className="w-full py-3 px-4 rounded-2xl bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-extrabold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98 disabled:opacity-50"
+                className="w-full py-3 px-4 rounded-2xl bg-zinc-900 hover:bg-black dark:bg-zinc-100 dark:hover:bg-white text-white dark:text-zinc-900 font-extrabold text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer btn-press disabled:opacity-50"
               >
                 {loading ? (
                   <RefreshCw className="w-4 h-4 animate-spin" />
@@ -584,7 +584,7 @@ export function AiPageAssistantModal({
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold transition-colors cursor-pointer"
+            className="px-4 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-bold transition-colors btn-press cursor-pointer"
           >
             Close
           </button>

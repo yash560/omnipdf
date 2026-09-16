@@ -406,11 +406,11 @@ export function CommandMenu() {
   return (
     <>
       <div 
-        className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-16 p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-150 overflow-hidden"
+        className="fixed inset-0 z-50 flex items-start justify-center pt-12 sm:pt-16 p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-modal-backdrop overflow-hidden"
         onClick={() => setOpen(false)}
       >
         <div
-          className="w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-150 flex flex-col max-h-[85vh]"
+          className="w-full max-w-3xl bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden animate-modal-pop flex flex-col max-h-[85vh]"
           onClick={(e) => e.stopPropagation()}
           onKeyDown={handleKeyDown}
         >
