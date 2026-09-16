@@ -297,6 +297,23 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Sync upload progress & active state directly from chunked upload orchestrator
+  useEffect(() => {
+    return chunkedUploader.subscribe((list) => {
+      if (list.length === 0) {
+        setIsUploading(false);
+        setUploadProgress(0);
+        return;
+      }
+      const inProgress = list.filter((u) => u.status === 'uploading' || u.status === 'assembling' || u.status === 'queued');
+      setIsUploading(inProgress.length > 0);
+      const totalBytes = list.reduce((acc, u) => acc + u.totalBytes, 0);
+      const totalUploaded = list.reduce((acc, u) => acc + u.uploadedBytes, 0);
+      const percent = totalBytes > 0 ? Math.round((totalUploaded / totalBytes) * 100) : 0;
+      setUploadProgress(percent);
+    });
+  }, []);
+
   const authRequired = !isLoading && !isAuthenticated;
 
   // Check vault unlock status from session storage
@@ -931,12 +948,14 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const trashSelected = async (targetIdsOverride?: string[] | string) => {
-    const rawIds = targetIdsOverride ? (Array.isArray(targetIdsOverride) ? targetIdsOverride : [targetIdsOverride]) : selectedIds;
-    if (!rawIds || rawIds.length === 0) return;
-    const targetIds = [...rawIds];
+  const trashSelected = async (targetIdsOverride?: string[] | string | any) => {
+    const isValidOverride = typeof targetIdsOverride === 'string' || Array.isArray(targetIdsOverride);
+    const targetIds = isValidOverride
+      ? (Array.isArray(targetIdsOverride) ? targetIdsOverride.filter((id) => typeof id === 'string') : [targetIdsOverride as string])
+      : selectedIds;
+    if (!targetIds || targetIds.length === 0) return;
     const previousItems = items;
-    if (!targetIdsOverride) clearSelection();
+    if (!isValidOverride) clearSelection();
 
     // Optimistic removal from current view
     if (viewSection !== 'trash') {
@@ -957,12 +976,14 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const restoreSelected = async (targetIdsOverride?: string[] | string) => {
-    const rawIds = targetIdsOverride ? (Array.isArray(targetIdsOverride) ? targetIdsOverride : [targetIdsOverride]) : selectedIds;
-    if (!rawIds || rawIds.length === 0) return;
-    const targetIds = [...rawIds];
+  const restoreSelected = async (targetIdsOverride?: string[] | string | any) => {
+    const isValidOverride = typeof targetIdsOverride === 'string' || Array.isArray(targetIdsOverride);
+    const targetIds = isValidOverride
+      ? (Array.isArray(targetIdsOverride) ? targetIdsOverride.filter((id) => typeof id === 'string') : [targetIdsOverride as string])
+      : selectedIds;
+    if (!targetIds || targetIds.length === 0) return;
     const previousItems = items;
-    if (!targetIdsOverride) clearSelection();
+    if (!isValidOverride) clearSelection();
 
     // Optimistic removal from trash view
     if (viewSection === 'trash') {
@@ -981,12 +1002,14 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const deleteSelectedPermanently = async (targetIdsOverride?: string[] | string) => {
-    const rawIds = targetIdsOverride ? (Array.isArray(targetIdsOverride) ? targetIdsOverride : [targetIdsOverride]) : selectedIds;
-    if (!rawIds || rawIds.length === 0) return;
-    const targetIds = [...rawIds];
+  const deleteSelectedPermanently = async (targetIdsOverride?: string[] | string | any) => {
+    const isValidOverride = typeof targetIdsOverride === 'string' || Array.isArray(targetIdsOverride);
+    const targetIds = isValidOverride
+      ? (Array.isArray(targetIdsOverride) ? targetIdsOverride.filter((id) => typeof id === 'string') : [targetIdsOverride as string])
+      : selectedIds;
+    if (!targetIds || targetIds.length === 0) return;
     const previousItems = items;
-    if (!targetIdsOverride) clearSelection();
+    if (!isValidOverride) clearSelection();
 
     setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
     if (detailsItem && targetIds.includes(detailsItem.id)) {
@@ -1047,10 +1070,15 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setShareModalItem(null);
   };
 
-  const triggerAutoLabel = async (itemIds?: string[]) => {
+  const triggerAutoLabel = async (itemIds?: string[] | any) => {
+    const isValidOverride = typeof itemIds === 'string' || Array.isArray(itemIds);
+    const validIds = isValidOverride
+      ? (Array.isArray(itemIds) ? itemIds.filter((id) => typeof id === 'string') : [itemIds as string])
+      : selectedIds;
+
     setIsSyncing(true);
     try {
-      await batchAutoLabelApi({ itemIds, allUnlabeled: !itemIds });
+      await batchAutoLabelApi({ itemIds: validIds, allUnlabeled: !validIds || validIds.length === 0 });
       await loadItems({ silent: true });
     } catch (err) {
       console.error('Auto-label failed:', err);

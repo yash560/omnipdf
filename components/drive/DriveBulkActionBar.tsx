@@ -91,7 +91,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
             <Tooltip content={`Select all ${totalCount} items`} shortcut="⌘A" side="top">
               <button
                 type="button"
-                onClick={onSelectAll}
+                onClick={() => onSelectAll?.()}
                 className="text-[10px] text-zinc-400 hover:text-white underline cursor-pointer ml-1"
                 aria-label={`Select all ${totalCount} items`}
               >
@@ -104,7 +104,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
             <Tooltip content="Invert current selection" side="top">
               <button
                 type="button"
-                onClick={onInvertSelection}
+                onClick={() => onInvertSelection?.()}
                 className="text-[10px] text-zinc-400 hover:text-white underline cursor-pointer"
                 aria-label="Invert current selection"
               >
@@ -121,7 +121,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
             <Tooltip content={`Merge ${selectedPdfCount} selected PDFs into a single document`} side="top">
               <button
                 type="button"
-                onClick={onBulkMergePdfs}
+                onClick={() => onBulkMergePdfs?.()}
                 disabled={isMergingPdfs}
                 className="px-2.5 py-1.5 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white rounded-xl transition flex items-center gap-1.5 text-xs font-bold shadow-sm cursor-pointer shrink-0 disabled:opacity-50"
                 aria-label="Merge selected PDFs"
@@ -141,7 +141,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
             <Tooltip content="Copy details of selected items to clipboard" side="top">
               <button
                 type="button"
-                onClick={onBulkCopyInfo}
+                onClick={() => onBulkCopyInfo?.()}
                 className="p-1.5 sm:p-2 hover:bg-white/10 rounded-xl transition text-zinc-300 hover:text-white cursor-pointer flex items-center gap-1"
                 aria-label="Copy item details"
               >
@@ -162,7 +162,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
             <Tooltip content="Download all selected items as ZIP archive" side="top">
               <button
                 type="button"
-                onClick={onBulkDownloadZip}
+                onClick={() => onBulkDownloadZip?.()}
                 className="p-1.5 sm:p-2 hover:bg-white/10 rounded-xl transition text-zinc-300 hover:text-white cursor-pointer"
                 aria-label="Download as ZIP"
               >
@@ -177,7 +177,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
               <Tooltip content="Star all selected items" side="top">
                 <button
                   type="button"
-                  onClick={onBulkStar}
+                  onClick={() => onBulkStar?.()}
                   className="p-1.5 sm:p-2 hover:bg-white/10 rounded-xl transition text-amber-300 hover:text-amber-200 cursor-pointer"
                   aria-label="Star selected"
                 >
@@ -188,7 +188,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
               <Tooltip content="Unstar all selected items" side="top">
                 <button
                   type="button"
-                  onClick={onBulkUnstar}
+                  onClick={() => onBulkUnstar?.()}
                   className="p-1.5 sm:p-2 hover:bg-white/10 rounded-xl transition text-zinc-400 hover:text-zinc-200 cursor-pointer"
                   aria-label="Unstar selected"
                 >
@@ -205,7 +205,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
                 <Tooltip content="Unlock and move out of Secure PIN Vault" side="top">
                   <button
                     type="button"
-                    onClick={onBulkUnvault}
+                    onClick={() => onBulkUnvault?.()}
                     className="px-2.5 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-xl transition flex items-center gap-1 text-xs font-bold cursor-pointer"
                     aria-label="Unlock and move out of Vault"
                   >
@@ -218,7 +218,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
                   <Tooltip content="Lock selected items in Secure PIN Vault" side="top">
                     <button
                       type="button"
-                      onClick={onBulkVault}
+                      onClick={() => onBulkVault?.()}
                       className="p-1.5 sm:p-2 hover:bg-amber-500/20 text-amber-400 hover:text-amber-300 rounded-xl transition cursor-pointer"
                       aria-label="Lock in Secure Vault"
                     >
@@ -229,7 +229,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
                   <Tooltip content="Unlock selected items from Secure PIN Vault" side="top">
                     <button
                       type="button"
-                      onClick={onBulkUnvault}
+                      onClick={() => onBulkUnvault?.()}
                       className="p-1.5 sm:p-2 hover:bg-white/10 text-emerald-400 hover:text-emerald-300 rounded-xl transition cursor-pointer"
                       aria-label="Unlock from Secure Vault"
                     >
@@ -246,7 +246,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
             <Tooltip content="Auto-tag & categorize selected files with AI" side="top">
               <button
                 type="button"
-                onClick={onBulkAutoLabel}
+                onClick={() => onBulkAutoLabel?.()}
                 className="p-1.5 sm:p-2 hover:bg-purple-500/20 text-purple-400 hover:text-purple-300 rounded-xl transition cursor-pointer"
                 aria-label="AI Auto-Label"
               >
@@ -260,7 +260,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
             <Tooltip content="Move selected items to folder..." side="top">
               <button
                 type="button"
-                onClick={onBulkMove}
+                onClick={() => onBulkMove?.()}
                 className="p-1.5 sm:p-2 hover:bg-white/10 rounded-xl transition text-blue-400 hover:text-blue-300 cursor-pointer"
                 aria-label="Move to folder"
               >
@@ -274,7 +274,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
             <Tooltip content="Batch edit tags, category & expiry dates" side="top">
               <button
                 type="button"
-                onClick={onBulkTag}
+                onClick={() => onBulkTag?.()}
                 className="p-1.5 sm:p-2 hover:bg-white/10 rounded-xl transition text-rose-400 hover:text-rose-300 cursor-pointer"
                 aria-label="Edit tags, category and expiry"
               >
@@ -290,7 +290,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
                 <Tooltip content="Restore selected items from recycle bin" side="top">
                   <button
                     type="button"
-                    onClick={onBulkRestore}
+                    onClick={() => onBulkRestore?.()}
                     className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl transition flex items-center gap-1 text-xs font-bold cursor-pointer"
                     aria-label="Restore selected"
                   >
@@ -303,7 +303,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
                 <Tooltip content="⚠️ Permanently delete selected items forever" side="top">
                   <button
                     type="button"
-                    onClick={onBulkDeletePermanent}
+                    onClick={() => onBulkDeletePermanent?.()}
                     className="px-2.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl transition flex items-center gap-1 text-xs font-bold cursor-pointer"
                     aria-label="Permanently delete forever"
                   >
@@ -317,7 +317,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
             <Tooltip content="Move selected items to Trash" side="top">
               <button
                 type="button"
-                onClick={onBulkTrash}
+                onClick={() => onBulkTrash?.()}
                 className="p-1.5 sm:p-2 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 rounded-xl transition cursor-pointer"
                 aria-label="Move to Trash"
               >
@@ -331,7 +331,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
         <Tooltip content="Clear selection" shortcut="Esc" side="top">
           <button
             type="button"
-            onClick={onClearSelection}
+            onClick={() => onClearSelection?.()}
             className="ml-1 sm:ml-2 p-1.5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl transition cursor-pointer shrink-0"
             aria-label="Clear Selection"
           >

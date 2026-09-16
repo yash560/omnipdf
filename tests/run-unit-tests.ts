@@ -5,6 +5,7 @@ import { runDedupTests } from './unit/dedup-engine.test';
 import { runExpiryTests } from './unit/expiry-tracker.test';
 import { runJwtAuthTests } from './unit/jwt-auth.test';
 import { runDossierTests } from './unit/dossier-generator.test';
+import { runChunkedUploaderTests } from './unit/chunked-uploader.test';
 
 async function main() {
   console.log('========================================================');
@@ -17,6 +18,7 @@ async function main() {
 
   const testSuites = [
     { name: 'drive-helpers', fn: runHelpersTests },
+    { name: 'chunked-uploader', fn: runChunkedUploaderTests },
     { name: 'search-engine', fn: runSearchEngineTests },
     { name: 'recommendations', fn: runRecommendationsTests },
     { name: 'dedup-engine', fn: runDedupTests },

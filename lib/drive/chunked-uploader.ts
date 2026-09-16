@@ -29,6 +29,7 @@ class ChunkedUploadOrchestrator {
 
   private listeners: Set<UploadListener> = new Set();
   private activeUploadsCount = 0;
+  private defaultOnItemCompleted?: (item: DriveItem) => void;
 
   public subscribe(listener: UploadListener) {
     this.listeners.add(listener);
@@ -62,8 +63,39 @@ class ChunkedUploadOrchestrator {
       item.paused = false;
       item.progress.status = 'uploading';
       this.notify();
-      this.processFileUpload(uploadId, onComplete);
+      this.processFileUpload(uploadId, onComplete || this.defaultOnItemCompleted);
     }
+  }
+
+  public retry(uploadId: string, onComplete?: (item: DriveItem) => void) {
+    const item = this.queue.get(uploadId);
+    if (item && (item.progress.status === 'error' || item.aborted)) {
+      item.aborted = false;
+      item.paused = false;
+      item.progress.status = 'queued';
+      item.progress.error = undefined;
+      item.progress.uploadedBytes = 0;
+      item.progress.percentage = 0;
+      item.progress.speedBytesPerSec = 0;
+      this.notify();
+      this.processFileUpload(uploadId, onComplete || this.defaultOnItemCompleted);
+    }
+  }
+
+  public retryAllFailed(onComplete?: (item: DriveItem) => void) {
+    for (const [uploadId, item] of this.queue.entries()) {
+      if (item.progress.status === 'error') {
+        this.retry(uploadId, onComplete || this.defaultOnItemCompleted);
+      }
+    }
+  }
+
+  public getFailedCount(): number {
+    let count = 0;
+    for (const item of this.queue.values()) {
+      if (item.progress.status === 'error') count++;
+    }
+    return count;
   }
 
   public cancel(uploadId: string) {
@@ -77,10 +109,15 @@ class ChunkedUploadOrchestrator {
 
   public clearCompleted() {
     for (const [id, item] of this.queue.entries()) {
-      if (item.progress.status === 'completed' || item.progress.status === 'error') {
+      if (item.progress.status === 'completed') {
         this.queue.delete(id);
       }
     }
+    this.notify();
+  }
+
+  public clearAll() {
+    this.queue.clear();
     this.notify();
   }
 
@@ -92,6 +129,9 @@ class ChunkedUploadOrchestrator {
     baseParentId: string | null = null,
     onItemCompleted?: (item: DriveItem) => void
   ): Promise<void> {
+    if (onItemCompleted) {
+      this.defaultOnItemCompleted = onItemCompleted;
+    }
     // 1. If any files have relativePath (nested folder structure), batch create intermediate folders first!
     const folderPaths = new Set<string>();
     for (const f of files) {
@@ -311,7 +351,8 @@ class ChunkedUploadOrchestrator {
       progress.uploadedBytes = file.size;
       this.notify();
 
-      if (onComplete) onComplete(finalItem);
+      const callback = onComplete || this.defaultOnItemCompleted;
+      if (callback) callback(finalItem);
     } catch (err: any) {
       if (!queueItem.aborted) {
         progress.status = 'error';

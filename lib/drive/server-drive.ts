@@ -78,7 +78,9 @@ async function ensureIndexes(): Promise<void> {
 
       await Promise.allSettled([
         chunksCol.createIndex({ uploadId: 1, chunkIndex: 1 }, { unique: true }),
+        chunksCol.createIndex({ receivedAt: 1 }, { expireAfterSeconds: 86400 }),
         sessionsCol.createIndex({ uploadId: 1, userId: 1 }, { unique: true }),
+        sessionsCol.createIndex({ createdAt: 1 }, { expireAfterSeconds: 86400 }),
         commentsCol.createIndex({ itemId: 1, createdAt: 1 }),
         activityCol.createIndex({ itemId: 1, timestamp: -1 }),
         activityCol.createIndex({ userId: 1, timestamp: -1 }),
