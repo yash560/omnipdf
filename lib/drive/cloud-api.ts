@@ -18,6 +18,7 @@ export async function fetchCloudItems(options: {
   parentId?: string | null;
   category?: DriveCategory;
   query?: string;
+  isVaultUnlocked?: boolean;
 } = {}): Promise<{ items: DriveItem[]; breadcrumbs: DriveBreadcrumb[] }> {
   const params = new URLSearchParams();
   if (options.section) params.set('section', options.section);

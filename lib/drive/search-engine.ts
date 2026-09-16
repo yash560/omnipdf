@@ -1,4 +1,5 @@
 import { DriveItem, SearchFilterOptions, SearchResult, DriveCategory } from './drive-types';
+import { getOcrSnippet } from '../ai/ocr-indexer';
 
 // Semantic Concept Dictionaries for Intent Expansion
 const CONCEPT_EXPANSIONS: Record<string, string[]> = {
@@ -16,13 +17,16 @@ const CONCEPT_EXPANSIONS: Record<string, string[]> = {
   dad: ['yogesh', 'yogesh jain', 'father'],
   father: ['yogesh', 'yogesh jain', 'dad'],
   yash: ['yash jain', 'yaash', 'my'],
+  mom: ['simpal', 'simpal jain', 'mother'],
+  mother: ['simpal', 'simpal jain', 'mom'],
+  shreya: ['shreya jain', 'sister'],
   bank: ['sbi', 'icici', 'cheque', 'passbook', 'statement', 'debit', 'credit', 'account'],
   cheque: ['cancelled cheque', 'sbi', 'icici', 'bank', 'check'],
   tax: ['pan card', 'tax invoice', 'income tax', 'municipal tax', 'tds', 'form 16', 'gst'],
   bills: ['invoice', 'receipt', 'tax invoice', 'electricity', 'amaze bills', 'expenses'],
   invoice: ['bill', 'tax invoice', 'receipt', 'payment', 'purchase'],
   insurance: ['policy', 'coverage', 'schedule', 'premium', 'pulsar insurance', 'amaze insurance', 'lic', 'mediclaim'],
-  property: ['registry', 'electricity', 'municipal', 'flat', 'house', 'land', 'deed'],
+  property: ['registry', 'electricity', 'municipal', 'flat', 'house', 'land', 'deed', 'ishan park', 'sapphire'],
   education: ['degree', 'mtech', 'btech', 'certificate', 'diploma', 'marksheet', 'school', 'college'],
   resume: ['cv', 'curriculum vitae', 'profile', 'bio', 'internshala'],
 };
@@ -74,7 +78,7 @@ function fuzzySimilarity(s1: string, s2: string): number {
 }
 
 /**
- * Master Hybrid Semantic & Fuzzy Search Algorithm
+ * Master Hybrid Semantic, OCR & Fuzzy Search Algorithm
  */
 export function searchDriveItems(
   items: DriveItem[],
@@ -93,17 +97,41 @@ export function searchDriveItems(
   });
 
   const expandedList = Array.from(expandedConcepts);
-
   const scoredItems: { item: DriveItem; score: number; matchedTerms: Set<string> }[] = [];
 
   for (const item of items) {
-    // 1. Hard filters
+    // 1. Hard filters & Section constraints
     if (options.section === 'trash' && !item.isTrash) continue;
     if (options.section !== 'trash' && item.isTrash) continue;
     if (options.section === 'starred' && !item.isStarred) continue;
+    if (options.section === 'vault') {
+      if (!item.isVault) continue;
+    } else if (item.isVault && !options.isVaultUnlocked) {
+      // Hide locked vault items from general browsing unless unlocked
+      continue;
+    }
+
+    if (options.section === 'expiry') {
+      if (!item.expiryStatus || item.expiryStatus === 'none') continue;
+    }
+
     if (options.category && item.category !== options.category) continue;
     if (options.aiCategory && item.aiCategory !== options.aiCategory) continue;
     if (options.parentId !== undefined && item.parentId !== options.parentId) continue;
+
+    // Person facet filter
+    if (options.person) {
+      const p = options.person.toLowerCase();
+      const combinedMeta = `${item.name} ${item.relativePath || ''} ${(item.tags || []).join(' ')} ${item.ocrText || ''}`.toLowerCase();
+      if (!combinedMeta.includes(p)) continue;
+    }
+
+    // Vehicle facet filter
+    if (options.vehicle) {
+      const v = options.vehicle.toLowerCase();
+      const combinedMeta = `${item.name} ${item.relativePath || ''} ${(item.tags || []).join(' ')} ${item.ocrText || ''}`.toLowerCase();
+      if (!combinedMeta.includes(v)) continue;
+    }
 
     if (options.tag) {
       const hasTag = (item.tags || []).some(
@@ -137,6 +165,7 @@ export function searchDriveItems(
     const itemKeywords = (item.semanticKeywords || []).map((k) => k.toLowerCase());
     const itemSummary = (item.aiSummary || '').toLowerCase();
     const itemAiCategory = (item.aiCategory || '').toLowerCase();
+    const itemOcrText = (item.ocrText || '').toLowerCase();
 
     // A. Full Exact String Match
     if (itemName === rawQuery) {
@@ -145,6 +174,12 @@ export function searchDriveItems(
     } else if (itemName.includes(rawQuery)) {
       score += 60;
       matchedTerms.add(rawQuery);
+    }
+
+    // OCR Full Text Exact Match
+    if (itemOcrText.includes(rawQuery)) {
+      score += 70;
+      matchedTerms.add(`OCR: "${rawQuery}"`);
     }
 
     // B. Token-by-Token Match & Fuzzy Comparison
@@ -207,6 +242,12 @@ export function searchDriveItems(
           matchedTerms.add(kw);
         }
       }
+
+      // OCR Deep Text Token Match
+      if (itemOcrText.includes(token)) {
+        score += 35;
+        matchedTerms.add(token);
+      }
     }
 
     // C. Semantic Concept Expansion Matches
@@ -229,6 +270,10 @@ export function searchDriveItems(
         score += 15;
         matchedTerms.add(concept);
       }
+      if (itemOcrText.includes(concept)) {
+        score += 15;
+        matchedTerms.add(concept);
+      }
     }
 
     // D. Starred & Recency Boosts
@@ -238,11 +283,14 @@ export function searchDriveItems(
       if (recencyDays < 7) score += 5;
       else if (recencyDays < 30) score += 2;
 
+      const ocrSnippet = item.ocrText ? getOcrSnippet(item.ocrText, rawQuery) || undefined : undefined;
+
       scoredItems.push({
         item: {
           ...item,
           searchScore: score,
           matchedTerms: Array.from(matchedTerms),
+          ocrSnippet,
         },
         score,
         matchedTerms,
@@ -265,6 +313,11 @@ export function searchDriveItems(
     }
     if (sortMode === 'size') {
       return b.item.size - a.item.size;
+    }
+    if (sortMode === 'expiry') {
+      const expA = a.item.expiryDate || Infinity;
+      const expB = b.item.expiryDate || Infinity;
+      return expA - expB;
     }
     return b.score - a.score;
   });

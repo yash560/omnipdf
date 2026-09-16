@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { DriveProvider, useDrive } from '@/lib/drive/drive-context';
 import { DriveSidebar } from '@/components/drive/DriveSidebar';
 import { DriveToolbar } from '@/components/drive/DriveToolbar';
+import { DriveFastFilters } from '@/components/drive/DriveFastFilters';
 import { DriveGrid } from '@/components/drive/DriveGrid';
 import { DriveTable } from '@/components/drive/DriveTable';
 import { DriveQuickLookModal } from '@/components/drive/DriveQuickLookModal';
@@ -11,6 +12,12 @@ import { DriveDetailsDrawer } from '@/components/drive/DriveDetailsDrawer';
 import { DriveUploadManager } from '@/components/drive/DriveUploadManager';
 import { DriveShareModal } from '@/components/drive/DriveShareModal';
 import { DriveAuthGate } from '@/components/drive/DriveAuthGate';
+import { DriveVaultModal } from '@/components/drive/DriveVaultModal';
+import { DriveFolderChatModal } from '@/components/drive/DriveFolderChatModal';
+import { DriveExpiryRadarModal } from '@/components/drive/DriveExpiryRadarModal';
+import { DriveDedupModal } from '@/components/drive/DriveDedupModal';
+import { DriveKeyboardShortcutsModal } from '@/components/drive/DriveKeyboardShortcutsModal';
+import { DriveBulkActionBar } from '@/components/drive/DriveBulkActionBar';
 import {
   NewFolderModal,
   RenameModal,
@@ -85,6 +92,7 @@ function DriveWorkspaceInner() {
     viewSection,
     selectedCategory,
     previewItem,
+    openPreview,
     closePreview,
     shareModalItem,
     closeShareModal,
@@ -94,6 +102,37 @@ function DriveWorkspaceInner() {
     trashSelected,
     selectAll,
     clearSelection,
+    selectedIds,
+    toggleSelect,
+    breadcrumbs,
+
+    // Vault
+    isVaultUnlocked,
+    unlockVault,
+    isVaultModalOpen,
+    setIsVaultModalOpen,
+
+    // Modals
+    isFolderChatOpen,
+    setIsFolderChatOpen,
+    isExpiryRadarOpen,
+    setIsExpiryRadarOpen,
+    isDedupModalOpen,
+    setIsDedupModalOpen,
+    isKeyboardShortcutsOpen,
+    setIsKeyboardShortcutsOpen,
+
+    // Fast Filters
+    activePerson,
+    setActivePerson,
+    activeVehicle,
+    setActiveVehicle,
+    selectedAiCategory,
+    setSelectedAiCategory,
+
+    // Batch Actions
+    triggerBatchAction,
+    bulkDownloadZip,
   } = useDrive();
 
   const [newFolderOpen, setNewFolderOpen] = useState(false);
@@ -101,8 +140,9 @@ function DriveWorkspaceInner() {
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [emptyTrashConfirmOpen, setEmptyTrashConfirmOpen] = useState(false);
   const [isDragOverScreen, setIsDragOverScreen] = useState(false);
+  const [showFastFilters, setShowFastFilters] = useState(true);
 
-  // Global Keyboard Shortcuts
+  // Global Keyboard Shortcuts (Space for Quick Look, Cmd+A, Del, ?, Esc)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore when typing in inputs/textareas
@@ -110,21 +150,49 @@ function DriveWorkspaceInner() {
         return;
       }
 
-      if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (e.key === ' ' && selectedIds.length > 0) {
+        // Spacebar -> Instant Quick Look Preview
+        e.preventDefault();
+        const selected = items.find((i) => i.id === selectedIds[0]);
+        if (selected) {
+          openPreview(selected);
+        }
+      } else if (e.key === 'Delete' || e.key === 'Backspace') {
         trashSelected();
       } else if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         selectAll();
       } else if (e.key === 'Escape') {
         clearSelection();
+        closePreview();
+        setIsFolderChatOpen(false);
+        setIsExpiryRadarOpen(false);
+        setIsDedupModalOpen(false);
+        setIsKeyboardShortcutsOpen(false);
+        setIsVaultModalOpen(false);
+      } else if (e.key === '?') {
+        setIsKeyboardShortcutsOpen(true);
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [trashSelected, selectAll, clearSelection]);
+  }, [
+    selectedIds,
+    items,
+    trashSelected,
+    selectAll,
+    clearSelection,
+    openPreview,
+    closePreview,
+    setIsFolderChatOpen,
+    setIsExpiryRadarOpen,
+    setIsDedupModalOpen,
+    setIsKeyboardShortcutsOpen,
+    setIsVaultModalOpen,
+  ]);
 
-  // Global Drag & Drop to Upload (Handles both individual 2GB+ files & deep nested directory trees)
+  // Global Drag & Drop to Upload
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     setIsDragOverScreen(true);
@@ -177,10 +245,11 @@ function DriveWorkspaceInner() {
     }
   };
 
-  // If user is not authenticated, show the Cloud Drive sign in gate
   if (authRequired) {
     return <DriveAuthGate />;
   }
+
+  const currentFolderCrumb = breadcrumbs[breadcrumbs.length - 1];
 
   return (
     <div
@@ -191,7 +260,7 @@ function DriveWorkspaceInner() {
     >
       {/* Drag & Drop Fullscreen Overlay */}
       {isDragOverScreen && (
-        <div className="absolute inset-0 z-50 bg-blue-600/90 dark:bg-blue-950/90 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-4 p-8 pointer-events-none animate-in fade-in duration-150">
+        <div className="absolute inset-0 z-50 bg-rose-600/90 dark:bg-rose-950/90 backdrop-blur-sm flex flex-col items-center justify-center text-white space-y-4 p-8 pointer-events-none animate-in fade-in duration-150">
           <div className="w-20 h-20 rounded-3xl bg-white/20 border-2 border-white/40 flex items-center justify-center animate-bounce">
             <Upload className="w-10 h-10" />
           </div>
@@ -199,7 +268,7 @@ function DriveWorkspaceInner() {
             <h2 className="text-2xl font-black tracking-tight mb-1">
               Drop Files & Folders to Upload to FileCraft Cloud Drive
             </h2>
-            <p className="text-sm text-blue-100 font-medium">
+            <p className="text-sm text-rose-100 font-medium">
               Files and nested directory structures will be synchronized securely via 2MB chunked streams.
             </p>
           </div>
@@ -214,13 +283,32 @@ function DriveWorkspaceInner() {
         <DriveToolbar
           onOpenMoveModal={() => setMoveModalOpen(true)}
           onOpenEmptyTrashConfirm={() => setEmptyTrashConfirmOpen(true)}
+          showFastFilters={showFastFilters}
+          onToggleFastFilters={() => setShowFastFilters(!showFastFilters)}
         />
+
+        {/* Fast Filters Bar */}
+        {showFastFilters && (
+          <DriveFastFilters
+            activePerson={activePerson}
+            onSelectPerson={setActivePerson}
+            activeVehicle={activeVehicle}
+            onSelectVehicle={setActiveVehicle}
+            activeCategory={selectedAiCategory || undefined}
+            onSelectCategory={(cat) => setSelectedAiCategory(cat || null)}
+            onClearAll={() => {
+              setActivePerson(undefined);
+              setActiveVehicle(undefined);
+              setSelectedAiCategory(null);
+            }}
+          />
+        )}
 
         {/* Scrollable Items Feed */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center space-y-3 text-zinc-400 py-24">
-              <span className="w-6 h-6 rounded-full bg-blue-500 animate-ping" />
+              <span className="w-6 h-6 rounded-full bg-rose-500 animate-ping" />
               <span className="text-xs font-bold">Synchronizing Cloud Drive...</span>
             </div>
           ) : items.length === 0 ? (
@@ -228,7 +316,9 @@ function DriveWorkspaceInner() {
             <div className="h-full flex flex-col items-center justify-center text-center p-8 max-w-md mx-auto space-y-5 py-24">
               <div className="w-18 h-18 rounded-3xl bg-zinc-100 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 flex items-center justify-center text-zinc-400 shadow-inner">
                 {viewSection === 'shared' ? (
-                  <Users className="w-9 h-9 text-indigo-500" />
+                  <Users className="w-9 h-9 text-purple-500" />
+                ) : viewSection === 'vault' ? (
+                  <Lock className="w-9 h-9 text-amber-500" />
                 ) : (
                   <Inbox className="w-9 h-9" />
                 )}
@@ -243,6 +333,8 @@ function DriveWorkspaceInner() {
                     ? 'No Recent Documents'
                     : viewSection === 'shared'
                     ? 'No Shared Items Yet'
+                    : viewSection === 'vault'
+                    ? 'Secure Vault is Empty'
                     : selectedCategory
                     ? `No ${selectedCategory.toUpperCase()} Files Found`
                     : 'Your Cloud Drive is Ready'}
@@ -252,6 +344,8 @@ function DriveWorkspaceInner() {
                     ? 'Deleted files and folders will appear here until permanently emptied.'
                     : viewSection === 'shared'
                     ? 'Files and folders shared with you by teammates or collaborators will appear here.'
+                    : viewSection === 'vault'
+                    ? 'Move sensitive files (passports, cards, tax documents) to the Secure Vault for PIN protection.'
                     : 'Drag & drop any files or folders anywhere on the screen, or click the button below to start.'}
                 </p>
               </div>
@@ -289,6 +383,21 @@ function DriveWorkspaceInner() {
       {/* Floating 2GB+ Resumable Upload Manager */}
       <DriveUploadManager />
 
+      {/* Floating Multi-Select Bulk Action Dock */}
+      <DriveBulkActionBar
+        selectedCount={selectedIds.length}
+        onClearSelection={clearSelection}
+        onBulkDownloadZip={bulkDownloadZip}
+        onBulkMove={() => setMoveModalOpen(true)}
+        onBulkTag={() => {
+          const tag = prompt('Enter tag to apply to all selected items:');
+          if (tag) triggerBatchAction('tag', { tags: [tag.trim()] });
+        }}
+        onBulkVault={() => triggerBatchAction('vault')}
+        onBulkStar={() => triggerBatchAction('star')}
+        onBulkTrash={trashSelected}
+      />
+
       {/* Modals & Dialogs */}
       <NewFolderModal
         isOpen={newFolderOpen}
@@ -323,6 +432,46 @@ function DriveWorkspaceInner() {
       <DriveQuickLookModal
         item={previewItem}
         onClose={closePreview}
+      />
+
+      {/* PIN-Protected Secure Vault Keypad Modal */}
+      <DriveVaultModal
+        isOpen={isVaultModalOpen}
+        onClose={() => setIsVaultModalOpen(false)}
+        hasPin={true}
+        onSuccess={() => {
+          unlockVault();
+          loadItems();
+        }}
+      />
+
+      {/* "Chat with Folder" Multi-Document AI RAG Modal */}
+      <DriveFolderChatModal
+        isOpen={isFolderChatOpen}
+        onClose={() => setIsFolderChatOpen(false)}
+        folderName={currentFolderCrumb?.name || 'My Drive'}
+        items={items}
+      />
+
+      {/* Document Expiry Radar Modal */}
+      <DriveExpiryRadarModal
+        isOpen={isExpiryRadarOpen}
+        onClose={() => setIsExpiryRadarOpen(false)}
+        items={items}
+        onSelectItem={(it) => openPreview(it)}
+      />
+
+      {/* Duplicate Document Cleaner Modal */}
+      <DriveDedupModal
+        isOpen={isDedupModalOpen}
+        onClose={() => setIsDedupModalOpen(false)}
+        onRefreshItems={loadItems}
+      />
+
+      {/* Keyboard Shortcuts Cheat Sheet Modal */}
+      <DriveKeyboardShortcutsModal
+        isOpen={isKeyboardShortcutsOpen}
+        onClose={() => setIsKeyboardShortcutsOpen(false)}
       />
     </div>
   );

@@ -16,16 +16,28 @@ import {
   ChevronRight,
   RotateCcw,
   Sparkles,
-  FolderOpen
+  FolderOpen,
+  MessageSquare,
+  Lock,
+  Unlock,
+  SlidersHorizontal,
+  HelpCircle
 } from 'lucide-react';
 import { DriveSortField } from '@/lib/drive/drive-types';
 
 interface DriveToolbarProps {
   onOpenMoveModal: () => void;
   onOpenEmptyTrashConfirm: () => void;
+  showFastFilters?: boolean;
+  onToggleFastFilters?: () => void;
 }
 
-export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: DriveToolbarProps) {
+export function DriveToolbar({
+  onOpenMoveModal,
+  onOpenEmptyTrashConfirm,
+  showFastFilters,
+  onToggleFastFilters,
+}: DriveToolbarProps) {
   const {
     breadcrumbs,
     navigateToFolder,
@@ -50,11 +62,14 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
     trashSelected,
     restoreSelected,
     deleteSelectedPermanently,
-    emptyTrash,
+    isVaultUnlocked,
+    lockVault,
+    setIsVaultModalOpen,
+    setIsFolderChatOpen,
+    setIsKeyboardShortcutsOpen,
   } = useDrive();
 
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
-
   const hasSelection = selectedIds.length > 0;
 
   const sortOptions: { label: string; field: DriveSortField; order: 'asc' | 'desc' }[] = [
@@ -64,21 +79,24 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
     { label: 'Last Modified (Oldest)', field: 'updatedAt', order: 'asc' },
     { label: 'File Size (Largest)', field: 'size', order: 'desc' },
     { label: 'File Size (Smallest)', field: 'size', order: 'asc' },
+    { label: 'Expiry Date (Soonest)', field: 'expiry', order: 'asc' },
     { label: 'File Category', field: 'category', order: 'asc' },
   ];
+
+  const currentFolderCrumb = breadcrumbs[breadcrumbs.length - 1];
 
   return (
     <div className="w-full border-b border-zinc-200 dark:border-zinc-800/80 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md px-4 sm:px-6 py-3 space-y-3">
       {/* Top Row: Search + Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Search Bar with Semantic & Fuzzy Capabilities */}
+        {/* Search Bar with Semantic, OCR & Fuzzy Capabilities */}
         <div className="relative flex-1 max-w-xl">
           <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by keywords, natural concepts (e.g. 'salary slip', 'car bills', 'passport')..."
+            placeholder="Search by keywords, OCR text, ID/RC numbers, salary, tax..."
             className="w-full pl-9 pr-9 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-inner font-medium"
           />
           {searchTerm && (
@@ -94,15 +112,59 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
 
         {/* View & Sort & AI Actions */}
         <div className="flex items-center gap-1.5 self-end sm:self-auto flex-wrap">
-          {/* AI Auto-Label All Button */}
+          {/* Chat with Folder / RAG Assistant */}
           <button
             type="button"
-            onClick={() => triggerAutoLabel()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/10 to-amber-500/10 hover:from-rose-500/20 hover:to-amber-500/20 border border-rose-200 dark:border-rose-900/40 text-xs font-bold text-rose-600 dark:text-rose-400 transition-all cursor-pointer shadow-2xs"
-            title="Auto-label all files using AI"
+            onClick={() => setIsFolderChatOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/30 hover:bg-violet-100 dark:hover:bg-violet-900/50 border border-violet-200 dark:border-violet-800/50 text-xs font-bold text-violet-700 dark:text-violet-300 transition-all cursor-pointer shadow-2xs"
+            title="Chat with AI about files in this folder"
           >
-            <Sparkles className="w-3.5 h-3.5 text-rose-500 animate-pulse" />
-            <span className="hidden md:inline">Auto-Label AI</span>
+            <Sparkles className="w-3.5 h-3.5 text-violet-500 animate-pulse" />
+            <span className="hidden md:inline">Folder AI Chat</span>
+          </button>
+
+          {/* Fast Filters Toggle */}
+          {onToggleFastFilters && (
+            <button
+              type="button"
+              onClick={onToggleFastFilters}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                showFastFilters
+                  ? 'bg-blue-500 text-white border-blue-600 shadow-xs'
+                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
+              }`}
+              title="Toggle Fast Person/Vehicle Filters"
+            >
+              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Filters</span>
+            </button>
+          )}
+
+          {/* Secure Vault Status Toggle */}
+          <button
+            type="button"
+            onClick={() => {
+              if (isVaultUnlocked) lockVault();
+              else setIsVaultModalOpen(true);
+            }}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+              isVaultUnlocked
+                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold'
+                : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'
+            }`}
+            title={isVaultUnlocked ? 'Vault is Unlocked. Click to Lock Now.' : 'Unlock Secure Vault with PIN'}
+          >
+            {isVaultUnlocked ? (
+              <>
+                <Unlock className="w-3.5 h-3.5 text-amber-500" />
+                <span className="hidden sm:inline">Vault Unlocked</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5 text-zinc-400" />
+                <span className="hidden sm:inline">Vault Locked</span>
+              </>
+            )}
           </button>
 
           {/* Sort Dropdown */}
@@ -123,7 +185,7 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
               <>
                 <div className="fixed inset-0 z-30" onClick={() => setSortDropdownOpen(false)} />
                 <div className="absolute right-0 mt-2 w-52 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-40 p-1.5 animate-in fade-in zoom-in-95 duration-150">
-                  <div className="px-3 py-1 text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
+                  <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
                     Sort By
                   </div>
                   {sortOptions.map((opt, i) => {
@@ -184,7 +246,7 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
       {/* Tag & Category Filter Pills */}
       {(availableTags.length > 0 || selectedTag || selectedAiCategory || searchTerm) && (
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
-          <span className="text-[11px] font-bold text-zinc-400 shrink-0 flex items-center gap-1">
+          <span className="text-3xs font-bold text-zinc-400 shrink-0 flex items-center gap-1">
             <Sparkles className="w-3 h-3 text-amber-500" />
             <span>AI Filters:</span>
           </span>
@@ -194,7 +256,7 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
             <button
               type="button"
               onClick={() => setSelectedTag(null)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500 text-white text-[11px] font-bold shadow-xs cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-500 text-white text-3xs font-bold shadow-xs cursor-pointer shrink-0"
             >
               <span>#{selectedTag}</span>
               <X className="w-3 h-3" />
@@ -206,7 +268,7 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
             <button
               type="button"
               onClick={() => setSelectedAiCategory(null)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-[11px] font-bold shadow-xs cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 text-white text-3xs font-bold shadow-xs cursor-pointer shrink-0"
             >
               <span>Category: {selectedAiCategory}</span>
               <X className="w-3 h-3" />
@@ -221,41 +283,39 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
                 key={t.tag}
                 type="button"
                 onClick={() => setSelectedTag(t.tag)}
-                className="px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-[11px] font-semibold text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60 transition-colors cursor-pointer shrink-0"
+                className="px-2 py-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-800/80 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-3xs font-semibold text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/60 transition-colors cursor-pointer shrink-0"
               >
-                #{t.tag} <span className="text-[10px] text-zinc-400">({t.count})</span>
+                #{t.tag} <span className="text-3xs text-zinc-400">({t.count})</span>
               </button>
             );
           })}
         </div>
       )}
 
-      {/* Bottom Row: Breadcrumbs OR Bulk Selection Actions */}
+      {/* Bottom Row: Breadcrumbs OR Selection Actions */}
       <div className="flex items-center justify-between min-h-[32px]">
         {hasSelection ? (
-          /* Bulk Action Bar */
           <div className="w-full flex flex-wrap items-center justify-between gap-2 p-2 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 text-xs font-semibold text-rose-950 dark:text-rose-200 animate-in fade-in slide-in-from-top-1 duration-150">
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-md bg-rose-500 text-white font-bold text-[11px]">
+              <span className="px-2 py-0.5 rounded-md bg-rose-500 text-white font-bold text-3xs">
                 {selectedIds.length} Selected
               </span>
               <button
                 type="button"
                 onClick={clearSelection}
-                className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline text-[11px] cursor-pointer"
+                className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline text-3xs cursor-pointer"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={selectAll}
-                className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline text-[11px] cursor-pointer ml-1"
+                className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline text-3xs cursor-pointer ml-1"
               >
                 Select All ({items.length})
               </button>
             </div>
 
-            {/* Actions */}
             <div className="flex items-center gap-1.5">
               {viewSection === 'trash' ? (
                 <>
@@ -299,7 +359,6 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
             </div>
           </div>
         ) : (
-          /* Normal Breadcrumbs */
           <div className="flex items-center gap-1.5 text-xs text-zinc-500 overflow-x-auto no-scrollbar">
             {viewSection === 'my-drive' ? (
               breadcrumbs.map((crumb, idx) => {
@@ -327,6 +386,8 @@ export function DriveToolbar({ onOpenMoveModal, onOpenEmptyTrashConfirm }: Drive
                 <span className="font-bold text-sm text-zinc-900 dark:text-zinc-100 capitalize">
                   {viewSection === 'category' && selectedCategory
                     ? `${selectedCategory} Files`
+                    : viewSection === 'vault'
+                    ? 'Secure Vault'
                     : viewSection}
                 </span>
                 {viewSection === 'trash' && items.length > 0 && (

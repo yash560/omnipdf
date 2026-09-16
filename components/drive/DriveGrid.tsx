@@ -17,7 +17,10 @@ import {
   Star,
   MoreVertical,
   Download,
-  Eye
+  Eye,
+  Lock,
+  Calendar,
+  AlertCircle
 } from 'lucide-react';
 
 interface DriveGridProps {
@@ -96,58 +99,67 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
       {/* Folders Section */}
       {folders.length > 0 && (
         <div className="space-y-3">
-          <div className="text-xs font-black uppercase tracking-wider text-zinc-400">
+          <div className="text-3xs font-black uppercase tracking-wider text-zinc-400">
             Folders ({folders.length})
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
-            {folders.map((f) => {
-              const isSelected = selectedIds.includes(f.id);
-              const colorConfig = FOLDER_COLORS[f.color || 'default'] || FOLDER_COLORS.default;
-              const isDragTarget = dragOverFolderId === f.id;
+            {folders.map((folder) => {
+              const isSelected = selectedIds.includes(folder.id);
+              const colorConfig = FOLDER_COLORS[folder.color || 'default'];
+              const isDragTarget = dragOverFolderId === folder.id;
 
               return (
                 <div
-                  key={f.id}
+                  key={folder.id}
                   draggable
-                  onDragStart={(e) => handleDragStart(e, f)}
-                  onDragOver={(e) => handleFolderDragOver(e, f.id)}
+                  onDragStart={(e) => handleDragStart(e, folder)}
+                  onDragOver={(e) => handleFolderDragOver(e, folder.id)}
                   onDragLeave={handleFolderDragLeave}
-                  onDrop={(e) => handleFolderDrop(e, f.id)}
-                  onClick={(e) => toggleSelect(f.id, e.shiftKey || e.metaKey || e.ctrlKey)}
-                  onDoubleClick={() => navigateToFolder(f.id)}
-                  onContextMenu={(e) => handleContextMenu(e, f)}
-                  className={`group relative p-3 rounded-2xl border transition-all select-none cursor-pointer flex items-center justify-between gap-2.5 ${
+                  onDrop={(e) => handleFolderDrop(e, folder.id)}
+                  onClick={(e) => toggleSelect(folder.id, e.shiftKey || e.metaKey || e.ctrlKey)}
+                  onDoubleClick={() => navigateToFolder(folder.id)}
+                  onContextMenu={(e) => handleContextMenu(e, folder)}
+                  className={`group relative p-3.5 rounded-2xl border transition-all select-none cursor-pointer flex flex-col justify-between min-h-[92px] ${
                     isDragTarget
-                      ? 'border-rose-500 bg-rose-500/10 ring-2 ring-rose-500/30 scale-105'
+                      ? 'border-rose-500 bg-rose-500/10 ring-4 ring-rose-500/30 scale-105 shadow-xl'
                       : isSelected
                       ? 'border-rose-500 bg-rose-500/10 dark:bg-rose-950/20 ring-2 ring-rose-500/20 shadow-md'
                       : 'border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-2xs hover:shadow-sm'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div className={`p-2 rounded-xl shrink-0 ${colorConfig.bgClass} ${colorConfig.textClass}`}>
-                      <Folder className="w-4 h-4 fill-current" />
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className={`p-2 rounded-xl ${colorConfig.bgClass} ${colorConfig.textClass} shrink-0`}>
+                        <Folder className="w-5 h-5 fill-current" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-bold text-xs text-zinc-900 dark:text-zinc-100 truncate group-hover:text-rose-500 transition-colors">
+                          {folder.name}
+                        </div>
+                        <div className="text-3xs text-zinc-400">
+                          {folder.itemCount !== undefined ? `${folder.itemCount} items` : 'Folder'}
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                      {f.name}
-                    </span>
-                  </div>
 
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    {f.isStarred && (
-                      <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                    )}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setContextItem(f);
-                        setContextPos({ x: e.clientX, y: e.clientY });
-                      }}
-                      className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
-                    >
-                      <MoreVertical className="w-3.5 h-3.5" />
-                    </button>
+                    <div className="flex items-center">
+                      {folder.isVault && (
+                        <div className="p-1 text-amber-500" title="Secure Vault Item">
+                          <Lock className="w-3.5 h-3.5" />
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setContextItem(folder);
+                          setContextPos({ x: e.clientX, y: e.clientY });
+                        }}
+                        className="p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-opacity"
+                      >
+                        <MoreVertical className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -159,7 +171,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
       {/* Files Section */}
       {files.length > 0 && (
         <div className="space-y-3">
-          <div className="text-xs font-black uppercase tracking-wider text-zinc-400">
+          <div className="text-3xs font-black uppercase tracking-wider text-zinc-400">
             Files ({files.length})
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
@@ -200,6 +212,21 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                       <Star className={`w-3.5 h-3.5 ${file.isStarred ? 'text-amber-400 fill-amber-400' : 'text-zinc-400'}`} />
                     </button>
 
+                    {/* Status Badges: Vault & Expiry */}
+                    <div className="absolute top-2 right-8 flex items-center gap-1">
+                      {file.isVault && (
+                        <span className="p-1 rounded-md bg-amber-500/20 text-amber-500 shadow-xs" title="Protected in Secure Vault">
+                          <Lock className="w-3 h-3" />
+                        </span>
+                      )}
+                      {file.expiryStatus === 'expired' && (
+                        <span className="w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50" title="Expired / Renewal Due" />
+                      )}
+                      {file.expiryStatus === 'expiring_soon' && (
+                        <span className="w-2 h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" title="Expiring Soon" />
+                      )}
+                    </div>
+
                     {/* 3-Dot Action Button */}
                     <button
                       type="button"
@@ -235,8 +262,15 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                       {file.name}
                     </div>
 
-                    {file.aiSummary && (
-                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-1 italic">
+                    {/* OCR match snippet */}
+                    {file.ocrSnippet && (
+                      <div className="text-3xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono truncate">
+                        OCR: {file.ocrSnippet}
+                      </div>
+                    )}
+
+                    {file.aiSummary && !file.ocrSnippet && (
+                      <p className="text-3xs text-zinc-500 dark:text-zinc-400 line-clamp-1 italic">
                         {file.aiSummary}
                       </p>
                     )}
@@ -251,22 +285,17 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                               e.stopPropagation();
                               setSelectedTag(tag);
                             }}
-                            className="px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-[9px] font-extrabold border border-rose-200/60 dark:border-rose-900/40 hover:bg-rose-100 transition-colors"
+                            className="px-1.5 py-0.2 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-rose-500 hover:text-white transition"
                           >
                             #{tag}
                           </button>
                         ))}
-                        {file.tags.length > 2 && (
-                          <span className="text-[9px] text-zinc-400 font-bold self-center">
-                            +{file.tags.length - 2}
-                          </span>
-                        )}
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono pt-1">
+                    <div className="flex items-center justify-between text-3xs text-zinc-400 font-mono pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
                       <span>{formatBytes(file.size)}</span>
-                      <span>{formatTimeAgo(file.updatedAt)}</span>
+                      <span>{formatTimeAgo(file.updatedAt || file.createdAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -276,14 +305,14 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
         </div>
       )}
 
-      {/* Context Menu Modal Portal */}
+      {/* Context Menu */}
       {contextItem && (
         <DriveContextMenu
           item={contextItem}
           isOpen={Boolean(contextItem)}
-          onClose={() => setContextItem(null)}
           position={contextPos}
-          onOpenRenameModal={onOpenRenameModal}
+          onClose={() => setContextItem(null)}
+          onOpenRenameModal={() => onOpenRenameModal(contextItem)}
           onOpenMoveModal={onOpenMoveModal}
         />
       )}

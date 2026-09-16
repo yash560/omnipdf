@@ -16,7 +16,10 @@ import {
   File,
   Star,
   MoreVertical,
-  ArrowUpDown
+  ArrowUpDown,
+  Lock,
+  Calendar,
+  AlertCircle
 } from 'lucide-react';
 
 interface DriveTableProps {
@@ -50,7 +53,7 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
     setContextItem(item);
   };
 
-  const handleSort = (field: 'name' | 'updatedAt' | 'size' | 'category') => {
+  const handleSort = (field: 'name' | 'updatedAt' | 'size' | 'category' | 'expiry') => {
     if (sortOption.field === field) {
       setSortOption({ field, order: sortOption.order === 'asc' ? 'desc' : 'asc' });
     } else {
@@ -78,7 +81,7 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
     <div className="w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 overflow-hidden shadow-2xs">
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs text-zinc-800 dark:text-zinc-200">
-          <thead className="bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200/80 dark:border-zinc-800 text-[11px] font-extrabold uppercase tracking-wider text-zinc-400 select-none">
+          <thead className="bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200/80 dark:border-zinc-800 text-3xs font-extrabold uppercase tracking-wider text-zinc-400 select-none">
             <tr>
               <th className="w-10 px-4 py-3 text-center">
                 <span className="sr-only">Star</span>
@@ -162,19 +165,44 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                     </button>
                   </td>
 
-                  {/* Name + Icon + Tags */}
+                  {/* Name + Icon + Tags + Status */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5 min-w-0 max-w-sm sm:max-w-md">
-                      <div className="shrink-0">{getSmallIcon(item)}</div>
+                      <div className="shrink-0 relative">
+                        {getSmallIcon(item)}
+                        {item.isVault && (
+                          <div className="absolute -top-1 -right-1 p-0.5 rounded-full bg-amber-500 text-white">
+                            <Lock className="w-2 h-2" />
+                          </div>
+                        )}
+                      </div>
                       <div className="min-w-0">
-                        <div className="font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                          {item.name}
+                        <div className="font-bold text-zinc-900 dark:text-zinc-100 truncate flex items-center gap-2">
+                          <span>{item.name}</span>
+                          {item.expiryStatus === 'expired' && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500/10 text-rose-500 border border-rose-500/30">
+                              Expired
+                            </span>
+                          )}
+                          {item.expiryStatus === 'expiring_soon' && (
+                            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30">
+                              {item.expiryDaysLeft}d
+                            </span>
+                          )}
                         </div>
-                        {item.aiSummary && (
-                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-1 italic">
+
+                        {item.ocrSnippet && (
+                          <div className="text-3xs text-emerald-600 dark:text-emerald-400 font-mono truncate bg-emerald-500/10 px-1 py-0.2 rounded mt-0.5 max-w-xs">
+                            OCR: {item.ocrSnippet}
+                          </div>
+                        )}
+
+                        {item.aiSummary && !item.ocrSnippet && (
+                          <p className="text-3xs text-zinc-500 dark:text-zinc-400 line-clamp-1 italic">
                             {item.aiSummary}
                           </p>
                         )}
+
                         {item.tags && item.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1 pt-1">
                             {item.tags.slice(0, 3).map((tag) => (
@@ -207,12 +235,12 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                   </td>
 
                   {/* Date Modified */}
-                  <td className="hidden sm:table-cell px-4 py-3 text-zinc-500 font-mono text-[11px]">
+                  <td className="hidden sm:table-cell px-4 py-3 text-zinc-500 font-mono text-3xs">
                     {formatTimeAgo(item.updatedAt)}
                   </td>
 
                   {/* Size */}
-                  <td className="px-4 py-3 text-right text-zinc-500 font-mono text-[11px]">
+                  <td className="px-4 py-3 text-right text-zinc-500 font-mono text-3xs">
                     {isFolder ? '—' : formatBytes(item.size)}
                   </td>
 
@@ -225,9 +253,9 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                         setContextItem(item);
                         setContextPos({ x: e.clientX, y: e.clientY });
                       }}
-                      className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+                      className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
-                      <MoreVertical className="w-3.5 h-3.5" />
+                      <MoreVertical className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
@@ -237,14 +265,14 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
         </table>
       </div>
 
-      {/* Context Menu Modal Portal */}
+      {/* Context Menu */}
       {contextItem && (
         <DriveContextMenu
           item={contextItem}
           isOpen={Boolean(contextItem)}
-          onClose={() => setContextItem(null)}
           position={contextPos}
-          onOpenRenameModal={onOpenRenameModal}
+          onClose={() => setContextItem(null)}
+          onOpenRenameModal={() => onOpenRenameModal(contextItem)}
           onOpenMoveModal={onOpenMoveModal}
         />
       )}

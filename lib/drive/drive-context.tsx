@@ -14,7 +14,6 @@ import {
 import {
   fetchCloudItems,
   uploadCloudFiles,
-  uploadCloudDirectoryStructure,
   createCloudFolderApi,
   updateCloudItemApi,
   moveCloudItemsApi,
@@ -31,7 +30,7 @@ import {
 } from './cloud-api';
 import { useAuth } from '@/lib/auth/auth-context';
 import saveAs from 'file-saver';
-
+import JSZip from 'jszip';
 import { chunkedUploader } from './chunked-uploader';
 
 interface DriveContextType {
@@ -50,6 +49,10 @@ interface DriveContextType {
   setSelectedTag: (tag: string | null) => void;
   selectedAiCategory: string | null;
   setSelectedAiCategory: (cat: string | null) => void;
+  activePerson?: string;
+  setActivePerson: (person?: string) => void;
+  activeVehicle?: string;
+  setActiveVehicle: (vehicle?: string) => void;
   availableTags: { tag: string; count: number }[];
   availableAiCategories: { category: string; count: number }[];
 
@@ -67,6 +70,23 @@ interface DriveContextType {
   uploadProgress: number;
   authRequired: boolean;
 
+  // Vault Security
+  isVaultUnlocked: boolean;
+  unlockVault: (untilMs?: number) => void;
+  lockVault: () => void;
+  isVaultModalOpen: boolean;
+  setIsVaultModalOpen: (open: boolean) => void;
+
+  // Feature Modals
+  isFolderChatOpen: boolean;
+  setIsFolderChatOpen: (open: boolean) => void;
+  isExpiryRadarOpen: boolean;
+  setIsExpiryRadarOpen: (open: boolean) => void;
+  isDedupModalOpen: boolean;
+  setIsDedupModalOpen: (open: boolean) => void;
+  isKeyboardShortcutsOpen: boolean;
+  setIsKeyboardShortcutsOpen: (open: boolean) => void;
+
   // Actions
   navigateToFolder: (folderId: string | null) => void;
   selectSection: (section: DriveViewSection, category?: DriveCategory) => void;
@@ -74,6 +94,8 @@ interface DriveContextType {
   selectAll: () => void;
   clearSelection: () => void;
   triggerAutoLabel: (itemIds?: string[]) => Promise<void>;
+  triggerBatchAction: (action: 'tag' | 'move' | 'star' | 'unstar' | 'trash' | 'restore' | 'vault' | 'unvault', payload?: any) => Promise<void>;
+  bulkDownloadZip: () => Promise<void>;
   
   // Cloud CRUD Operations
   createFolder: (name: string, color?: DriveFolderColor) => Promise<DriveItem>;
@@ -100,21 +122,30 @@ interface DriveContextType {
 
 const DriveContext = createContext<DriveContextType | null>(null);
 
-export function DriveProvider({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, user } = useAuth();
+export const useDrive = () => {
+  const context = useContext(DriveContext);
+  if (!context) {
+    throw new Error('useDrive must be used within a DriveProvider');
+  }
+  return context;
+};
 
+export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, isAuthenticated, isLoading } = useAuth();
+  
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<DriveBreadcrumb[]>([{ id: null, name: 'Cloud Drive' }]);
+  const [breadcrumbs, setBreadcrumbs] = useState<DriveBreadcrumb[]>([{ id: null, name: 'My Drive' }]);
   const [viewSection, setViewSection] = useState<DriveViewSection>('my-drive');
   const [selectedCategory, setSelectedCategory] = useState<DriveCategory | null>(null);
+  const [viewLayout, setViewLayout] = useState<DriveViewLayout>('grid');
+  const [sortOption, setSortOption] = useState<DriveSortOption>({ field: 'updatedAt', order: 'desc' });
+  const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedAiCategory, setSelectedAiCategory] = useState<string | null>(null);
+  const [activePerson, setActivePerson] = useState<string | undefined>(undefined);
+  const [activeVehicle, setActiveVehicle] = useState<string | undefined>(undefined);
   const [availableTags, setAvailableTags] = useState<{ tag: string; count: number }[]>([]);
   const [availableAiCategories, setAvailableAiCategories] = useState<{ category: string; count: number }[]>([]);
-
-  const [viewLayout, setViewLayout] = useState<DriveViewLayout>('grid');
-  const [sortOption, setSortOption] = useState<DriveSortOption>({ field: 'name', order: 'asc' });
-  const [searchTerm, setSearchTerm] = useState('');
 
   const [items, setItems] = useState<DriveItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -123,157 +154,157 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
   const [previewItem, setPreviewItem] = useState<DriveItem | null>(null);
   const [detailsItem, setDetailsItem] = useState<DriveItem | null>(null);
   const [shareModalItem, setShareModalItem] = useState<DriveItem | null>(null);
+
+  // Vault Security
+  const [isVaultUnlocked, setIsVaultUnlocked] = useState(false);
+  const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
+
+  // Feature Modals
+  const [isFolderChatOpen, setIsFolderChatOpen] = useState(false);
+  const [isExpiryRadarOpen, setIsExpiryRadarOpen] = useState(false);
+  const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
+  const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
+
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [authRequired, setAuthRequired] = useState(false);
 
-  // Load items from Cloud API with Semantic & Fuzzy Search Integration
+  const authRequired = !isLoading && !isAuthenticated;
+
+  // Check vault unlock status from session storage
+  useEffect(() => {
+    const unlockUntil = sessionStorage.getItem('filecraft_vault_unlocked_until');
+    if (unlockUntil && parseInt(unlockUntil, 10) > Date.now()) {
+      setIsVaultUnlocked(true);
+    }
+  }, []);
+
+  const unlockVault = (untilMs?: number) => {
+    const expiry = untilMs || Date.now() + 15 * 60 * 1000;
+    sessionStorage.setItem('filecraft_vault_unlocked_until', expiry.toString());
+    setIsVaultUnlocked(true);
+  };
+
+  const lockVault = () => {
+    sessionStorage.removeItem('filecraft_vault_unlocked_until');
+    setIsVaultUnlocked(false);
+    if (viewSection === 'vault') {
+      setViewSection('my-drive');
+    }
+  };
+
   const loadItems = useCallback(async () => {
-    if (!isAuthenticated && !user) {
-      setAuthRequired(true);
+    if (authRequired) {
       setLoading(false);
       return;
     }
 
-    setAuthRequired(false);
     setLoading(true);
-
     try {
-      const isSearchActive = Boolean(searchTerm.trim() || selectedTag || selectedAiCategory);
-
-      if (isSearchActive) {
+      if (searchTerm || selectedTag || selectedAiCategory || activePerson || activeVehicle) {
         const searchResult = await searchCloudItemsApi({
-          query: searchTerm.trim(),
+          query: searchTerm,
           tag: selectedTag || undefined,
           aiCategory: selectedAiCategory || undefined,
+          person: activePerson,
+          vehicle: activeVehicle,
           category: selectedCategory || undefined,
           section: viewSection,
-          parentId: currentFolderId,
+          parentId: (searchTerm || selectedTag || selectedAiCategory || activePerson || activeVehicle) ? undefined : currentFolderId,
+          sort: sortOption.field === 'updatedAt' ? 'date' : (sortOption.field as any),
+          isVaultUnlocked,
         });
 
-        setItems(searchResult.items);
-        setAvailableTags(searchResult.availableTags);
-        setAvailableAiCategories(searchResult.availableAiCategories);
+        setItems(searchResult.items || []);
+        setAvailableTags(searchResult.availableTags || []);
+        setAvailableAiCategories(searchResult.availableAiCategories || []);
       } else {
-        const { items: fetched, breadcrumbs: crumbs } = await fetchCloudItems({
+        const cloudData = await fetchCloudItems({
+          parentId: (viewSection === 'my-drive') ? currentFolderId : undefined,
           section: viewSection,
-          parentId: currentFolderId,
           category: selectedCategory || undefined,
-          query: undefined,
+          isVaultUnlocked,
         });
-
-        // Compute available tags and categories from current folder items
-        const tagCounts = new Map<string, number>();
-        const categoryCounts = new Map<string, number>();
-
-        fetched.forEach((it) => {
-          (it.tags || []).forEach((t) => tagCounts.set(t, (tagCounts.get(t) || 0) + 1));
-          if (it.aiCategory) categoryCounts.set(it.aiCategory, (categoryCounts.get(it.aiCategory) || 0) + 1);
-        });
-
-        setAvailableTags(
-          Array.from(tagCounts.entries())
-            .map(([tag, count]) => ({ tag, count }))
-            .sort((a, b) => b.count - a.count)
-            .slice(0, 20)
-        );
-
-        setAvailableAiCategories(
-          Array.from(categoryCounts.entries())
-            .map(([category, count]) => ({ category, count }))
-            .sort((a, b) => b.count - a.count)
-        );
-
-        // Apply Client Sort
-        fetched.sort((a, b) => {
-          if (viewSection === 'my-drive' && a.type !== b.type) {
-            return a.type === 'folder' ? -1 : 1;
-          }
-
-          let comparison = 0;
-          if (sortOption.field === 'name') {
-            comparison = a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
-          } else if (sortOption.field === 'updatedAt') {
-            comparison = a.updatedAt - b.updatedAt;
-          } else if (sortOption.field === 'size') {
-            comparison = a.size - b.size;
-          } else if (sortOption.field === 'category') {
-            comparison = a.category.localeCompare(b.category);
-          }
-
-          return sortOption.order === 'asc' ? comparison : -comparison;
-        });
-
-        setItems(fetched);
-        setBreadcrumbs(crumbs.length > 0 ? crumbs : [{ id: null, name: 'Cloud Drive' }]);
+        setItems(cloudData.items);
+        if (cloudData.breadcrumbs && cloudData.breadcrumbs.length > 0) {
+          setBreadcrumbs(cloudData.breadcrumbs);
+        }
       }
 
-      // Fetch cloud stats
-      const s = await fetchCloudStats().catch(() => null);
-      if (s) setStats(s);
-    } catch (err: any) {
-      if (err.message === 'AUTH_REQUIRED') {
-        setAuthRequired(true);
-      } else {
-        console.error('[DriveProvider] Error loading cloud items:', err);
-      }
+      const cloudStats = await fetchCloudStats();
+      setStats(cloudStats);
+    } catch (error) {
+      console.error('Failed to load drive items from cloud:', error);
     } finally {
       setLoading(false);
     }
   }, [
-    isAuthenticated,
-    user,
+    authRequired,
     currentFolderId,
     viewSection,
     selectedCategory,
+    searchTerm,
     selectedTag,
     selectedAiCategory,
+    activePerson,
+    activeVehicle,
     sortOption,
-    searchTerm,
+    isVaultUnlocked,
   ]);
 
   useEffect(() => {
     loadItems();
   }, [loadItems]);
 
-  const folders = items.filter((i) => i.type === 'folder');
-  const files = items.filter((i) => i.type === 'file');
+  // Derived state
+  const folders = items.filter((item) => item.type === 'folder');
+  const files = items.filter((item) => item.type === 'file');
 
-  const navigateToFolder = (folderId: string | null) => {
-    setViewSection('my-drive');
-    setSelectedCategory(null);
-    setSelectedTag(null);
-    setSelectedAiCategory(null);
+  // Navigation handlers
+  const navigateToFolder = async (folderId: string | null) => {
     setCurrentFolderId(folderId);
     setSelectedIds([]);
     setSearchTerm('');
+    setSelectedTag(null);
+    setSelectedAiCategory(null);
+
+    if (folderId === null) {
+      setBreadcrumbs([{ id: null, name: 'My Drive' }]);
+    } else {
+      const folderItem = items.find((i) => i.id === folderId);
+      if (folderItem) {
+        setBreadcrumbs((prev) => {
+          const idx = prev.findIndex((b) => b.id === folderId);
+          if (idx !== -1) {
+            return prev.slice(0, idx + 1);
+          }
+          return [...prev, { id: folderItem.id, name: folderItem.name }];
+        });
+      }
+    }
   };
 
   const selectSection = (section: DriveViewSection, category?: DriveCategory) => {
+    if (section === 'vault' && !isVaultUnlocked) {
+      setIsVaultModalOpen(true);
+      return;
+    }
     setViewSection(section);
     setSelectedCategory(category || null);
-    setSelectedTag(null);
-    setSelectedAiCategory(null);
-    if (section !== 'my-drive') {
-      setCurrentFolderId(null);
-    }
+    setCurrentFolderId(null);
+    setBreadcrumbs([{ id: null, name: section === 'shared' ? 'Shared with Me' : section === 'vault' ? 'Secure Vault' : 'My Drive' }]);
     setSelectedIds([]);
     setSearchTerm('');
+    setSelectedTag(null);
+    setSelectedAiCategory(null);
   };
 
-  const toggleSelect = (id: string, multi = false) => {
-    if (multi) {
-      setSelectedIds((prev) =>
-        prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
-      );
-    } else {
-      setSelectedIds([id]);
-    }
-
-    const clicked = items.find((i) => i.id === id);
-    if (clicked) {
-      setDetailsItem(clicked);
-    }
+  const toggleSelect = (id: string, multi: boolean = false) => {
+    setSelectedIds((prev) => {
+      if (multi) {
+        return prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id];
+      }
+      return prev.includes(id) && prev.length === 1 ? [] : [id];
+    });
   };
 
   const selectAll = () => {
@@ -282,16 +313,58 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
 
   const clearSelection = () => {
     setSelectedIds([]);
-    setDetailsItem(null);
   };
 
-  const createFolder = async (name: string, color: DriveFolderColor = 'default') => {
-    const folder = await createCloudFolderApi(name, currentFolderId, color);
+  // Batch multi-select actions
+  const triggerBatchAction = async (
+    action: 'tag' | 'move' | 'star' | 'unstar' | 'trash' | 'restore' | 'vault' | 'unvault',
+    payload?: any
+  ) => {
+    if (selectedIds.length === 0) return;
+    setLoading(true);
+    try {
+      await fetch('/api/drive/batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action,
+          itemIds: selectedIds,
+          targetParentId: payload?.targetParentId,
+          tags: payload?.tags,
+          category: payload?.category,
+        }),
+      });
+      clearSelection();
+      await loadItems();
+    } catch (err) {
+      console.error('Batch action error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const bulkDownloadZip = async () => {
+    if (selectedIds.length === 0) return;
+    const selectedItems = items.filter((i) => selectedIds.includes(i.id));
+    const zip = new JSZip();
+
+    for (const item of selectedItems) {
+      if (item.type === 'file') {
+        const blob = await getCloudFileBlob(item.id);
+        if (blob) zip.file(item.name, blob);
+      }
+    }
+
+    const zipBlob = await zip.generateAsync({ type: 'blob' });
+    saveAs(zipBlob, `FileCraft_Batch_Export_${Date.now()}.zip`);
+  };
+
+  const createFolder = async (name: string, color?: DriveFolderColor) => {
+    const newFolder = await createCloudFolderApi(name, currentFolderId, color);
     await loadItems();
-    return folder;
+    return newFolder;
   };
 
-  // Upload files using 2GB+ Resumable Chunked Multipart Engine
   const uploadFiles = async (fileList: File[] | FileList) => {
     const list = Array.from(fileList);
     if (list.length === 0) return;
@@ -305,7 +378,6 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  // Upload directory structure preserving nested folders
   const uploadDirectory = async (directoryItems: { path: string; file: File }[]) => {
     if (directoryItems.length === 0) return;
 
@@ -439,6 +511,10 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
         setSelectedTag,
         selectedAiCategory,
         setSelectedAiCategory,
+        activePerson,
+        setActivePerson,
+        activeVehicle,
+        setActiveVehicle,
         availableTags,
         availableAiCategories,
         viewLayout,
@@ -459,12 +535,34 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
         isUploading,
         uploadProgress,
         authRequired,
+
+        // Vault
+        isVaultUnlocked,
+        unlockVault,
+        lockVault,
+        isVaultModalOpen,
+        setIsVaultModalOpen,
+
+        // Modals
+        isFolderChatOpen,
+        setIsFolderChatOpen,
+        isExpiryRadarOpen,
+        setIsExpiryRadarOpen,
+        isDedupModalOpen,
+        setIsDedupModalOpen,
+        isKeyboardShortcutsOpen,
+        setIsKeyboardShortcutsOpen,
+
+        // Actions
         navigateToFolder,
         selectSection,
         toggleSelect,
         selectAll,
         clearSelection,
         triggerAutoLabel,
+        triggerBatchAction,
+        bulkDownloadZip,
+
         createFolder,
         uploadFiles,
         uploadDirectory,
@@ -490,12 +588,4 @@ export function DriveProvider({ children }: { children: React.ReactNode }) {
       {children}
     </DriveContext.Provider>
   );
-}
-
-export function useDrive() {
-  const ctx = useContext(DriveContext);
-  if (!ctx) {
-    throw new Error('useDrive must be used within a DriveProvider');
-  }
-  return ctx;
-}
+};

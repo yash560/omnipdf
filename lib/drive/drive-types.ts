@@ -66,6 +66,9 @@ export interface ShareConfig {
   maxDownloads?: number | null;
 }
 
+export type ExpiryStatus = 'valid' | 'expiring_soon' | 'expired' | 'none';
+export type ExpiryType = 'insurance' | 'puc' | 'tax' | 'passport' | 'licence' | 'agreement' | 'other';
+
 export interface DriveItem {
   id: string;
   name: string;
@@ -93,6 +96,21 @@ export interface DriveItem {
   matchedTerms?: string[];
   thumbnailUrl?: string;
   itemCount?: number; // for folders (computed/cached)
+
+  // Security Vault
+  isVault?: boolean;
+
+  // OCR full text
+  ocrText?: string;
+  ocrSnippet?: string;
+
+  // Expiry & Renewal
+  expiryDate?: number | null; // epoch timestamp
+  expiryStatus?: ExpiryStatus;
+  expiryDaysLeft?: number;
+  expiryType?: ExpiryType;
+  expiryDetails?: string;
+
   // Multi-account & collaboration
   userId?: string;
   ownerEmail?: string;
@@ -108,10 +126,14 @@ export interface SearchFilterOptions {
   category?: DriveCategory;
   aiCategory?: string;
   tag?: string;
+  person?: string;
+  vehicle?: string;
   dateRange?: 'all' | 'today' | 'week' | 'month' | 'year';
   section?: DriveViewSection;
   parentId?: string | null;
-  sort?: 'relevance' | 'date' | 'name' | 'size';
+  sort?: 'relevance' | 'date' | 'name' | 'size' | 'expiry';
+  includeVault?: boolean;
+  isVaultUnlocked?: boolean;
 }
 
 export interface SearchResult {
@@ -145,7 +167,10 @@ export type DriveActivityAction =
   | 'downloaded'
   | 'trashed'
   | 'restored'
-  | 'commented';
+  | 'commented'
+  | 'vault_locked'
+  | 'vault_unlocked'
+  | 'ocr_indexed';
 
 export interface DriveActivity {
   id: string;
@@ -173,9 +198,12 @@ export type DriveViewSection =
   | 'recent' 
   | 'trash' 
   | 'shared'
+  | 'vault'
+  | 'expiry'
+  | 'duplicates'
   | 'category';
 
-export type DriveSortField = 'name' | 'updatedAt' | 'size' | 'category';
+export type DriveSortField = 'name' | 'updatedAt' | 'size' | 'category' | 'expiry';
 export type DriveSortOrder = 'asc' | 'desc';
 
 export interface DriveSortOption {
@@ -193,6 +221,9 @@ export interface DriveStats {
   categoryCount: Record<DriveCategory, number>;
   starredCount: number;
   trashCount: number;
+  vaultCount?: number;
+  expiringCount?: number;
+  expiredCount?: number;
   sharedWithMeCount?: number;
 }
 
@@ -219,4 +250,20 @@ export interface ChunkUploadProgress {
   speedBytesPerSec: number;
   status: 'queued' | 'uploading' | 'assembling' | 'completed' | 'paused' | 'error';
   error?: string;
+}
+
+export interface DuplicateCluster {
+  id: string;
+  hash: string;
+  name: string;
+  size: number;
+  items: DriveItem[];
+  suggestedKeepId: string;
+}
+
+export interface VaultStatus {
+  hasPin: boolean;
+  isUnlocked: boolean;
+  vaultItemsCount: number;
+  unlockedUntil: number | null;
 }
