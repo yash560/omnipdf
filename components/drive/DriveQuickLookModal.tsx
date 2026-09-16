@@ -22,6 +22,7 @@ import {
   Share2
 } from 'lucide-react';
 import Link from 'next/link';
+import { DriveRelatedItems } from './DriveRelatedItems';
 
 interface DriveQuickLookModalProps {
   item: DriveItem | null;
@@ -37,6 +38,7 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
   const [loading, setLoading] = useState(true);
   const [zoom, setZoom] = useState(1.0);
   const [rotation, setRotation] = useState(0);
+  const [showRelated, setShowRelated] = useState(false);
 
   useEffect(() => {
     let url: string | null = null;
@@ -138,6 +140,20 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
               <span>Ask AI Copilot</span>
             </button>
 
+            {/* Related Files */}
+            <button
+              type="button"
+              onClick={() => setShowRelated(!showRelated)}
+              className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                showRelated
+                  ? 'bg-rose-500 text-white border-rose-500 shadow-xs'
+                  : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+              }`}
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${showRelated ? 'text-white' : 'text-amber-500'}`} />
+              <span>Related</span>
+            </button>
+
             {/* Share */}
             {onOpenShare && (
               <button
@@ -184,14 +200,16 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
           </div>
         </div>
 
-        {/* Viewer Canvas Area */}
-        <div className="flex-1 bg-zinc-100 dark:bg-zinc-950 overflow-hidden flex items-center justify-center relative">
-          {loading ? (
-            <div className="flex flex-col items-center gap-2 text-zinc-400 text-xs">
-              <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping" />
-              <span className="font-bold">Streaming Cloud File Preview...</span>
-            </div>
-          ) : isZipArchive && blob ? (
+        {/* Viewer Canvas Area with Optional Related Sidebar */}
+        <div className="flex-1 flex overflow-hidden relative">
+          <div className="flex-1 bg-zinc-100 dark:bg-zinc-950 overflow-hidden flex items-center justify-center relative">
+            {loading ? (
+              <div className="flex flex-col items-center gap-2 text-zinc-400 text-xs">
+                <span className="w-3 h-3 rounded-full bg-rose-500 animate-ping" />
+                <span className="font-bold">Streaming Cloud File Preview...</span>
+              </div>
+            ) : isZipArchive && blob ? (
+
             // 1. In-browser ZIP / Archive Explorer
             <div className="w-full h-full">
               <DriveArchiveViewer blob={blob} />
@@ -285,6 +303,14 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
             </div>
           )}
         </div>
+
+        {/* Optional Collapsible Related Items Drawer */}
+        {showRelated && (
+          <div className="w-80 border-l border-zinc-200 dark:border-zinc-800 p-4 bg-white dark:bg-zinc-900 overflow-y-auto shrink-0 animate-in slide-in-from-right-4 duration-150">
+            <DriveRelatedItems item={item} />
+          </div>
+        )}
+      </div>
 
         {/* Footer Toolbar: Quick Launch Options */}
         {tools.length > 0 && (

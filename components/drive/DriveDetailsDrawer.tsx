@@ -22,6 +22,7 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import Link from 'next/link';
+import { DriveRelatedItems } from './DriveRelatedItems';
 
 export function DriveDetailsDrawer() {
   const { detailsItem, setDetailsItem, changeFolderColor, openShareModal } = useDrive();
@@ -237,9 +238,14 @@ export function DriveDetailsDrawer() {
               </div>
             </div>
 
+            {/* Related Items Recommendations */}
+            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800">
+              <DriveRelatedItems item={detailsItem} />
+            </div>
+
             {/* Tool Shortcuts */}
             {tools.length > 0 && (
-              <div className="space-y-1.5 text-xs">
+              <div className="space-y-1.5 text-xs pt-2 border-t border-zinc-100 dark:border-zinc-800">
                 <div className="text-[10px] font-extrabold uppercase tracking-wider text-zinc-400">
                   Quick Actions
                 </div>

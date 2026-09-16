@@ -21,7 +21,8 @@ import {
   Lock,
   Unlock,
   SlidersHorizontal,
-  HelpCircle
+  HelpCircle,
+  Menu
 } from 'lucide-react';
 import { DriveSortField } from '@/lib/drive/drive-types';
 
@@ -30,6 +31,7 @@ interface DriveToolbarProps {
   onOpenEmptyTrashConfirm: () => void;
   showFastFilters?: boolean;
   onToggleFastFilters?: () => void;
+  onToggleMobileSidebar?: () => void;
 }
 
 export function DriveToolbar({
@@ -37,6 +39,7 @@ export function DriveToolbar({
   onOpenEmptyTrashConfirm,
   showFastFilters,
   onToggleFastFilters,
+  onToggleMobileSidebar,
 }: DriveToolbarProps) {
   const {
     breadcrumbs,
@@ -86,40 +89,53 @@ export function DriveToolbar({
   const currentFolderCrumb = breadcrumbs[breadcrumbs.length - 1];
 
   return (
-    <div className="w-full border-b border-zinc-200 dark:border-zinc-800/80 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md px-4 sm:px-6 py-3 space-y-3">
-      {/* Top Row: Search + Controls */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+    <div className="w-full border-b border-zinc-200 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 space-y-2 sm:space-y-2.5 shrink-0 select-none">
+      {/* Top Row: Mobile Menu + Search Bar + Action Buttons */}
+      <div className="flex items-center justify-between gap-2 sm:gap-3">
+        {/* Mobile Sidebar Drawer Trigger Button */}
+        {onToggleMobileSidebar && (
+          <button
+            type="button"
+            onClick={onToggleMobileSidebar}
+            className="lg:hidden p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 transition-colors cursor-pointer shrink-0 shadow-2xs"
+            title="Open Drive Navigation Menu"
+            aria-label="Open Drive Navigation Menu"
+          >
+            <Menu className="w-4 h-4" />
+          </button>
+        )}
+
         {/* Search Bar with Semantic, OCR & Fuzzy Capabilities */}
-        <div className="relative flex-1 max-w-xl">
-          <Search className="w-4 h-4 text-zinc-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+        <div className="relative flex-1 min-w-0">
+          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search by keywords, OCR text, ID/RC numbers, salary, tax..."
-            className="w-full pl-9 pr-9 py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-inner font-medium"
+            placeholder="Search keywords, OCR text, IDs, tax..."
+            className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-1.5 sm:py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-inner font-medium"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           )}
         </div>
 
-        {/* View & Sort & AI Actions */}
-        <div className="flex items-center gap-1.5 self-end sm:self-auto flex-wrap">
-          {/* Chat with Folder / RAG Assistant */}
+        {/* View & Sort & AI Actions Group */}
+        <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          {/* Chat with Folder / AI RAG */}
           <button
             type="button"
             onClick={() => setIsFolderChatOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/30 hover:bg-violet-100 dark:hover:bg-violet-900/50 border border-violet-200 dark:border-violet-800/50 text-xs font-bold text-violet-700 dark:text-violet-300 transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/40 hover:bg-violet-100 dark:hover:bg-violet-900/60 border border-violet-200/80 dark:border-violet-800/60 text-xs font-bold text-violet-700 dark:text-violet-300 transition-all cursor-pointer shadow-2xs"
             title="Chat with AI about files in this folder"
           >
-            <Sparkles className="w-3.5 h-3.5 text-violet-500 animate-pulse" />
+            <Sparkles className="w-3.5 h-3.5 text-violet-500 shrink-0" />
             <span className="hidden md:inline">Folder AI Chat</span>
           </button>
 
@@ -128,14 +144,14 @@ export function DriveToolbar({
             <button
               type="button"
               onClick={onToggleFastFilters}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
                 showFastFilters
                   ? 'bg-blue-500 text-white border-blue-600 shadow-xs'
                   : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
               }`}
               title="Toggle Fast Person/Vehicle Filters"
             >
-              <SlidersHorizontal className="w-3.5 h-3.5" />
+              <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
               <span className="hidden sm:inline">Filters</span>
             </button>
           )}
@@ -147,7 +163,7 @@ export function DriveToolbar({
               if (isVaultUnlocked) lockVault();
               else setIsVaultModalOpen(true);
             }}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+            className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
               isVaultUnlocked
                 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold'
                 : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'
@@ -156,13 +172,13 @@ export function DriveToolbar({
           >
             {isVaultUnlocked ? (
               <>
-                <Unlock className="w-3.5 h-3.5 text-amber-500" />
-                <span className="hidden sm:inline">Vault Unlocked</span>
+                <Unlock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                <span className="hidden lg:inline">Vault Unlocked</span>
               </>
             ) : (
               <>
-                <Lock className="w-3.5 h-3.5 text-zinc-400" />
-                <span className="hidden sm:inline">Vault Locked</span>
+                <Lock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                <span className="hidden lg:inline">Vault Locked</span>
               </>
             )}
           </button>
@@ -172,11 +188,12 @@ export function DriveToolbar({
             <button
               type="button"
               onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+              title="Sort items"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400" />
-              <span className="hidden sm:inline">Sort:</span>
-              <span className="truncate max-w-[120px]">
+              <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+              <span className="hidden xl:inline text-zinc-400 font-normal">Sort:</span>
+              <span className="truncate max-w-[90px] sm:max-w-[120px] hidden sm:inline">
                 {sortOptions.find((s) => s.field === sortOption.field && s.order === sortOption.order)?.label || 'Name'}
               </span>
             </button>
@@ -214,7 +231,7 @@ export function DriveToolbar({
           </div>
 
           {/* Grid vs List View Toggle */}
-          <div className="flex items-center p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+          <div className="flex items-center p-0.5 sm:p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
             <button
               type="button"
               onClick={() => setViewLayout('grid')}

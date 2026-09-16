@@ -7,17 +7,14 @@ import {
   ChevronDown, 
   Search, 
   ShieldCheck, 
-  Layers, 
   Image as ImageIcon, 
-  Minimize2, 
   FileEdit, 
-  PenTool, 
-  Lock, 
   Sparkles,
   Table,
-  Video,
-  Bot,
-  HardDrive
+  HardDrive,
+  Menu,
+  X,
+  Bot
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { UserDropdown } from './auth/UserDropdown';
@@ -26,160 +23,225 @@ import { ALL_TOOLS } from '@/lib/tools-data';
 
 export function Navbar() {
   const [toolsOpen, setToolsOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { isAuthenticated, openAuthModal } = useAuth();
 
-  const quickSuites = [
-    { name: 'Drive', slug: 'drive', icon: HardDrive },
+  const primarySuites = [
+    { name: 'Drive', slug: 'drive', icon: HardDrive, highlight: true },
     { name: 'PDF Studio', slug: 'edit', icon: FileEdit },
     { name: 'Image Studio', slug: 'image-converter', icon: ImageIcon },
     { name: 'Spreadsheets', slug: 'csv-json-excel', icon: Table },
-    { name: 'AI Chat', slug: 'chat-file', icon: Bot },
+    { name: 'AI Studio', slug: 'chat-file', icon: Bot },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Left: Brand Logo & Mega Menu */}
-        <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform duration-200">
-              <FileText className="w-5 h-5 stroke-[2.2]" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
-                File<span className="text-rose-500">Craft</span>
-              </span>
-              <span className="text-[10px] font-medium text-zinc-500 dark:text-zinc-400 -mt-1 hidden sm:inline">
-                Universal File OS
-              </span>
-            </div>
-          </Link>
+    <>
+      <header className="sticky top-0 z-40 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-xl">
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
+          {/* Left: Brand Logo & Catalog Dropdown */}
+          <div className="flex items-center gap-3 sm:gap-5 min-w-0">
+            <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform duration-200">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
+                  File<span className="text-rose-500">Craft</span>
+                </span>
+                <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 -mt-1 hidden sm:inline tracking-wider uppercase">
+                  Universal File OS
+                </span>
+              </div>
+            </Link>
 
-          {/* Tools Dropdown Navigation */}
-          <div className="relative hidden md:block">
+            {/* Tools Mega Menu Dropdown */}
+            <div className="relative hidden lg:block">
+              <button
+                type="button"
+                onClick={() => setToolsOpen(!toolsOpen)}
+                onBlur={() => setTimeout(() => setToolsOpen(false), 200)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer border border-transparent hover:border-zinc-200 dark:hover:border-zinc-700"
+              >
+                <span>50 Tools Catalog</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${toolsOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Mega Dropdown */}
+              {toolsOpen && (
+                <div className="absolute left-0 top-full mt-2 w-[520px] p-3.5 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl grid grid-cols-2 gap-2 animate-in fade-in zoom-in-95 duration-150 z-50">
+                  {ALL_TOOLS.slice(0, 10).map((tool) => (
+                    <Link
+                      key={tool.id}
+                      href={`/${tool.slug}`}
+                      className="flex items-start gap-2.5 p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors group"
+                    >
+                      <div
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-white shrink-0 shadow-xs"
+                        style={{ backgroundColor: tool.color }}
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-rose-500 transition-colors truncate">
+                          {tool.name}
+                        </div>
+                        <div className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-1">
+                          {tool.description}
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                  <div className="col-span-2 pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center text-xs">
+                    <span className="text-[11px] text-zinc-400">50 Powerhouse Client-Side Tools</span>
+                    <Link href="/" className="font-bold text-rose-500 hover:underline text-xs">
+                      View All 50 Tools →
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Quick Suites Links */}
+            <nav className="hidden md:flex items-center gap-1">
+              {primarySuites.map((tool) => {
+                const Icon = tool.icon;
+                return (
+                  <Link
+                    key={tool.slug}
+                    href={`/${tool.slug}`}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl transition-all ${
+                      tool.highlight
+                        ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 font-bold'
+                        : 'text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{tool.name}</span>
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Right: Quick Search, Privacy Badge, Theme Toggle, Auth, Mobile Menu */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Privacy Badge */}
+            <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/50 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>100% Client-Side Private</span>
+            </div>
+
+            {/* Search Trigger */}
             <button
-              onClick={() => setToolsOpen(!toolsOpen)}
-              onBlur={() => setTimeout(() => setToolsOpen(false), 200)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold text-zinc-700 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 transition-colors"
+              type="button"
+              onClick={() => {
+                window.dispatchEvent(new CustomEvent('open-command-menu'));
+              }}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs text-zinc-500 dark:text-zinc-400 transition-all cursor-pointer shadow-2xs"
             >
-              <span>50 Tools Catalog</span>
-              <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${toolsOpen ? 'rotate-180' : ''}`} />
+              <Search className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Find</span>
+              <kbd className="hidden sm:inline px-1 py-0.2 text-[9px] font-mono font-bold bg-zinc-200 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700">
+                ⌘K
+              </kbd>
             </button>
 
-            {/* Mega Dropdown */}
-            {toolsOpen && (
-              <div className="absolute left-0 top-full mt-2 w-[540px] p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-2xl grid grid-cols-2 gap-2 animate-in fade-in zoom-in-95 duration-150 z-50">
-                {ALL_TOOLS.slice(0, 10).map((tool) => (
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
+            {/* User Auth or Dropdown */}
+            {isAuthenticated ? (
+              <UserDropdown />
+            ) : (
+              <button
+                type="button"
+                onClick={() => openAuthModal('login')}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer"
+              >
+                <span>Sign In</span>
+              </button>
+            )}
+
+            {/* Mobile Menu Toggle Button */}
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen((prev) => !prev)}
+              className="md:hidden p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-colors cursor-pointer"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Drawer Menu */}
+      {mobileNavOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs md:hidden animate-in fade-in duration-150">
+          <div className="fixed top-14 left-0 right-0 max-h-[85vh] bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 p-4 shadow-2xl overflow-y-auto space-y-4 animate-in slide-in-from-top-4 duration-200">
+            <div className="flex items-center justify-between pb-2 border-b border-zinc-100 dark:border-zinc-800">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-400">
+                FileCraft Studios & Workspace
+              </span>
+              <button
+                type="button"
+                onClick={() => setMobileNavOpen(false)}
+                className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {primarySuites.map((tool) => {
+                const Icon = tool.icon;
+                return (
+                  <Link
+                    key={tool.slug}
+                    href={`/${tool.slug}`}
+                    onClick={() => setMobileNavOpen(false)}
+                    className="flex items-center gap-2.5 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/80 font-bold text-xs text-zinc-900 dark:text-zinc-100 hover:border-rose-500 transition-colors"
+                  >
+                    <Icon className="w-4 h-4 text-rose-500" />
+                    <span>{tool.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-2">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-zinc-400 block px-1">
+                Popular Tools
+              </span>
+              <div className="grid grid-cols-2 gap-2">
+                {ALL_TOOLS.slice(0, 8).map((tool) => (
                   <Link
                     key={tool.id}
                     href={`/${tool.slug}`}
-                    className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-colors group"
+                    onClick={() => setMobileNavOpen(false)}
+                    className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200/50 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 truncate hover:text-rose-500"
                   >
-                    <div
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white shrink-0 shadow-sm"
-                      style={{ backgroundColor: tool.color }}
-                    >
-                      <FileText className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100 group-hover:text-rose-500 transition-colors">
-                        {tool.name}
-                      </div>
-                      <div className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1">
-                        {tool.description}
-                      </div>
-                    </div>
+                    {tool.name}
                   </Link>
                 ))}
-                <div className="col-span-2 pt-2 border-t border-zinc-100 dark:border-zinc-800 flex justify-between items-center text-xs">
-                  <span className="text-zinc-500">50 Powerhouse Tools Across 6 Suites</span>
-                  <Link href="/" className="font-semibold text-rose-500 hover:underline">
-                    View Complete Catalog →
-                  </Link>
-                </div>
               </div>
-            )}
-          </div>
+            </div>
 
-          {/* Quick links */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {quickSuites.map((tool) => (
+            <div className="pt-2 flex items-center justify-between text-xs text-zinc-500">
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
+                <ShieldCheck className="w-4 h-4" /> 100% Client-Side
+              </span>
               <Link
-                key={tool.slug}
-                href={`/${tool.slug}`}
-                className="px-2.5 py-1.5 text-xs font-medium text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60 rounded-lg transition-colors"
+                href="/"
+                onClick={() => setMobileNavOpen(false)}
+                className="font-bold text-rose-500 hover:underline"
               >
-                {tool.name}
+                All 50 Tools →
               </Link>
-            ))}
-          </nav>
-        </div>
-
-        {/* Right: Quick Search, Privacy Badge, Theme Toggle */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Privacy Pill */}
-          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/50 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span>100% Client-Side Private</span>
+            </div>
           </div>
-
-          {/* Search trigger button */}
-          <button
-            onClick={() => {
-              window.dispatchEvent(new CustomEvent('open-command-menu'));
-            }}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs text-zinc-500 dark:text-zinc-400 transition-all cursor-pointer shadow-sm"
-          >
-            <Search className="w-3.5 h-3.5" />
-            <span className="hidden md:inline">Quick Find...</span>
-            <kbd className="hidden md:inline px-1.5 py-0.5 text-[10px] font-semibold bg-zinc-200 dark:bg-zinc-800 rounded text-zinc-600 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700">
-              ⌘K
-            </kbd>
-          </button>
-
-          {/* Theme Toggle */}
-          <ThemeToggle />
-
-          {/* Drive Workspace Quick Launcher */}
-          <Link
-            href="/drive"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 text-xs font-bold transition-all"
-          >
-            <HardDrive className="w-3.5 h-3.5 text-blue-500" />
-            <span className="hidden md:inline">Drive</span>
-          </Link>
-
-          {/* AI Copilot Quick Launcher */}
-          <Link
-            href="/chat-file"
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-cyan-500/10 hover:from-rose-500/20 hover:to-cyan-500/20 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-xs font-bold transition-all shadow-2xs"
-          >
-            <Sparkles className="w-3.5 h-3.5 animate-pulse text-purple-500" />
-            <span className="hidden sm:inline">AI Studio</span>
-          </Link>
-
-          {/* User Auth or Dropdown */}
-          {isAuthenticated ? (
-            <UserDropdown />
-          ) : (
-            <button
-              onClick={() => openAuthModal('login')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer"
-            >
-              <span>Sign In</span>
-            </button>
-          )}
-
-          {/* Studio CTA Button */}
-          <Link
-            href="/edit"
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white text-xs font-bold shadow-md shadow-rose-500/20 hover:shadow-lg hover:shadow-rose-500/30 transition-all active:scale-95"
-          >
-            <FileEdit className="w-3.5 h-3.5" />
-            <span>PDF Studio</span>
-          </Link>
         </div>
-      </div>
-    </header>
+      )}
+    </>
   );
 }

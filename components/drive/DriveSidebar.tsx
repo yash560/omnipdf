@@ -25,16 +25,26 @@ import {
   Calendar,
   Copy,
   Shield,
-  HelpCircle
+  HelpCircle,
+  Layers,
+  X
 } from 'lucide-react';
 import { DriveCategory } from '@/lib/drive/drive-types';
 import { formatBytes } from '@/lib/drive/drive-helpers';
 
 interface DriveSidebarProps {
   onOpenNewFolderModal: () => void;
+  onOpenDossiersModal?: () => void;
+  isMobileDrawer?: boolean;
+  onCloseMobileDrawer?: () => void;
 }
 
-export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
+export function DriveSidebar({ 
+  onOpenNewFolderModal, 
+  onOpenDossiersModal,
+  isMobileDrawer = false,
+  onCloseMobileDrawer
+}: DriveSidebarProps) {
   const {
     viewSection,
     selectedCategory,
@@ -59,6 +69,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
     if (e.target.files && e.target.files.length > 0) {
       await uploadFiles(e.target.files);
       e.target.value = '';
+      if (isMobileDrawer && onCloseMobileDrawer) onCloseMobileDrawer();
     }
   };
 
@@ -70,6 +81,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
       }));
       await uploadDirectory(filesArray);
       e.target.value = '';
+      if (isMobileDrawer && onCloseMobileDrawer) onCloseMobileDrawer();
     }
   };
 
@@ -82,12 +94,25 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
     { id: 'code', label: 'Code & Scripts', icon: FileCode, color: 'text-blue-500' },
   ];
 
+  const handleNavClick = (action: () => void) => {
+    action();
+    if (isMobileDrawer && onCloseMobileDrawer) {
+      onCloseMobileDrawer();
+    }
+  };
+
   const totalUsed = stats?.totalBytes || 0;
   const maxQuota = 100 * 1024 * 1024 * 1024; // 100 GB cloud tier
   const quotaPercent = Math.min(100, Math.max(1, Math.round((totalUsed / maxQuota) * 100)));
 
   return (
-    <aside className="w-full lg:w-64 shrink-0 flex flex-col justify-between p-4 bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800/80">
+    <aside
+      className={
+        isMobileDrawer
+          ? 'w-full h-full flex flex-col justify-between p-4 bg-white dark:bg-zinc-950 overflow-y-auto'
+          : 'hidden lg:flex w-64 xl:w-72 shrink-0 flex-col justify-between p-4 bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800/80 h-full overflow-y-auto select-none'
+      }
+    >
       {/* Hidden File Inputs */}
       <input
         ref={fileInputRef}
@@ -108,6 +133,27 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
       />
 
       <div className="space-y-4">
+        {/* Mobile Header with Close Button */}
+        {isMobileDrawer && (
+          <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-rose-500 to-red-600 flex items-center justify-center text-white text-xs font-black shadow-xs">
+                <HardDrive className="w-4 h-4" />
+              </div>
+              <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">
+                FileCraft Drive
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={onCloseMobileDrawer}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {/* New Item Dropdown Button */}
         <div className="relative">
           <button
@@ -132,6 +178,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
                   onClick={() => {
                     setNewDropdownOpen(false);
                     onOpenNewFolderModal();
+                    if (isMobileDrawer && onCloseMobileDrawer) onCloseMobileDrawer();
                   }}
                   className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
                 >
@@ -185,7 +232,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
         <nav className="space-y-1 text-xs font-semibold">
           <button
             type="button"
-            onClick={() => selectSection('my-drive')}
+            onClick={() => handleNavClick(() => selectSection('my-drive'))}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
               viewSection === 'my-drive'
                 ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
@@ -206,7 +253,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
           {/* Secure Vault Item */}
           <button
             type="button"
-            onClick={() => selectSection('vault')}
+            onClick={() => handleNavClick(() => selectSection('vault'))}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
               viewSection === 'vault'
                 ? 'bg-amber-500 text-white font-bold shadow-md shadow-amber-500/20'
@@ -233,7 +280,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
           {/* Expiry Radar Item */}
           <button
             type="button"
-            onClick={() => setIsExpiryRadarOpen(true)}
+            onClick={() => handleNavClick(() => setIsExpiryRadarOpen(true))}
             className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
           >
             <div className="flex items-center gap-3">
@@ -247,10 +294,27 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
             ) : null}
           </button>
 
+          {/* Smart Dossiers */}
+          {onOpenDossiersModal && (
+            <button
+              type="button"
+              onClick={() => handleNavClick(onOpenDossiersModal)}
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+            >
+              <div className="flex items-center gap-3">
+                <Layers className="w-4 h-4 text-blue-500" />
+                <span>Smart Dossiers</span>
+              </div>
+              <span className="text-3xs font-mono px-1.5 py-0.5 rounded-md bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold">
+                Auto
+              </span>
+            </button>
+          )}
+
           {/* Duplicate Cleaner */}
           <button
             type="button"
-            onClick={() => setIsDedupModalOpen(true)}
+            onClick={() => handleNavClick(() => setIsDedupModalOpen(true))}
             className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900"
           >
             <div className="flex items-center gap-3">
@@ -261,7 +325,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
 
           <button
             type="button"
-            onClick={() => selectSection('starred')}
+            onClick={() => handleNavClick(() => selectSection('starred'))}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
               viewSection === 'starred'
                 ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
@@ -281,7 +345,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
 
           <button
             type="button"
-            onClick={() => selectSection('shared')}
+            onClick={() => handleNavClick(() => selectSection('shared'))}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
               viewSection === 'shared'
                 ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
@@ -301,7 +365,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
 
           <button
             type="button"
-            onClick={() => selectSection('trash')}
+            onClick={() => handleNavClick(() => selectSection('trash'))}
             className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
               viewSection === 'trash'
                 ? 'bg-rose-500 text-white font-bold shadow-md shadow-rose-500/20'
@@ -334,7 +398,7 @@ export function DriveSidebar({ onOpenNewFolderModal }: DriveSidebarProps) {
                 <button
                   key={cat.id}
                   type="button"
-                  onClick={() => selectSection('category', cat.id)}
+                  onClick={() => handleNavClick(() => selectSection('category', cat.id))}
                   className={`w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                     isSelected
                       ? 'bg-zinc-100 dark:bg-zinc-900 text-zinc-900 dark:text-white font-bold border border-zinc-300 dark:border-zinc-700'

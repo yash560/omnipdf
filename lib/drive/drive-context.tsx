@@ -95,7 +95,7 @@ interface DriveContextType {
   clearSelection: () => void;
   triggerAutoLabel: (itemIds?: string[]) => Promise<void>;
   triggerBatchAction: (action: 'tag' | 'move' | 'star' | 'unstar' | 'trash' | 'restore' | 'vault' | 'unvault', payload?: any) => Promise<void>;
-  bulkDownloadZip: () => Promise<void>;
+  bulkDownloadZip: (customItems?: DriveItem[]) => Promise<void>;
   
   // Cloud CRUD Operations
   createFolder: (name: string, color?: DriveFolderColor) => Promise<DriveItem>;
@@ -343,12 +343,12 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const bulkDownloadZip = async () => {
-    if (selectedIds.length === 0) return;
-    const selectedItems = items.filter((i) => selectedIds.includes(i.id));
+  const bulkDownloadZip = async (customItems?: DriveItem[]) => {
+    const targetItems = customItems || items.filter((i) => selectedIds.includes(i.id));
+    if (targetItems.length === 0) return;
     const zip = new JSZip();
 
-    for (const item of selectedItems) {
+    for (const item of targetItems) {
       if (item.type === 'file') {
         const blob = await getCloudFileBlob(item.id);
         if (blob) zip.file(item.name, blob);

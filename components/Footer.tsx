@@ -1,8 +1,16 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { FileText, ShieldCheck, Heart, Sparkles, Lock, Cpu } from 'lucide-react';
 import { PDF_TOOLS } from '@/lib/tools-data';
 
 export function Footer() {
+  const pathname = usePathname();
+  if (pathname === '/drive' || pathname?.startsWith('/drive/')) {
+    return null;
+  }
+
   const organizeTools = PDF_TOOLS.filter((t) => t.category === 'organize');
   const optimizeTools = PDF_TOOLS.filter((t) => t.category === 'optimize' || t.category === 'security');
   const editTools = PDF_TOOLS.filter((t) => t.category === 'edit' || t.category === 'smart');

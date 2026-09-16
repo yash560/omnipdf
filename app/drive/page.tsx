@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { DriveProvider, useDrive } from '@/lib/drive/drive-context';
 import { DriveSidebar } from '@/components/drive/DriveSidebar';
@@ -17,6 +17,8 @@ import { DriveVaultModal } from '@/components/drive/DriveVaultModal';
 import { DriveFolderChatModal } from '@/components/drive/DriveFolderChatModal';
 import { DriveExpiryRadarModal } from '@/components/drive/DriveExpiryRadarModal';
 import { DriveDedupModal } from '@/components/drive/DriveDedupModal';
+import { DriveRecommendationHero } from '@/components/drive/DriveRecommendationHero';
+import { DriveSmartDossiersModal } from '@/components/drive/DriveSmartDossiersModal';
 import { DriveKeyboardShortcutsModal } from '@/components/drive/DriveKeyboardShortcutsModal';
 import { DriveBulkActionBar } from '@/components/drive/DriveBulkActionBar';
 import {
@@ -25,7 +27,8 @@ import {
   MoveModal,
   EmptyTrashModal,
 } from '@/components/drive/DriveModals';
-import { DriveItem } from '@/lib/drive/drive-types';
+import { generateSmartDossiers } from '@/lib/drive/dossier-generator';
+import { DriveItem, SmartDossier } from '@/lib/drive/drive-types';
 import { 
   Cloud, 
   Upload, 
@@ -146,6 +149,13 @@ function DriveWorkspaceInner() {
   const [emptyTrashConfirmOpen, setEmptyTrashConfirmOpen] = useState(false);
   const [isDragOverScreen, setIsDragOverScreen] = useState(false);
   const [showFastFilters, setShowFastFilters] = useState(true);
+  const [isDossiersModalOpen, setIsDossiersModalOpen] = useState(false);
+  const [selectedDossier, setSelectedDossier] = useState<SmartDossier | null>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  const dossiers = useMemo(() => {
+    return generateSmartDossiers(items, { isVaultUnlocked });
+  }, [items, isVaultUnlocked]);
 
   // Listen for query params from Global Search / Deep Links
   useEffect(() => {
@@ -290,7 +300,7 @@ function DriveWorkspaceInner() {
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
-      className="flex-1 flex flex-col lg:flex-row h-[calc(100vh-64px)] w-full overflow-hidden relative bg-zinc-50 dark:bg-zinc-950 font-sans"
+      className="flex-1 flex flex-col lg:flex-row h-[calc(100dvh-56px)] sm:h-[calc(100dvh-64px)] w-full overflow-hidden relative bg-zinc-50 dark:bg-zinc-950 font-sans"
     >
       {/* Drag & Drop Fullscreen Overlay */}
       {isDragOverScreen && (
@@ -309,8 +319,30 @@ function DriveWorkspaceInner() {
         </div>
       )}
 
-      {/* Left Navigation Sidebar */}
-      <DriveSidebar onOpenNewFolderModal={() => setNewFolderOpen(true)} />
+      {/* Desktop Persistent Sidebar */}
+      <DriveSidebar
+        onOpenNewFolderModal={() => setNewFolderOpen(true)}
+        onOpenDossiersModal={() => setIsDossiersModalOpen(true)}
+      />
+
+      {/* Mobile Slide-Over Sidebar Drawer */}
+      {mobileSidebarOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs lg:hidden flex animate-in fade-in duration-150">
+          <div className="w-[280px] sm:w-[320px] h-full bg-white dark:bg-zinc-950 border-r border-zinc-200 dark:border-zinc-800 shadow-2xl animate-in slide-in-from-left duration-200">
+            <DriveSidebar
+              isMobileDrawer
+              onCloseMobileDrawer={() => setMobileSidebarOpen(false)}
+              onOpenNewFolderModal={() => setNewFolderOpen(true)}
+              onOpenDossiersModal={() => setIsDossiersModalOpen(true)}
+            />
+          </div>
+          <div 
+            className="flex-1" 
+            onClick={() => setMobileSidebarOpen(false)} 
+            aria-label="Dismiss sidebar"
+          />
+        </div>
+      )}
 
       {/* Main Drive Workspace Canvas */}
       <main className="flex-1 flex flex-col min-w-0 h-full overflow-hidden bg-white dark:bg-zinc-900/60">
@@ -319,6 +351,7 @@ function DriveWorkspaceInner() {
           onOpenEmptyTrashConfirm={() => setEmptyTrashConfirmOpen(true)}
           showFastFilters={showFastFilters}
           onToggleFastFilters={() => setShowFastFilters(!showFastFilters)}
+          onToggleMobileSidebar={() => setMobileSidebarOpen((prev) => !prev)}
         />
 
         {/* Fast Filters Bar */}
@@ -340,6 +373,14 @@ function DriveWorkspaceInner() {
 
         {/* Scrollable Items Feed */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+          {/* Top Recommendation & Intelligence Hero */}
+          <DriveRecommendationHero
+            onOpenDossiersModal={(dos) => {
+              setSelectedDossier(dos || null);
+              setIsDossiersModalOpen(true);
+            }}
+          />
+
           {loading ? (
             <div className="h-full flex flex-col items-center justify-center space-y-3 text-zinc-400 py-24">
               <span className="w-6 h-6 rounded-full bg-rose-500 animate-ping" />
@@ -500,6 +541,17 @@ function DriveWorkspaceInner() {
         isOpen={isDedupModalOpen}
         onClose={() => setIsDedupModalOpen(false)}
         onRefreshItems={loadItems}
+      />
+
+      {/* Smart Dossiers Modal */}
+      <DriveSmartDossiersModal
+        isOpen={isDossiersModalOpen}
+        onClose={() => {
+          setIsDossiersModalOpen(false);
+          setSelectedDossier(null);
+        }}
+        initialDossier={selectedDossier}
+        dossiers={dossiers}
       />
 
       {/* Keyboard Shortcuts Cheat Sheet Modal */}

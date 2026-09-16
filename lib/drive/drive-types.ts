@@ -269,3 +269,80 @@ export interface VaultStatus {
   vaultItemsCount: number;
   unlockedUntil: number | null;
 }
+
+export type DriveRecommendationStream = 
+  | 'for_you' 
+  | 'suggested_action' 
+  | 'dossier' 
+  | 'related';
+
+export type DriveRecommendationRationale = 
+  | 'frequent_work_hours' 
+  | 'recently_active' 
+  | 'expiring_soon' 
+  | 'co_occurring' 
+  | 'semantic_match' 
+  | 'starred' 
+  | 'cleanup_candidate' 
+  | 'missing_dossier_item' 
+  | 'predicted_workflow';
+
+export interface DriveRecommendation {
+  id: string;
+  itemId: string;
+  item: DriveItem;
+  score: number;
+  stream: DriveRecommendationStream;
+  rationale: string;
+  rationaleType: DriveRecommendationRationale;
+  confidence: number; // 0.0 to 1.0
+  actionType?: 'preview' | 'renew' | 'dedup' | 'merge' | 'compress' | 'open_folder' | 'export_zip' | 'chat_folder';
+  actionPayload?: Record<string, any>;
+  badgeText?: string;
+  similarityScore?: number; // percentage match for related items (e.g. 94)
+  sharedKeywords?: string[];
+}
+
+export interface SmartDossier {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  icon: string; // lucide icon identifier
+  accentColor: string; // hex or tailwind class
+  category: string;
+  itemIds: string[];
+  items: DriveItem[];
+  totalBytes: number;
+  completenessScore: number; // 0 to 100
+  status: 'complete' | 'attention_needed' | 'in_progress';
+  tags: string[];
+  keyHighlights: string[];
+  suggestedActions: { label: string; action: string; icon: string }[];
+}
+
+export interface RecommendationContext {
+  activeFolderId?: string | null;
+  selectedItemId?: string | null;
+  currentHour?: number; // 0-23
+  dayOfWeek?: number; // 0=Sun, 1=Mon, ..., 6=Sat
+  isVaultUnlocked?: boolean;
+  recentActionHistory?: string[];
+  dismissedIds?: string[];
+  viewMode?: string;
+}
+
+export interface RecommendationResponse {
+  success: boolean;
+  forYou: DriveRecommendation[];
+  suggestedActions: DriveRecommendation[];
+  dossiers: SmartDossier[];
+  related?: DriveRecommendation[];
+  stats: {
+    generatedAt: number;
+    totalItemsEvaluated: number;
+    topCategory: string;
+    contextMode: string;
+    executionTimeMs: number;
+  };
+}
