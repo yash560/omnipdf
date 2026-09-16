@@ -105,21 +105,44 @@ export function DriveSearchDropdown({
   if (!isOpen) return null;
 
   return (
-    <div
-      ref={dropdownRef}
-      className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[480px] flex flex-col"
-    >
-      <div className="p-3 overflow-y-auto space-y-4">
-        {/* SECTION 1: INSTANT MATCHED DOCUMENTS (When Query Exists) */}
-        {cleanQuery && matchedItems.length > 0 && (
-          <div className="space-y-1">
-            <div className="flex items-center justify-between px-2 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
-              <span className="flex items-center gap-1.5">
-                <FileText className="w-3 h-3 text-rose-500" />
-                <span>Instant Document Matches</span>
-              </span>
-              <span>{matchedItems.length} results</span>
-            </div>
+    <>
+      {/* Mobile Backdrop */}
+      <div 
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden animate-in fade-in duration-150"
+        onClick={onClose} 
+      />
+
+      <div
+        ref={dropdownRef}
+        className="fixed inset-x-2.5 sm:inset-x-4 top-16 max-h-[80vh] md:absolute md:inset-x-0 md:top-full md:mt-2 md:max-h-[480px] bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col"
+      >
+        {/* Mobile Header Bar */}
+        <div className="md:hidden flex items-center justify-between px-3.5 py-2.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80">
+          <div className="flex items-center gap-2 text-xs font-bold text-zinc-900 dark:text-zinc-100">
+            <Search className="w-3.5 h-3.5 text-rose-500" />
+            <span>Search Drive & Quick Look</span>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
+            aria-label="Close search dropdown"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="p-3 overflow-y-auto space-y-4">
+          {/* SECTION 1: INSTANT MATCHED DOCUMENTS (When Query Exists) */}
+          {cleanQuery && matchedItems.length > 0 && (
+            <div className="space-y-1">
+              <div className="flex items-center justify-between px-2 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
+                <span className="flex items-center gap-1.5">
+                  <FileText className="w-3 h-3 text-rose-500" />
+                  <span>Instant Document Matches</span>
+                </span>
+                <span>{matchedItems.length} results</span>
+              </div>
 
             <div className="space-y-0.5">
               {matchedItems.map((item) => (
@@ -258,5 +281,6 @@ export function DriveSearchDropdown({
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -78,7 +78,7 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
 
   return (
     <div className="fixed bottom-3 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-200 max-w-[96vw] sm:max-w-4xl w-max">
-      <div className="flex flex-wrap sm:flex-nowrap items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-2xl bg-zinc-900/95 dark:bg-zinc-800/95 backdrop-blur-xl border border-white/10 shadow-2xl text-white">
+      <div className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2.5 rounded-2xl bg-zinc-900/95 dark:bg-zinc-800/95 backdrop-blur-xl border border-white/10 shadow-2xl text-white overflow-x-auto no-scrollbar max-w-[96vw]">
         {/* Selection Count Pill & Quick Toggles */}
         <div className="flex items-center gap-1.5 sm:gap-2 pr-2.5 sm:pr-3 border-r border-zinc-700/60 text-xs font-semibold shrink-0">
           <CheckSquare className="w-4 h-4 text-rose-400 shrink-0" />

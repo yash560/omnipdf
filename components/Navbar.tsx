@@ -37,15 +37,15 @@ export function Navbar() {
   return (
     <>
       <header className="sticky top-0 z-40 w-full border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-2 sm:gap-4">
+        <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
           {/* Left: Brand Logo & Catalog Dropdown */}
-          <div className="flex items-center gap-3 sm:gap-5 min-w-0">
-            <Link href="/" className="flex items-center gap-2 sm:gap-2.5 group shrink-0">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform duration-200">
+          <div className="flex items-center gap-2 sm:gap-5 min-w-0 shrink-0">
+            <Link href="/" className="flex items-center gap-1.5 sm:gap-2.5 group shrink-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform duration-200 shrink-0">
                 <FileText className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
               </div>
-              <div className="flex flex-col">
-                <span className="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
+              <div className="flex flex-col shrink-0">
+                <span className="font-extrabold text-sm sm:text-lg tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
                   File<span className="text-rose-500">Craft</span>
                 </span>
                 <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 -mt-1 hidden sm:inline tracking-wider uppercase">
@@ -131,7 +131,7 @@ export function Navbar() {
           </div>
 
           {/* Right: Quick Search, Theme Toggle, Auth, Mobile Menu */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 shrink-0">
 
             {/* Search Trigger */}
             <button
@@ -139,7 +139,8 @@ export function Navbar() {
               onClick={() => {
                 window.dispatchEvent(new CustomEvent('open-command-menu'));
               }}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs text-zinc-500 dark:text-zinc-400 transition-all cursor-pointer shadow-2xs"
+              className="flex items-center justify-center gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs text-zinc-500 dark:text-zinc-400 transition-all cursor-pointer shadow-2xs shrink-0"
+              title="Search tools & files (⌘K)"
             >
               <Search className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Find</span>
@@ -158,7 +159,7 @@ export function Navbar() {
               <button
                 type="button"
                 onClick={() => openAuthModal('login')}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer"
+                className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 transition-all cursor-pointer shrink-0"
               >
                 <span>Sign In</span>
               </button>
@@ -168,7 +169,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileNavOpen((prev) => !prev)}
-              className="md:hidden p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-colors cursor-pointer"
+              className="md:hidden p-2 rounded-xl text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 transition-colors cursor-pointer shrink-0"
               aria-label="Toggle Navigation Menu"
             >
               {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}

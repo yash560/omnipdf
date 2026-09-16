@@ -270,11 +270,11 @@ export function DriveToolbar({
           <button
             type="button"
             onClick={() => setIsFolderChatOpen(true)}
-            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/40 hover:bg-violet-100 dark:hover:bg-violet-900/60 border border-violet-200/80 dark:border-violet-800/60 text-xs font-bold text-violet-700 dark:text-violet-300 transition-all cursor-pointer shadow-2xs shrink-0"
+            className="inline-flex items-center justify-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/40 hover:bg-violet-100 dark:hover:bg-violet-900/60 border border-violet-200/80 dark:border-violet-800/60 text-xs font-bold text-violet-700 dark:text-violet-300 transition-all cursor-pointer shadow-2xs shrink-0"
             title="Chat with AI about files in this folder"
           >
             <Sparkles className="w-3.5 h-3.5 text-violet-500 shrink-0" />
-            <span className="hidden md:inline">Folder AI Chat</span>
+            <span className="hidden sm:inline">Folder AI Chat</span>
           </button>
 
           {/* Fast Filters Toggle */}
@@ -282,7 +282,7 @@ export function DriveToolbar({
             <button
               type="button"
               onClick={onToggleFastFilters}
-              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer shrink-0 ${
+              className={`inline-flex items-center justify-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer shrink-0 ${
                 showFastFilters
                   ? 'bg-blue-500 text-white border-blue-600 shadow-xs'
                   : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
@@ -290,7 +290,7 @@ export function DriveToolbar({
               title="Toggle Fast Person/Vehicle Filters"
             >
               <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden md:inline">Filters</span>
+              <span className="hidden sm:inline">Filters</span>
             </button>
           )}
         </div>
@@ -613,13 +613,13 @@ export function DriveToolbar({
       </div>
 
       {/* Dedicated Mobile Action Dock (Visible ONLY on < md screens: Select, Sort, Vault, Layout) */}
-      <div className="flex flex-wrap md:hidden items-center justify-between gap-1.5 pt-1.5 pb-0.5 border-t border-zinc-100 dark:border-zinc-800/60">
+      <div className="flex items-center justify-between gap-1.5 pt-1.5 pb-0.5 border-t border-zinc-100 dark:border-zinc-800/60 md:hidden w-full overflow-x-auto no-scrollbar scroll-smooth">
         {/* Mobile Select Menu */}
         <div className="relative shrink-0">
           <button
             type="button"
             onClick={() => setSelectDropdownOpen(!selectDropdownOpen)}
-            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer shrink-0 ${
               hasSelection
                 ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-bold'
                 : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300'
@@ -631,10 +631,10 @@ export function DriveToolbar({
           </button>
           {selectDropdownOpen && (
             <>
-              <div className="fixed inset-0 z-40" onClick={() => setSelectDropdownOpen(false)} />
-              <div className="absolute left-0 mt-2 w-52 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+              <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-2xs" onClick={() => setSelectDropdownOpen(false)} />
+              <div className="fixed inset-x-3 top-28 max-h-[70vh] overflow-y-auto sm:absolute sm:inset-auto sm:left-0 sm:top-full sm:mt-2 sm:w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-2 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
-                  Selection Modes
+                  Selection Modes ({items.length} total)
                 </div>
                 <button
                   type="button"
@@ -644,8 +644,11 @@ export function DriveToolbar({
                   }}
                   className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
                 >
-                  <span>Select All</span>
-                  <span className="text-3xs text-zinc-400">({items.length})</span>
+                  <div className="flex items-center gap-2">
+                    <CheckSquare className="w-3.5 h-3.5 text-rose-500" />
+                    <span>Select All</span>
+                  </div>
+                  <span className="text-3xs text-zinc-400 font-mono">({items.length})</span>
                 </button>
                 <button
                   type="button"
@@ -655,8 +658,11 @@ export function DriveToolbar({
                   }}
                   className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
                 >
-                  <span>Files Only</span>
-                  <span className="text-3xs text-zinc-400">({files.length})</span>
+                  <div className="flex items-center gap-2">
+                    <Files className="w-3.5 h-3.5 text-blue-500" />
+                    <span>Files Only</span>
+                  </div>
+                  <span className="text-3xs text-zinc-400 font-mono">({files.length})</span>
                 </button>
                 <button
                   type="button"
@@ -666,16 +672,100 @@ export function DriveToolbar({
                   }}
                   className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
                 >
-                  <span>Folders Only</span>
-                  <span className="text-3xs text-zinc-400">({folders.length})</span>
+                  <div className="flex items-center gap-2">
+                    <FolderOpen className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Folders Only</span>
+                  </div>
+                  <span className="text-3xs text-zinc-400 font-mono">({folders.length})</span>
                 </button>
+                {starredCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectByType('starred');
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                      <span>Starred Items</span>
+                    </div>
+                    <span className="text-3xs text-zinc-400 font-mono">({starredCount})</span>
+                  </button>
+                )}
+                {radarCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectByType('radar');
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-rose-500" />
+                      <span>Expiring / Radar</span>
+                    </div>
+                    <span className="text-3xs text-zinc-400 font-mono">({radarCount})</span>
+                  </button>
+                )}
+                {pdfCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectByType('pdf');
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-3.5 h-3.5 text-rose-500" />
+                      <span>PDF Documents</span>
+                    </div>
+                    <span className="text-3xs text-zinc-400 font-mono">({pdfCount})</span>
+                  </button>
+                )}
+                {imageCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectByType('image');
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <ImageIcon className="w-3.5 h-3.5 text-purple-500" />
+                      <span>Images</span>
+                    </div>
+                    <span className="text-3xs text-zinc-400 font-mono">({imageCount})</span>
+                  </button>
+                )}
+                {sheetCount > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectByType('spreadsheet');
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <TableIcon className="w-3.5 h-3.5 text-emerald-500" />
+                      <span>Spreadsheets</span>
+                    </div>
+                    <span className="text-3xs text-zinc-400 font-mono">({sheetCount})</span>
+                  </button>
+                )}
+                <div className="my-1 border-t border-zinc-100 dark:border-zinc-800" />
                 <button
                   type="button"
                   onClick={() => {
                     invertSelection();
                     setSelectDropdownOpen(false);
                   }}
-                  className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 cursor-pointer"
+                  className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-2 cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5 text-indigo-500" />
                   <span>Invert Selection</span>
@@ -687,10 +777,10 @@ export function DriveToolbar({
                       clearSelection();
                       setSelectDropdownOpen(false);
                     }}
-                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-rose-50 text-rose-600 flex items-center gap-1.5 cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 flex items-center gap-2 cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" />
-                    <span>Clear</span>
+                    <span>Clear Selection</span>
                   </button>
                 )}
               </div>
@@ -703,17 +793,17 @@ export function DriveToolbar({
           <button
             type="button"
             onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 cursor-pointer"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 cursor-pointer shrink-0"
           >
             <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400" />
-            <span className="truncate max-w-[75px]">
+            <span className="truncate max-w-[80px]">
               {sortOptions.find((s) => s.field === sortOption.field && s.order === sortOption.order)?.label.split(' ')[0] || 'Sort'}
             </span>
           </button>
           {sortDropdownOpen && (
             <>
-              <div className="fixed inset-0 z-40" onClick={() => setSortDropdownOpen(false)} />
-              <div className="absolute left-0 mt-2 w-48 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+              <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-2xs" onClick={() => setSortDropdownOpen(false)} />
+              <div className="fixed inset-x-3 top-28 max-h-[70vh] overflow-y-auto sm:absolute sm:inset-auto sm:left-0 sm:top-full sm:mt-2 sm:w-52 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-2 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
                   Sort By
                 </div>
@@ -750,7 +840,7 @@ export function DriveToolbar({
               if (isVaultUnlocked) lockVault();
               else openVaultModal('unlock');
             }}
-            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer shrink-0 ${
               isVaultUnlocked
                 ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold'
                 : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400'
@@ -771,7 +861,7 @@ export function DriveToolbar({
           <button
             type="button"
             onClick={() => openVaultModal('configure')}
-            className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 cursor-pointer"
+            className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:text-amber-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer shrink-0"
             title="Configure PIN"
             aria-label="Configure PIN"
           >
@@ -784,10 +874,10 @@ export function DriveToolbar({
           <button
             type="button"
             onClick={() => setViewLayout('grid')}
-            className={`p-1.5 rounded-lg transition-colors ${
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
               viewLayout === 'grid'
                 ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
-                : 'text-zinc-400'
+                : 'text-zinc-400 hover:text-zinc-600'
             }`}
             title="Grid"
           >
@@ -796,10 +886,10 @@ export function DriveToolbar({
           <button
             type="button"
             onClick={() => setViewLayout('list')}
-            className={`p-1.5 rounded-lg transition-colors ${
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
               viewLayout === 'list'
                 ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
-                : 'text-zinc-400'
+                : 'text-zinc-400 hover:text-zinc-600'
             }`}
             title="List"
           >
@@ -808,10 +898,10 @@ export function DriveToolbar({
           <button
             type="button"
             onClick={() => setViewLayout('columns')}
-            className={`p-1.5 rounded-lg transition-colors ${
+            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
               viewLayout === 'columns'
                 ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
-                : 'text-zinc-400'
+                : 'text-zinc-400 hover:text-zinc-600'
             }`}
             title="Columns"
           >

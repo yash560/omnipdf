@@ -27,13 +27,13 @@ export function DriveSearchPills({
   onOpenVaultModal,
 }: DriveSearchPillsProps) {
   return (
-    <div className="flex flex-wrap items-center gap-2 py-1.5 px-1 mb-4 select-none">
+    <div className="flex items-center gap-2 py-1 px-0.5 mb-3 select-none overflow-x-auto no-scrollbar scroll-smooth whitespace-nowrap">
       <div className="flex items-center gap-1.5 text-3xs font-extrabold uppercase tracking-wider text-zinc-400 shrink-0 px-1">
         <Sparkles className="w-3.5 h-3.5 text-rose-500" />
         <span>Recommended:</span>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5">
+      <div className="flex items-center gap-1.5 shrink-0">
         {SEARCH_PILLS.map((pill, i) => {
           const isSelected = activeQuery.toLowerCase() === pill.query.toLowerCase();
           return (
@@ -41,7 +41,7 @@ export function DriveSearchPills({
               key={i}
               type="button"
               onClick={() => onSelectQuery(isSelected ? '' : pill.query)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs border ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer shadow-2xs border shrink-0 ${
                 isSelected
                   ? 'bg-rose-500 text-white border-rose-600 shadow-sm shadow-rose-500/20 font-bold'
                   : 'bg-white dark:bg-zinc-900 border-zinc-200/80 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
@@ -65,7 +65,7 @@ export function DriveSearchPills({
           <button
             type="button"
             onClick={onOpenVaultModal}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 transition-all cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 transition-all cursor-pointer shrink-0"
           >
             <Shield className="w-3.5 h-3.5 text-amber-500" />
             <span>Search Vault (54 docs)</span>

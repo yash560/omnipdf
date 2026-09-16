@@ -126,14 +126,14 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
       {/* Folders Section */}
       {folders.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
+          <div className="flex items-center justify-between gap-2 flex-wrap px-0.5">
+            <span className="text-3xs sm:text-2xs font-extrabold uppercase tracking-wider text-zinc-400">
               Folders ({folders.length})
             </span>
             <button
               type="button"
               onClick={handleToggleAllFolders}
-              className="text-3xs font-bold text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
+              className="text-3xs sm:text-2xs font-bold text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
             >
               {areAllFoldersSelected ? 'Deselect All Folders' : 'Select All Folders'}
             </button>
@@ -226,14 +226,14 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
       {/* Files Section */}
       {files.length > 0 && (
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
+          <div className="flex items-center justify-between gap-2 flex-wrap px-0.5">
+            <span className="text-3xs sm:text-2xs font-extrabold uppercase tracking-wider text-zinc-400">
               Files ({files.length})
             </span>
             <button
               type="button"
               onClick={handleToggleAllFiles}
-              className="text-3xs font-bold text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
+              className="text-3xs sm:text-2xs font-bold text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
             >
               {areAllFilesSelected ? 'Deselect All Files' : 'Select All Files'}
             </button>

@@ -36,10 +36,10 @@ export const DriveFastFilters: React.FC<DriveFastFiltersProps> = ({
   const hasActiveFilters = activeCount > 0;
 
   return (
-    <div className="w-full px-3 sm:px-6 py-2 bg-zinc-50/80 dark:bg-zinc-900/60 border-b border-zinc-200/60 dark:border-zinc-800/60 flex flex-wrap items-center gap-2 sm:gap-3 text-xs select-none shrink-0">
+    <div className="w-full px-3 sm:px-6 py-2 bg-zinc-50/80 dark:bg-zinc-900/60 border-b border-zinc-200/60 dark:border-zinc-800/60 flex items-center gap-2 sm:gap-3 text-xs select-none shrink-0 overflow-x-auto no-scrollbar scroll-smooth whitespace-nowrap">
       {/* People Filters */}
-      <div className="flex flex-wrap items-center gap-1">
-        <div className="flex items-center gap-1 text-zinc-400 font-bold uppercase text-[10px] tracking-wider mr-0.5">
+      <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 text-zinc-400 font-bold uppercase text-[10px] tracking-wider mr-0.5 shrink-0">
           <User className="w-3 h-3 text-blue-500" />
           <span>People:</span>
         </div>
@@ -63,11 +63,11 @@ export const DriveFastFilters: React.FC<DriveFastFiltersProps> = ({
         })}
       </div>
 
-      <div className="hidden sm:block w-px h-3.5 bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+      <div className="w-px h-3.5 bg-zinc-200 dark:bg-zinc-800 shrink-0" />
 
       {/* Vehicle Filters */}
-      <div className="flex flex-wrap items-center gap-1">
-        <div className="flex items-center gap-1 text-zinc-400 font-bold uppercase text-[10px] tracking-wider mr-0.5">
+      <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 text-zinc-400 font-bold uppercase text-[10px] tracking-wider mr-0.5 shrink-0">
           <Car className="w-3 h-3 text-amber-500" />
           <span>Vehicles:</span>
         </div>
@@ -91,11 +91,11 @@ export const DriveFastFilters: React.FC<DriveFastFiltersProps> = ({
         })}
       </div>
 
-      <div className="hidden sm:block w-px h-3.5 bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+      <div className="w-px h-3.5 bg-zinc-200 dark:bg-zinc-800 shrink-0" />
 
       {/* Category Filters */}
-      <div className="flex flex-wrap items-center gap-1">
-        <div className="flex items-center gap-1 text-zinc-400 font-bold uppercase text-[10px] tracking-wider mr-0.5">
+      <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1 text-zinc-400 font-bold uppercase text-[10px] tracking-wider mr-0.5 shrink-0">
           <Tag className="w-3 h-3 text-violet-500" />
           <span>Categories:</span>
         </div>
