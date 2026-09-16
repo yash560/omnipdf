@@ -27,6 +27,7 @@ import {
   getCloudFileUrl,
   searchCloudItemsApi,
   batchAutoLabelApi,
+  replaceCloudItemContentApi,
 } from './cloud-api';
 import { useAuth } from '@/lib/auth/auth-context';
 import saveAs from 'file-saver';
@@ -91,6 +92,14 @@ interface DriveContextType {
   setIsDedupModalOpen: (open: boolean) => void;
   isKeyboardShortcutsOpen: boolean;
   setIsKeyboardShortcutsOpen: (open: boolean) => void;
+
+  // In-Place Quick Tools (Crop, Edit, Transform & Convert)
+  quickToolsItem: DriveItem | null;
+  quickToolsInitialTab?: string;
+  openQuickTools: (item: DriveItem, initialTab?: string) => void;
+  closeQuickTools: () => void;
+  replaceItemContent: (itemId: string, blob: Blob, fileName?: string, mimeType?: string) => Promise<DriveItem>;
+  saveAsNewFile: (name: string, blob: Blob, mimeType?: string, parentId?: string | null) => Promise<DriveItem>;
 
   // Actions & Selection
   navigateToFolder: (folderId: string | null) => void;
@@ -203,6 +212,18 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [isExpiryRadarOpen, setIsExpiryRadarOpen] = useState(false);
   const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
   const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
+  const [quickToolsItem, setQuickToolsItem] = useState<DriveItem | null>(null);
+  const [quickToolsInitialTab, setQuickToolsInitialTab] = useState<string | undefined>(undefined);
+
+  const openQuickTools = (item: DriveItem, initialTab?: string) => {
+    setQuickToolsItem(item);
+    setQuickToolsInitialTab(initialTab);
+  };
+
+  const closeQuickTools = () => {
+    setQuickToolsItem(null);
+    setQuickToolsInitialTab(undefined);
+  };
 
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -936,6 +957,35 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const replaceItemContent = async (itemId: string, blob: Blob, fileName?: string, mimeType?: string): Promise<DriveItem> => {
+    setIsSyncing(true);
+    try {
+      const updated = await replaceCloudItemContentApi(itemId, blob, fileName, mimeType);
+      setItems((prev) => prev.map((it) => (it.id === itemId ? { ...it, ...updated } : it)));
+      if (previewItem?.id === itemId) setPreviewItem(updated);
+      if (detailsItem?.id === itemId) setDetailsItem(updated);
+      fetchCloudStats().then(setStats).catch(() => {});
+      return updated;
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const saveAsNewFile = async (name: string, blob: Blob, mimeType?: string, parentId: string | null = currentFolderId): Promise<DriveItem> => {
+    setIsSyncing(true);
+    try {
+      const createdItems = await uploadCloudFiles([{ name, blob, type: mimeType }], parentId);
+      if (createdItems.length > 0) {
+        setItems((prev) => [createdItems[0], ...prev]);
+        fetchCloudStats().then(setStats).catch(() => {});
+        return createdItems[0];
+      }
+      throw new Error('Upload returned empty');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
   return (
     <DriveContext.Provider
       value={{
@@ -992,6 +1042,14 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsDedupModalOpen,
         isKeyboardShortcutsOpen,
         setIsKeyboardShortcutsOpen,
+
+        // In-Place Quick Tools
+        quickToolsItem,
+        quickToolsInitialTab,
+        openQuickTools,
+        closeQuickTools,
+        replaceItemContent,
+        saveAsNewFile,
 
         // Actions & Selection
         navigateToFolder,

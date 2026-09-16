@@ -542,6 +542,101 @@ export async function uploadCloudFile(
   return item;
 }
 
+/**
+ * Replace existing file's binary content in Cloud Storage (In-Place Quick Edit/Transform)
+ */
+export async function replaceCloudFileContent(
+  userId: string,
+  itemId: string,
+  buffer: Buffer,
+  newName?: string,
+  mimeType?: string
+): Promise<DriveItem> {
+  await ensureIndexes();
+  const db = await getMongoDb();
+  const col = db.collection<DriveItem>(ITEMS_COLLECTION);
+  const bucket = await getStorageBucket();
+
+  const existing = await col.findOne({ id: itemId });
+  if (!existing) {
+    throw new Error('Item not found');
+  }
+
+  const finalName = newName || existing.name;
+  const ext = finalName.split('.').pop()?.toLowerCase() || existing.extension;
+  let finalBuffer = buffer;
+  let finalMime = mimeType || existing.mimeType || 'application/octet-stream';
+
+  if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+    try {
+      const optimized = await sharp(buffer)
+        .resize({ width: 2560, height: 2560, fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 85, progressive: true, mozjpeg: true })
+        .toBuffer();
+      if (optimized.length < buffer.length) {
+        finalBuffer = optimized;
+        finalMime = 'image/jpeg';
+      }
+    } catch {}
+  }
+
+  const category = categorizeFile(finalName, finalMime);
+
+  // 1. Remove old GridFS file chunks if existing
+  try {
+    const oldFiles = await bucket.find({ filename: itemId }).toArray();
+    for (const old of oldFiles) {
+      await bucket.delete(old._id).catch(() => {});
+    }
+  } catch (err) {
+    console.warn('[ServerDrive] Could not remove old file chunks:', err);
+  }
+
+  // 2. Upload new binary stream to GridFS
+  const readable = new Readable();
+  readable.push(finalBuffer);
+  readable.push(null);
+
+  const uploadStream = bucket.openUploadStream(itemId, {
+    metadata: {
+      userId,
+      originalName: finalName,
+      mimeType: finalMime,
+      size: finalBuffer.length,
+      originalSize: buffer.length,
+      updatedAt: Date.now(),
+    },
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    readable.pipe(uploadStream)
+      .on('finish', () => resolve())
+      .on('error', (err) => reject(err));
+  });
+
+  // 3. Update Item Record in DB
+  const now = Date.now();
+  await col.updateOne(
+    { id: itemId },
+    {
+      $set: {
+        name: finalName,
+        size: finalBuffer.length,
+        mimeType: finalMime,
+        extension: ext,
+        category,
+        updatedAt: now,
+        lastAccessedAt: now,
+      },
+    }
+  );
+
+  const updated = await col.findOne({ id: itemId });
+  await recordDriveActivity(userId, itemId, finalName, 'file', 'edited', 'Replaced file content via Quick Tools');
+
+  return updated as any as DriveItem;
+}
+
 // ==========================================
 // RESUMABLE 2GB+ CHUNKED UPLOAD ENGINE
 // ==========================================

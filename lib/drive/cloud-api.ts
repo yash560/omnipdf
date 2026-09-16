@@ -482,3 +482,34 @@ export async function batchAutoLabelApi(params: { itemIds?: string[]; allUnlabel
   return await res.json();
 }
 
+/**
+ * Replace file content in-place for an existing Drive item
+ */
+export async function replaceCloudItemContentApi(
+  itemId: string,
+  blob: Blob,
+  fileName?: string,
+  mimeType?: string
+): Promise<DriveItem> {
+  const formData = new FormData();
+  formData.append('itemId', itemId);
+  if (fileName) formData.append('name', fileName);
+  const fileObj = new File([blob], fileName || 'updated_file', { type: mimeType || blob.type || 'application/octet-stream' });
+  formData.append('file', fileObj);
+
+  const res = await fetch('/api/drive/item/replace', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: formData,
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) throw new Error('AUTH_REQUIRED');
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Failed to replace file content');
+  }
+
+  const data = await res.json();
+  return data.item;
+}
+

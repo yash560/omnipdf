@@ -404,7 +404,8 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                         setContextItem(item);
                         setContextPos({ x: e.clientX, y: e.clientY });
                       }}
-                      className="p-1 rounded-md text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-pointer"
+                      title="Item Options"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>

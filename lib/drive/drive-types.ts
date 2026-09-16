@@ -172,7 +172,8 @@ export type DriveActivityAction =
   | 'commented'
   | 'vault_locked'
   | 'vault_unlocked'
-  | 'ocr_indexed';
+  | 'ocr_indexed'
+  | 'edited';
 
 export interface DriveActivity {
   id: string;

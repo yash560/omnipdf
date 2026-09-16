@@ -84,14 +84,14 @@ export function DriveContextMenu({
         style={
           position
             ? {
-                top: Math.min(position.y, window.innerHeight - 380),
-                left: Math.min(position.x, window.innerWidth - 250),
+                top: Math.max(12, Math.min(position.y, window.innerHeight - 380)),
+                left: Math.max(12, Math.min(position.x, window.innerWidth - 264)),
               }
             : undefined
         }
         className={`${
           position ? 'fixed' : 'absolute right-2 top-8'
-        } w-64 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 text-xs text-zinc-700 dark:text-zinc-300 animate-in fade-in zoom-in-95 duration-150`}
+        } w-64 max-w-[calc(100vw-24px)] max-h-[85vh] overflow-y-auto no-scrollbar rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 text-xs text-zinc-700 dark:text-zinc-300 animate-in fade-in zoom-in-95 duration-150`}
       >
         {/* Multi-Selection Context Menu Mode */}
         {isMulti ? (

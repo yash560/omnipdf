@@ -173,7 +173,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                       className={`p-1 rounded-md transition-opacity cursor-pointer ${
                         isSelected
                           ? 'opacity-100'
-                          : 'opacity-0 group-hover:opacity-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                          : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-zinc-100/80 dark:bg-zinc-800/80 sm:bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800'
                       }`}
                     >
                       <input
@@ -210,7 +210,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                         setContextItem(folder);
                         setContextPos({ x: e.clientX, y: e.clientY });
                       }}
-                      className="p-1 rounded-lg sm:opacity-0 group-hover:opacity-100 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-opacity cursor-pointer"
+                      className="p-1.5 rounded-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-zinc-100/80 dark:bg-zinc-800/80 sm:bg-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"
                       title="Folder Options"
                     >
                       <MoreVertical className="w-3.5 h-3.5" />
@@ -257,7 +257,16 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                   }`}
                 >
                   {/* Thumbnail / Icon Box */}
-                  <div className="w-full aspect-[4/3] bg-zinc-50 dark:bg-zinc-950/80 flex items-center justify-center border-b border-zinc-100 dark:border-zinc-800/60 relative group overflow-hidden">
+                  <div 
+                    onClick={(e) => {
+                      // On touch / single tap on thumbnail area, open preview
+                      if (window.innerWidth < 640) {
+                        e.stopPropagation();
+                        openPreview(file);
+                      }
+                    }}
+                    className="w-full aspect-[4/3] bg-zinc-50 dark:bg-zinc-950/80 flex items-center justify-center border-b border-zinc-100 dark:border-zinc-800/60 relative group overflow-hidden"
+                  >
                     <DriveThumbnail item={file} view="grid" />
 
                     {/* Star Button */}
@@ -267,11 +276,12 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                         e.stopPropagation();
                         toggleStar(file.id);
                       }}
-                      className={`absolute top-2 left-2 p-1 rounded-lg transition-opacity ${
+                      className={`absolute top-2 left-2 p-1.5 rounded-xl transition-all z-20 ${
                         file.isStarred
-                          ? 'opacity-100'
-                          : 'opacity-0 group-hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10'
+                          ? 'opacity-100 bg-amber-500/20 text-amber-500 shadow-2xs'
+                          : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-400 hover:text-amber-400 shadow-2xs'
                       }`}
+                      title={file.isStarred ? 'Unstar' : 'Star'}
                     >
                       <Star className={`w-3.5 h-3.5 ${file.isStarred ? 'text-amber-400 fill-amber-400' : 'text-zinc-400'}`} />
                     </button>
@@ -283,10 +293,10 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                         e.stopPropagation();
                         toggleSelect(file.id, true);
                       }}
-                      className={`absolute top-2 left-8 p-1 rounded-lg transition-opacity ${
+                      className={`absolute top-2 left-10 p-1.5 rounded-xl transition-all z-20 ${
                         isSelected
-                          ? 'opacity-100'
-                          : 'opacity-0 group-hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10'
+                          ? 'opacity-100 bg-rose-500/20 border border-rose-500/40 shadow-2xs'
+                          : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-500 shadow-2xs'
                       }`}
                       title="Select File"
                     >
@@ -294,12 +304,12 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                         type="checkbox"
                         checked={isSelected}
                         onChange={() => {}}
-                        className="w-3.5 h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none"
+                        className="w-3.5 h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none block"
                       />
                     </button>
 
                     {/* Status Badges: Vault & Expiry */}
-                    <div className="absolute top-2 right-8 flex items-center gap-1">
+                    <div className="absolute top-2 right-10 flex items-center gap-1 z-10">
                       {file.isVault && (
                         <span className="p-1 rounded-md bg-amber-500/20 text-amber-500 shadow-xs" title="Protected in Secure Vault">
                           <Lock className="w-3 h-3" />
@@ -321,13 +331,14 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                         setContextItem(file);
                         setContextPos({ x: e.clientX, y: e.clientY });
                       }}
-                      className="absolute top-2 right-2 p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-opacity"
+                      className="absolute top-2 right-2 p-1.5 rounded-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-2xs transition-all cursor-pointer z-20"
+                      title="File Options"
                     >
                       <MoreVertical className="w-3.5 h-3.5" />
                     </button>
 
-                    {/* Quick Preview Hover Pill */}
-                    <div className="absolute inset-0 bg-black/40 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    {/* Quick Preview Hover Pill (Desktop) */}
+                    <div className="hidden sm:flex absolute inset-0 bg-black/40 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity items-center justify-center gap-2">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -341,6 +352,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                       </button>
                     </div>
                   </div>
+
 
                   {/* File Metadata Footer */}
                   <div className="p-3 space-y-1.5">

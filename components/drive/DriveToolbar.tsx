@@ -185,9 +185,9 @@ export function DriveToolbar({
   const currentFolderCrumb = breadcrumbs[breadcrumbs.length - 1];
 
   return (
-    <div className="w-full border-b border-zinc-200 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 space-y-2 sm:space-y-2.5 shrink-0 select-none relative z-30">
-      {/* Top Row: Mobile Menu + Search Bar + Action Buttons */}
-      <div className="flex items-center justify-between gap-2 sm:gap-3">
+    <div className="w-full border-b border-zinc-200 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md px-3 sm:px-6 py-2 sm:py-2.5 space-y-2 shrink-0 select-none relative z-30">
+      {/* Top Row: Sidebar Trigger + Full Search Bar + AI / Filter Quick Actions */}
+      <div className="flex items-center gap-1.5 sm:gap-2.5">
         {/* Mobile Sidebar Drawer Trigger Button */}
         {onToggleMobileSidebar && (
           <button
@@ -202,7 +202,7 @@ export function DriveToolbar({
         )}
 
         {/* Search Bar with Predictive Recommendations & Autocomplete */}
-        <div className="relative flex-1 min-w-[200px] sm:min-w-[260px] md:min-w-[300px] z-40">
+        <div className="relative flex-1 min-w-0 z-40">
           <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
           <input
             type="text"
@@ -221,7 +221,7 @@ export function DriveToolbar({
               setSearchTerm(e.target.value);
               setIsSearchDropdownOpen(true);
             }}
-            placeholder="Search files, scanned text, categories, tags (Click for suggestions)..."
+            placeholder="Search files, text, tags..."
             className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-1.5 sm:py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-inner font-medium relative z-10"
           />
           {searchTerm && (
@@ -264,17 +264,17 @@ export function DriveToolbar({
           />
         </div>
 
-        {/* View & Sort & AI Actions Group */}
+        {/* Quick Tools on Top Row: Chat + Filters */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
           {/* Chat with Folder / AI RAG */}
           <button
             type="button"
             onClick={() => setIsFolderChatOpen(true)}
-            className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/40 hover:bg-violet-100 dark:hover:bg-violet-900/60 border border-violet-200/80 dark:border-violet-800/60 text-xs font-bold text-violet-700 dark:text-violet-300 transition-all cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-violet-50 dark:bg-violet-950/40 hover:bg-violet-100 dark:hover:bg-violet-900/60 border border-violet-200/80 dark:border-violet-800/60 text-xs font-bold text-violet-700 dark:text-violet-300 transition-all cursor-pointer shadow-2xs shrink-0"
             title="Chat with AI about files in this folder"
           >
             <Sparkles className="w-3.5 h-3.5 text-violet-500 shrink-0" />
-            <span className="hidden xl:inline">Folder AI Chat</span>
+            <span className="hidden md:inline">Folder AI Chat</span>
           </button>
 
           {/* Fast Filters Toggle */}
@@ -282,7 +282,7 @@ export function DriveToolbar({
             <button
               type="button"
               onClick={onToggleFastFilters}
-              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer shrink-0 ${
                 showFastFilters
                   ? 'bg-blue-500 text-white border-blue-600 shadow-xs'
                   : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
@@ -290,10 +290,13 @@ export function DriveToolbar({
               title="Toggle Fast Person/Vehicle Filters"
             >
               <SlidersHorizontal className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden lg:inline">Filters</span>
+              <span className="hidden md:inline">Filters</span>
             </button>
           )}
+        </div>
 
+        {/* Desktop Actions Group (Visible on md+ screens) */}
+        <div className="hidden md:flex items-center gap-1.5 shrink-0">
           {/* Secure Vault Status Toggle */}
           <div className="inline-flex items-center gap-1">
             <button
@@ -302,7 +305,7 @@ export function DriveToolbar({
                 if (isVaultUnlocked) lockVault();
                 else openVaultModal('unlock');
               }}
-              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
                 isVaultUnlocked
                   ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold'
                   : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'
@@ -337,7 +340,7 @@ export function DriveToolbar({
             <button
               type="button"
               onClick={() => setSelectDropdownOpen(!selectDropdownOpen)}
-              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
                 hasSelection
                   ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-bold'
                   : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
@@ -345,7 +348,7 @@ export function DriveToolbar({
               title="Select items (All, Files, Folders, Starred, PDFs, etc.)"
             >
               <CheckSquare className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden lg:inline">
+              <span>
                 {hasSelection ? `${selectedIds.length} Selected` : 'Select'}
               </span>
               <ChevronDown className="w-3 h-3 text-zinc-400 shrink-0" />
@@ -525,12 +528,12 @@ export function DriveToolbar({
             <button
               type="button"
               onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
-              className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300 transition-colors cursor-pointer"
               title="Sort items"
             >
               <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-              <span className="hidden 2xl:inline text-zinc-400 font-normal">Sort:</span>
-              <span className="truncate max-w-[90px] sm:max-w-[110px] hidden lg:inline">
+              <span className="hidden xl:inline text-zinc-400 font-normal">Sort:</span>
+              <span className="truncate max-w-[100px] sm:max-w-[120px]">
                 {sortOptions.find((s) => s.field === sortOption.field && s.order === sortOption.order)?.label || 'Name'}
               </span>
             </button>
@@ -568,7 +571,7 @@ export function DriveToolbar({
           </div>
 
           {/* Grid vs List vs Columns View Toggle */}
-          <div className="flex items-center p-0.5 sm:p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
+          <div className="flex items-center p-0.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
             <button
               type="button"
               onClick={() => setViewLayout('grid')}
@@ -608,6 +611,215 @@ export function DriveToolbar({
           </div>
         </div>
       </div>
+
+      {/* Dedicated Mobile Action Dock (Visible ONLY on < md screens: Select, Sort, Vault, Layout) */}
+      <div className="flex md:hidden items-center justify-between gap-1.5 overflow-x-auto no-scrollbar pt-1.5 pb-0.5 border-t border-zinc-100 dark:border-zinc-800/60" style={{ touchAction: 'pan-x' }}>
+        {/* Mobile Select Menu */}
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => setSelectDropdownOpen(!selectDropdownOpen)}
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+              hasSelection
+                ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-bold'
+                : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300'
+            }`}
+          >
+            <CheckSquare className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+            <span>{hasSelection ? `${selectedIds.length}` : 'Select'}</span>
+            <ChevronDown className="w-3 h-3 text-zinc-400" />
+          </button>
+          {selectDropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setSelectDropdownOpen(false)} />
+              <div className="absolute left-0 mt-2 w-52 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
+                  Selection Modes
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    selectAll();
+                    setSelectDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                >
+                  <span>Select All</span>
+                  <span className="text-3xs text-zinc-400">({items.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    selectByType('files');
+                    setSelectDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                >
+                  <span>Files Only</span>
+                  <span className="text-3xs text-zinc-400">({files.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    selectByType('folders');
+                    setSelectDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                >
+                  <span>Folders Only</span>
+                  <span className="text-3xs text-zinc-400">({folders.length})</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    invertSelection();
+                    setSelectDropdownOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5 text-indigo-500" />
+                  <span>Invert Selection</span>
+                </button>
+                {hasSelection && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      clearSelection();
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-rose-50 text-rose-600 flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Clear</span>
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Mobile Sort Menu */}
+        <div className="relative shrink-0">
+          <button
+            type="button"
+            onClick={() => setSortDropdownOpen(!sortDropdownOpen)}
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-semibold text-zinc-700 dark:text-zinc-300 cursor-pointer"
+          >
+            <ArrowUpDown className="w-3.5 h-3.5 text-zinc-400" />
+            <span className="truncate max-w-[75px]">
+              {sortOptions.find((s) => s.field === sortOption.field && s.order === sortOption.order)?.label.split(' ')[0] || 'Sort'}
+            </span>
+          </button>
+          {sortDropdownOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setSortDropdownOpen(false)} />
+              <div className="absolute left-0 mt-2 w-48 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-50 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
+                  Sort By
+                </div>
+                {sortOptions.map((opt, i) => {
+                  const isSelected = opt.field === sortOption.field && opt.order === sortOption.order;
+                  return (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setSortOption({ field: opt.field, order: opt.order });
+                        setSortDropdownOpen(false);
+                      }}
+                      className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+                        isSelected
+                          ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 font-bold'
+                          : 'hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Mobile Vault Button */}
+        <div className="inline-flex items-center gap-1 shrink-0">
+          <button
+            type="button"
+            onClick={() => {
+              if (isVaultUnlocked) lockVault();
+              else openVaultModal('unlock');
+            }}
+            className={`inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+              isVaultUnlocked
+                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold'
+                : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400'
+            }`}
+          >
+            {isVaultUnlocked ? (
+              <>
+                <Unlock className="w-3.5 h-3.5 text-amber-500" />
+                <span>Vault</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-3.5 h-3.5 text-zinc-400" />
+                <span>Vault</span>
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() => openVaultModal('configure')}
+            className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 cursor-pointer"
+            title="Configure PIN"
+            aria-label="Configure PIN"
+          >
+            <Settings className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Mobile Layout Switcher */}
+        <div className="flex items-center p-0.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 shrink-0">
+          <button
+            type="button"
+            onClick={() => setViewLayout('grid')}
+            className={`p-1.5 rounded-lg transition-colors ${
+              viewLayout === 'grid'
+                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
+                : 'text-zinc-400'
+            }`}
+            title="Grid"
+          >
+            <LayoutGrid className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewLayout('list')}
+            className={`p-1.5 rounded-lg transition-colors ${
+              viewLayout === 'list'
+                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
+                : 'text-zinc-400'
+            }`}
+            title="List"
+          >
+            <List className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewLayout('columns')}
+            className={`p-1.5 rounded-lg transition-colors ${
+              viewLayout === 'columns'
+                ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
+                : 'text-zinc-400'
+            }`}
+            title="Columns"
+          >
+            <Columns3 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </div>
+
 
       {/* Tag & Category Filter Pills */}
       {(availableTags.length > 0 || selectedTag || selectedAiCategory || searchTerm) && (
