@@ -50,6 +50,9 @@ import {
   TableProperties,
   Tags,
   Mic,
+  FormInput,
+  Presentation,
+  Receipt,
   ArrowUpRight
 } from 'lucide-react';
 import { PDFTool } from '@/types/pdf';
@@ -107,6 +110,9 @@ const iconMap: Record<string, any> = {
   TableProperties,
   Tags,
   Mic,
+  FormInput,
+  Presentation,
+  Receipt,
 };
 
 export function ToolCard({ tool }: ToolCardProps) {
