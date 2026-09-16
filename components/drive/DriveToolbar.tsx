@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDrive } from '@/lib/drive/drive-context';
+import { DriveSearchDropdown } from './DriveSearchDropdown';
 import {
   Search,
   X,
@@ -71,6 +72,7 @@ export function DriveToolbar({
     deleteSelectedPermanently,
     triggerBatchAction,
     bulkDownloadZip,
+    openPreview,
     isVaultUnlocked,
     lockVault,
     setIsVaultModalOpen,
@@ -78,6 +80,46 @@ export function DriveToolbar({
     setIsFolderChatOpen,
     setIsKeyboardShortcutsOpen,
   } = useDrive();
+
+  const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('filecraft_recent_searches');
+      if (saved) setRecentSearches(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  const handleAddRecentSearch = (q: string) => {
+    if (!q || !q.trim()) return;
+    const clean = q.trim();
+    setRecentSearches((prev) => {
+      const filtered = prev.filter((item) => item.toLowerCase() !== clean.toLowerCase());
+      const updated = [clean, ...filtered].slice(0, 8);
+      try {
+        localStorage.setItem('filecraft_recent_searches', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleRemoveRecentSearch = (q: string) => {
+    setRecentSearches((prev) => {
+      const updated = prev.filter((item) => item.toLowerCase() !== q.toLowerCase());
+      try {
+        localStorage.setItem('filecraft_recent_searches', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleClearRecentSearches = () => {
+    setRecentSearches([]);
+    try {
+      localStorage.removeItem('filecraft_recent_searches');
+    } catch {}
+  };
 
   const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const hasSelection = selectedIds.length > 0;
@@ -112,25 +154,59 @@ export function DriveToolbar({
           </button>
         )}
 
-        {/* Search Bar with Semantic, OCR & Fuzzy Capabilities */}
+        {/* Search Bar with Predictive Recommendations & Autocomplete */}
         <div className="relative flex-1 min-w-0">
-          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 z-10" />
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search keywords, OCR text, IDs, tax..."
-            className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-1.5 sm:py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-inner font-medium"
+            onFocus={() => setIsSearchDropdownOpen(true)}
+            onClick={() => setIsSearchDropdownOpen(true)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                handleAddRecentSearch(searchTerm);
+                setIsSearchDropdownOpen(false);
+              } else if (e.key === 'Escape') {
+                setIsSearchDropdownOpen(false);
+              }
+            }}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setIsSearchDropdownOpen(true);
+            }}
+            placeholder="Search files, OCR text, tax, vehicle IDs (Click for recommendations)..."
+            className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-1.5 sm:py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-inner font-medium relative z-10"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer z-10"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           )}
+
+          {/* Predictive Search Recommender Dropdown */}
+          <DriveSearchDropdown
+            isOpen={isSearchDropdownOpen}
+            onClose={() => setIsSearchDropdownOpen(false)}
+            query={searchTerm}
+            onSelectQuery={(q) => {
+              setSearchTerm(q);
+              handleAddRecentSearch(q);
+              setIsSearchDropdownOpen(false);
+            }}
+            onSelectItem={(it) => {
+              openPreview(it);
+              handleAddRecentSearch(it.name);
+              setIsSearchDropdownOpen(false);
+            }}
+            items={items}
+            recentSearches={recentSearches}
+            onClearRecentSearches={handleClearRecentSearches}
+            onRemoveRecentSearch={handleRemoveRecentSearch}
+          />
         </div>
 
         {/* View & Sort & AI Actions Group */}

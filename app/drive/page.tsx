@@ -18,6 +18,7 @@ import { DriveFolderChatModal } from '@/components/drive/DriveFolderChatModal';
 import { DriveExpiryRadarModal } from '@/components/drive/DriveExpiryRadarModal';
 import { DriveDedupModal } from '@/components/drive/DriveDedupModal';
 import { DriveRecommendationHero } from '@/components/drive/DriveRecommendationHero';
+import { DriveSearchPills } from '@/components/drive/DriveSearchPills';
 import { DriveSmartDossiersModal } from '@/components/drive/DriveSmartDossiersModal';
 import { DriveKeyboardShortcutsModal } from '@/components/drive/DriveKeyboardShortcutsModal';
 import { DriveBulkActionBar } from '@/components/drive/DriveBulkActionBar';
@@ -112,6 +113,7 @@ function DriveWorkspaceInner() {
     toggleSelect,
     breadcrumbs,
     navigateToFolder,
+    searchTerm,
     setSearchTerm,
 
     // Vault
@@ -382,12 +384,12 @@ function DriveWorkspaceInner() {
 
         {/* Scrollable Items Feed */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          {/* Top Recommendation & Intelligence Hero */}
-          <DriveRecommendationHero
-            onOpenDossiersModal={(dos) => {
-              setSelectedDossier(dos || null);
-              setIsDossiersModalOpen(true);
-            }}
+          {/* Predictive Search Recommendation & Quick Discovery Pills */}
+          <DriveSearchPills
+            onSelectQuery={(q) => setSearchTerm(q)}
+            activeQuery={searchTerm}
+            isVaultUnlocked={isVaultUnlocked}
+            onOpenVaultModal={() => openVaultModal('unlock')}
           />
 
           {/* Vault Active Management Banner */}
