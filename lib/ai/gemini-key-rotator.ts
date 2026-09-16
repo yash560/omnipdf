@@ -1,34 +1,13 @@
 import { MongoClient } from 'mongodb';
 
-// Verified Active Gemini API Keys from TheWebVale Database & Ecosystem
-const DEFAULT_KEY_POOL: string[] = [
-  'AIzaSyDMSpBNoFurRh0XMQIfgi1xYy_DrhJJ3I0',
-  'AIzaSyAJZligX_G9K6uCze3X0ll3eehzEsAoqxo',
-  'AIzaSyCuCSSso5BfUcUEMRTHft3IDVQcTPx4Cmc',
-  'AIzaSyDZUheFeCsJi01p4hr7P54ACZ65wx4MCcU',
-  'AIzaSyCahr-g5V5SYFAVg2qLATdcWiZ4dwk465k',
-  'AIzaSyC81s2HWUiORcawh0pLtRMdM9NoSOqadv4',
-  'AIzaSyCrs1WxN3T2boYBqLk3AdCnFVOl3ruPfJ0',
-  'AIzaSyBYrmk0h21dmrntQr_aDx8VWZiIsdn4fzM',
-  'AIzaSyBhBj6EPVXZhz7_HvhbTH6pwbadj5r_Mvk',
-  'AIzaSyCzyr0Js_sw1zidq5SiPAeO43c1ZKMQGeo',
-  'AIzaSyBDF_2GgbDCwj0VZfngkUw30vdCjfpzOVo',
-  'AIzaSyBd_etzodMHI-uK82Pq6nCiAhZLv_6MtoI',
-  'AIzaSyAqHJH1Yk5xAvfJ3cAVmN_Mo1SgHbaPevY',
-  'AIzaSyArFRJUpm_Ldca6mTQInL6ZsiyqFNBQNKA',
-  'AIzaSyAeDZ9wznjzXP27aNtrTlqGZdW58y63tpo',
-  'AIzaSyCQc0YS-OmPR9rCko5K5Szzm0gMIjjdC4U',
-  'AIzaSyB8u6KIJozVnufBsVNevMdp3AtJHr48ztw',
-  'AIzaSyB1wXmnhes7zpv-s8AP2XJ9qEtYUdgKpKE',
-  'AIzaSyB48sG-pBXjaewf6tVPbQnDywUi63UEngw',
-  'AIzaSyCfkDuQIjNdhcT-UAun9FJk0LdjGaZ-oEI',
-  'AIzaSyCrzcuHGkCnx_dWafCfJ5fZxB4w7eVoxxM',
-  'AIzaSyCAqX5n7B31-sXABvIynfv5_8YtM3wkLeU',
-  'AIzaSyB-y0axvTcXTe4_KvtVNCLKzpHY6lUFRR4',
-];
+// Load keys from environment (comma-separated or single key)
+const ENV_KEYS = (process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '')
+  .split(',')
+  .map((k) => k.trim())
+  .filter((k) => k.startsWith('AIzaSy'));
 
 class GeminiKeyRotator {
-  private keys: string[] = [...DEFAULT_KEY_POOL];
+  private keys: string[] = [...ENV_KEYS];
   private activeIndex = 0;
   private cooldowns = new Map<string, number>();
   private permanentFails = new Set<string>();
@@ -81,7 +60,7 @@ class GeminiKeyRotator {
     const total = this.keys.length;
 
     if (total === 0) {
-      return process.env.GEMINI_API_KEY || DEFAULT_KEY_POOL[0];
+      return process.env.GEMINI_API_KEY || '';
     }
 
     for (let i = 0; i < total; i++) {
