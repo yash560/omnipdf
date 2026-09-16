@@ -60,6 +60,7 @@ export function DriveToolbar({
     setSearchTerm,
     selectedIds,
     items,
+    isSyncing,
     clearSelection,
     selectAll,
     trashSelected,
@@ -376,7 +377,7 @@ export function DriveToolbar({
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-1.5 text-xs text-zinc-500 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2 text-xs text-zinc-500 overflow-x-auto no-scrollbar">
             {viewSection === 'my-drive' ? (
               breadcrumbs.map((crumb, idx) => {
                 const isLast = idx === breadcrumbs.length - 1;
@@ -417,6 +418,14 @@ export function DriveToolbar({
                   </button>
                 )}
               </div>
+            )}
+
+            {/* Subtle Non-Intrusive Syncing Indicator */}
+            {isSyncing && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 text-[10px] font-bold animate-pulse shrink-0 ml-1">
+                <RotateCcw className="w-2.5 h-2.5 animate-spin" />
+                <span>Syncing</span>
+              </span>
             )}
           </div>
         )}

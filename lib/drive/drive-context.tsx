@@ -61,6 +61,7 @@ interface DriveContextType {
   folders: DriveItem[];
   files: DriveItem[];
   loading: boolean;
+  isSyncing: boolean;
   stats: DriveStats | null;
   selectedIds: string[];
   previewItem: DriveItem | null;
@@ -116,8 +117,8 @@ interface DriveContextType {
   openShareModal: (item: DriveItem) => void;
   closeShareModal: () => void;
   setDetailsItem: (item: DriveItem | null) => void;
-  loadItems: () => Promise<void>;
-  refreshDrive: () => Promise<void>;
+  loadItems: (options?: { silent?: boolean }) => Promise<void>;
+  refreshDrive: (options?: { silent?: boolean }) => Promise<void>;
 }
 
 const DriveContext = createContext<DriveContextType | null>(null);
@@ -148,7 +149,9 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [availableAiCategories, setAvailableAiCategories] = useState<{ category: string; count: number }[]>([]);
 
   const [items, setItems] = useState<DriveItem[]>([]);
+  const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [stats, setStats] = useState<DriveStats | null>(null);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [previewItem, setPreviewItem] = useState<DriveItem | null>(null);
@@ -192,13 +195,20 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
-  const loadItems = useCallback(async () => {
+  const loadItems = useCallback(async (options?: { silent?: boolean }) => {
     if (authRequired) {
       setLoading(false);
+      setIsSyncing(false);
       return;
     }
 
-    setLoading(true);
+    const isSilent = options?.silent ?? (hasLoadedInitial && items.length > 0);
+    if (!isSilent) {
+      setLoading(true);
+    } else {
+      setIsSyncing(true);
+    }
+
     try {
       if (searchTerm || selectedTag || selectedAiCategory || activePerson || activeVehicle) {
         const searchResult = await searchCloudItemsApi({
@@ -232,13 +242,17 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       const cloudStats = await fetchCloudStats();
       setStats(cloudStats);
+      setHasLoadedInitial(true);
     } catch (error) {
       console.error('Failed to load drive items from cloud:', error);
     } finally {
       setLoading(false);
+      setIsSyncing(false);
     }
   }, [
     authRequired,
+    hasLoadedInitial,
+    items.length,
     currentFolderId,
     viewSection,
     selectedCategory,
@@ -315,31 +329,45 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setSelectedIds([]);
   };
 
-  // Batch multi-select actions
+  // Batch multi-select actions (Optimistic)
   const triggerBatchAction = async (
     action: 'tag' | 'move' | 'star' | 'unstar' | 'trash' | 'restore' | 'vault' | 'unvault',
     payload?: any
   ) => {
     if (selectedIds.length === 0) return;
-    setLoading(true);
+    const targetIds = [...selectedIds];
+    clearSelection();
+
+    // Optimistic UI updates
+    if (action === 'trash' && viewSection !== 'trash') {
+      setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+    } else if (action === 'restore' && viewSection === 'trash') {
+      setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+    } else if (action === 'move') {
+      setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+    } else if (action === 'star' || action === 'unstar') {
+      const isStarred = action === 'star';
+      setItems((prev) =>
+        prev.map((i) => (targetIds.includes(i.id) ? { ...i, isStarred, updatedAt: Date.now() } : i))
+      );
+    }
+
     try {
       await fetch('/api/drive/batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action,
-          itemIds: selectedIds,
+          itemIds: targetIds,
           targetParentId: payload?.targetParentId,
           tags: payload?.tags,
           category: payload?.category,
         }),
       });
-      clearSelection();
-      await loadItems();
+      loadItems({ silent: true });
     } catch (err) {
       console.error('Batch action error:', err);
-    } finally {
-      setLoading(false);
+      loadItems({ silent: true });
     }
   };
 
@@ -361,7 +389,10 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const createFolder = async (name: string, color?: DriveFolderColor) => {
     const newFolder = await createCloudFolderApi(name, currentFolderId, color);
-    await loadItems();
+    if (newFolder) {
+      setItems((prev) => [newFolder, ...prev]);
+    }
+    loadItems({ silent: true });
     return newFolder;
   };
 
@@ -373,7 +404,7 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       list.map((f) => ({ file: f, parentId: currentFolderId })),
       currentFolderId,
       () => {
-        loadItems();
+        loadItems({ silent: true });
       }
     );
   };
@@ -389,21 +420,55 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       })),
       currentFolderId,
       () => {
-        loadItems();
+        loadItems({ silent: true });
       }
     );
   };
 
   const renameItem = async (id: string, newName: string) => {
-    await updateCloudItemApi(id, { name: newName });
-    await loadItems();
+    const trimmed = newName.trim();
+    if (!trimmed) return;
+    const previousItems = items;
+
+    // Optimistic rename
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, name: trimmed, updatedAt: Date.now() } : i))
+    );
+    if (previewItem?.id === id) {
+      setPreviewItem((prev) => (prev ? { ...prev, name: trimmed } : null));
+    }
+    if (detailsItem?.id === id) {
+      setDetailsItem((prev) => (prev ? { ...prev, name: trimmed } : null));
+    }
+
+    try {
+      await updateCloudItemApi(id, { name: trimmed });
+      loadItems({ silent: true });
+    } catch (err) {
+      console.error('Failed to rename item:', err);
+      setItems(previousItems); // Rollback
+    }
   };
 
   const moveItems = async (targetFolderId: string | null) => {
     if (selectedIds.length === 0) return;
-    await moveCloudItemsApi(selectedIds, targetFolderId);
+    const previousItems = items;
+    const targetIds = [...selectedIds];
     clearSelection();
-    await loadItems();
+
+    // Optimistic removal from current folder view
+    setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+    if (detailsItem && targetIds.includes(detailsItem.id)) {
+      setDetailsItem(null);
+    }
+
+    try {
+      await moveCloudItemsApi(targetIds, targetFolderId);
+      loadItems({ silent: true });
+    } catch (err) {
+      console.error('Failed to move items:', err);
+      setItems(previousItems);
+    }
   };
 
   const duplicateItem = async (id: string) => {
@@ -412,49 +477,137 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const blob = await getCloudFileBlob(id);
     if (blob) {
       const copyName = original.name.replace(/(\.[^.]+)$/, ' (Copy)$1');
-      await uploadCloudFiles([{ name: copyName.includes('(Copy)') ? copyName : `${original.name} (Copy)`, blob, type: original.mimeType }], original.parentId);
-      await loadItems();
+      await uploadCloudFiles(
+        [{ name: copyName.includes('(Copy)') ? copyName : `${original.name} (Copy)`, blob, type: original.mimeType }],
+        original.parentId
+      );
+      loadItems({ silent: true });
     }
   };
 
   const toggleStar = async (id: string) => {
-    const item = items.find((i) => i.id === id);
-    if (item) {
-      await updateCloudItemApi(id, { isStarred: !item.isStarred });
-      await loadItems();
+    const target = items.find((i) => i.id === id);
+    if (!target) return;
+    const previousItems = items;
+    const newStarred = !target.isStarred;
+
+    // Instant 0ms optimistic toggle
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, isStarred: newStarred, updatedAt: Date.now() } : i))
+    );
+    if (previewItem?.id === id) {
+      setPreviewItem((prev) => (prev ? { ...prev, isStarred: newStarred } : null));
+    }
+    if (detailsItem?.id === id) {
+      setDetailsItem((prev) => (prev ? { ...prev, isStarred: newStarred } : null));
+    }
+
+    try {
+      await updateCloudItemApi(id, { isStarred: newStarred });
+    } catch (err) {
+      console.error('Failed to toggle star:', err);
+      setItems(previousItems); // Rollback
     }
   };
 
   const changeFolderColor = async (id: string, color: DriveFolderColor) => {
-    await updateCloudItemApi(id, { color });
-    await loadItems();
+    const previousItems = items;
+    // Instant optimistic update
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, color, updatedAt: Date.now() } : i))
+    );
+    if (detailsItem?.id === id) {
+      setDetailsItem((prev) => (prev ? { ...prev, color } : null));
+    }
+
+    try {
+      await updateCloudItemApi(id, { color });
+    } catch (err) {
+      console.error('Failed to change folder color:', err);
+      setItems(previousItems);
+    }
   };
 
   const trashSelected = async () => {
     if (selectedIds.length === 0) return;
-    await trashCloudItemsApi(selectedIds);
+    const previousItems = items;
+    const targetIds = [...selectedIds];
     clearSelection();
-    await loadItems();
+
+    // Optimistic removal from current view
+    if (viewSection !== 'trash') {
+      setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+    } else {
+      setItems((prev) => prev.map((i) => (targetIds.includes(i.id) ? { ...i, isTrashed: true } : i)));
+    }
+    if (detailsItem && targetIds.includes(detailsItem.id)) {
+      setDetailsItem(null);
+    }
+
+    try {
+      await trashCloudItemsApi(targetIds);
+      fetchCloudStats().then(setStats).catch(() => {});
+    } catch (err) {
+      console.error('Failed to trash items:', err);
+      setItems(previousItems);
+    }
   };
 
   const restoreSelected = async () => {
     if (selectedIds.length === 0) return;
-    await restoreCloudItemsApi(selectedIds);
+    const previousItems = items;
+    const targetIds = [...selectedIds];
     clearSelection();
-    await loadItems();
+
+    // Optimistic removal from trash view
+    if (viewSection === 'trash') {
+      setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+    }
+    if (detailsItem && targetIds.includes(detailsItem.id)) {
+      setDetailsItem(null);
+    }
+
+    try {
+      await restoreCloudItemsApi(targetIds);
+      fetchCloudStats().then(setStats).catch(() => {});
+    } catch (err) {
+      console.error('Failed to restore items:', err);
+      setItems(previousItems);
+    }
   };
 
   const deleteSelectedPermanently = async () => {
     if (selectedIds.length === 0) return;
-    await deleteCloudItemsPermanentlyApi(selectedIds);
+    const previousItems = items;
+    const targetIds = [...selectedIds];
     clearSelection();
-    await loadItems();
+
+    setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+    if (detailsItem && targetIds.includes(detailsItem.id)) {
+      setDetailsItem(null);
+    }
+
+    try {
+      await deleteCloudItemsPermanentlyApi(targetIds);
+      fetchCloudStats().then(setStats).catch(() => {});
+    } catch (err) {
+      console.error('Failed to permanently delete items:', err);
+      setItems(previousItems);
+    }
   };
 
   const emptyTrash = async () => {
-    await emptyCloudTrashApi();
+    const previousItems = items;
     clearSelection();
-    await loadItems();
+    setItems([]);
+
+    try {
+      await emptyCloudTrashApi();
+      fetchCloudStats().then(setStats).catch(() => {});
+    } catch (err) {
+      console.error('Failed to empty trash:', err);
+      setItems(previousItems);
+    }
   };
 
   const downloadItem = async (item: DriveItem) => {
@@ -489,14 +642,14 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const triggerAutoLabel = async (itemIds?: string[]) => {
-    setLoading(true);
+    setIsSyncing(true);
     try {
       await batchAutoLabelApi({ itemIds, allUnlabeled: !itemIds });
-      await loadItems();
+      await loadItems({ silent: true });
     } catch (err) {
       console.error('Auto-label failed:', err);
     } finally {
-      setLoading(false);
+      setIsSyncing(false);
     }
   };
 
@@ -527,6 +680,7 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         folders,
         files,
         loading,
+        isSyncing,
         stats,
         selectedIds,
         previewItem,

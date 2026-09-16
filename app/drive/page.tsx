@@ -381,7 +381,7 @@ function DriveWorkspaceInner() {
             }}
           />
 
-          {loading ? (
+          {loading && items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center space-y-3 text-zinc-400 py-24">
               <span className="w-6 h-6 rounded-full bg-rose-500 animate-ping" />
               <span className="text-xs font-bold">Synchronizing Cloud Drive...</span>

@@ -59,9 +59,9 @@ export function DriveRecommendationHero({
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
   // Fetch recommendations
-  const fetchRecommendations = async () => {
+  const fetchRecommendations = async (silent: boolean = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const res = await fetch(`/api/drive/recommendations?vaultUnlocked=${isVaultUnlocked}&limit=8`);
       if (res.ok) {
         const data: RecommendationResponse = await res.json();
@@ -75,7 +75,8 @@ export function DriveRecommendationHero({
   };
 
   useEffect(() => {
-    fetchRecommendations();
+    const isSilent = recommendations !== null;
+    fetchRecommendations(isSilent);
   }, [items.length, isVaultUnlocked]);
 
   // If on trash, shared, or vault sections, hide hero to keep focus
