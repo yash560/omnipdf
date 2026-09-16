@@ -594,29 +594,34 @@ export async function uploadCloudFile(
   // Server-render a PDF page-1 thumbnail once, cached for every future viewer
   scheduleServerPdfThumbnail(userId, item, buffer);
 
-  // Trigger async deep Gemini enrichment in background
-  autoLabelFile({
-    fileName: name,
-    relativePath: name,
-    category,
-    mimeType,
-    size: buffer.length,
-  }).then(async (aiLabels) => {
-    if (aiLabels.confidence >= 0.8) {
-      await col.updateOne(
-        { id },
-        {
-          $set: {
-            tags: aiLabels.tags,
-            aiSummary: aiLabels.aiSummary,
-            aiCategory: aiLabels.aiCategory,
-            semanticKeywords: aiLabels.semanticKeywords,
-            updatedAt: Date.now(),
-          },
-        }
-      );
-    }
-  }).catch(() => {});
+  // Trigger async deep Gemini enrichment in background. after() keeps this
+  // alive past the response on Vercel (see scheduleServerPdfThumbnail above
+  // for why plain fire-and-forget silently never runs there).
+  after(async () => {
+    try {
+      const aiLabels = await autoLabelFile({
+        fileName: name,
+        relativePath: name,
+        category,
+        mimeType,
+        size: buffer.length,
+      });
+      if (aiLabels.confidence >= 0.8) {
+        await col.updateOne(
+          { id },
+          {
+            $set: {
+              tags: aiLabels.tags,
+              aiSummary: aiLabels.aiSummary,
+              aiCategory: aiLabels.aiCategory,
+              semanticKeywords: aiLabels.semanticKeywords,
+              updatedAt: Date.now(),
+            },
+          }
+        );
+      }
+    } catch {}
+  });
 
   return item;
 }
@@ -953,29 +958,34 @@ export async function completeChunkUploadSession(
   // re-reads via getCloudFileStream, capped by MAX_PDF_THUMBNAIL_SOURCE_BYTES.
   scheduleServerPdfThumbnail(userId, item);
 
-  // Trigger async deep Gemini enrichment in background
-  autoLabelFile({
-    fileName: session.fileName,
-    relativePath: session.relativePath || session.fileName,
-    category,
-    mimeType: session.mimeType,
-    size: writtenBytes,
-  }).then(async (aiLabels) => {
-    if (aiLabels.confidence >= 0.8) {
-      await itemsCol.updateOne(
-        { id },
-        {
-          $set: {
-            tags: aiLabels.tags,
-            aiSummary: aiLabels.aiSummary,
-            aiCategory: aiLabels.aiCategory,
-            semanticKeywords: aiLabels.semanticKeywords,
-            updatedAt: Date.now(),
-          },
-        }
-      );
-    }
-  }).catch(() => {});
+  // Trigger async deep Gemini enrichment in background. after() keeps this
+  // alive past the response on Vercel (see scheduleServerPdfThumbnail above
+  // for why plain fire-and-forget silently never runs there).
+  after(async () => {
+    try {
+      const aiLabels = await autoLabelFile({
+        fileName: session.fileName,
+        relativePath: session.relativePath || session.fileName,
+        category,
+        mimeType: session.mimeType,
+        size: writtenBytes,
+      });
+      if (aiLabels.confidence >= 0.8) {
+        await itemsCol.updateOne(
+          { id },
+          {
+            $set: {
+              tags: aiLabels.tags,
+              aiSummary: aiLabels.aiSummary,
+              aiCategory: aiLabels.aiCategory,
+              semanticKeywords: aiLabels.semanticKeywords,
+              updatedAt: Date.now(),
+            },
+          }
+        );
+      }
+    } catch {}
+  });
 
   return item;
 }

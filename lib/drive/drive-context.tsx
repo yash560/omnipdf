@@ -48,6 +48,7 @@ interface DriveContextType {
   setSortOption: (option: DriveSortOption) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
+  debouncedSearchTerm: string;
   selectedTag: string | null;
   setSelectedTag: (tag: string | null) => void;
   selectedAiCategory: string | null;
@@ -196,24 +197,24 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [searchTerm]);
 
   // Reflect the active search term in the URL (?q=) so it survives refresh
-  // and is shareable — but skip when a navigation (folder change/section
-  // switch) just cleared search itself, since that already pushes its own
-  // clean URL and this effect racing it with a stale pathname would revert it.
+  // and is shareable without triggering Next.js router re-renders while typing.
   useEffect(() => {
     if (skipNextSearchUrlSync.current) {
       skipNextSearchUrlSync.current = false;
       return;
     }
     if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    if (debouncedSearchTerm) {
-      params.set('q', debouncedSearchTerm);
-    } else {
-      params.delete('q');
-    }
-    const qs = params.toString();
-    router.replace(pathname + (qs ? `?${qs}` : ''), { scroll: false });
-  }, [debouncedSearchTerm, pathname, router]);
+    try {
+      const url = new URL(window.location.href);
+      if (debouncedSearchTerm) {
+        url.searchParams.set('q', debouncedSearchTerm);
+      } else {
+        url.searchParams.delete('q');
+      }
+      const newUrl = url.pathname + url.search;
+      window.history.replaceState(window.history.state, '', newUrl);
+    } catch {}
+  }, [debouncedSearchTerm]);
 
   const [items, setItems] = useState<DriveItem[]>([]);
   const [folderCache, setFolderCache] = useState<Record<string, DriveItem[]>>({});
@@ -1068,6 +1069,7 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setSortOption,
         searchTerm,
         setSearchTerm,
+        debouncedSearchTerm,
         items,
         folders,
         files,

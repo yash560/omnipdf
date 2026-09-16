@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useDrive } from '@/lib/drive/drive-context';
 import { DriveSearchDropdown } from './DriveSearchDropdown';
 import {
@@ -108,6 +108,25 @@ export function DriveToolbar({
   const [copiedFeedback, setCopiedFeedback] = useState(false);
   const [isMergingPdfs, setIsMergingPdfs] = useState(false);
 
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // Close search dropdown on outside click or touch
+  useEffect(() => {
+    const handleDocumentClick = (e: MouseEvent | TouchEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsSearchDropdownOpen(false);
+      }
+    };
+    if (isSearchDropdownOpen) {
+      document.addEventListener('mousedown', handleDocumentClick);
+      document.addEventListener('touchstart', handleDocumentClick, { passive: true });
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentClick);
+      document.removeEventListener('touchstart', handleDocumentClick);
+    };
+  }, [isSearchDropdownOpen]);
+
   const starredCount = items.filter((i) => i.isStarred).length;
   const radarCount = items.filter((i) => i.expiryStatus === 'expired' || i.expiryStatus === 'expiring_soon').length;
   const pdfCount = items.filter((i) => i.category === 'pdf' || i.name.toLowerCase().endsWith('.pdf')).length;
@@ -202,8 +221,8 @@ export function DriveToolbar({
         )}
 
         {/* Search Bar with Predictive Recommendations & Autocomplete */}
-        <div className="relative flex-1 min-w-0 z-40">
-          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+        <div ref={searchContainerRef} className="relative flex-1 min-w-[140px] sm:min-w-[240px] z-40">
+          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 z-30 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
@@ -222,24 +241,16 @@ export function DriveToolbar({
               setIsSearchDropdownOpen(true);
             }}
             placeholder="Search files, text, tags..."
-            className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-1.5 sm:py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-inner font-medium relative z-10"
+            className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-1.5 sm:py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-inner font-medium relative z-20"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer z-20"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer z-30"
             >
               <X className="w-3.5 h-3.5" />
             </button>
-          )}
-
-          {/* Transparent click-outside backdrop when search dropdown is open */}
-          {isSearchDropdownOpen && (
-            <div 
-              className="fixed inset-0 z-30" 
-              onClick={() => setIsSearchDropdownOpen(false)} 
-            />
           )}
 
           {/* Predictive Search Recommender Dropdown */}

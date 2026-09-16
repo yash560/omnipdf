@@ -59,23 +59,8 @@ export function DriveSearchDropdown({
   onClearRecentSearches,
   onRemoveRecentSearch,
 }: DriveSearchDropdownProps) {
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Close on outside click
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        onClose();
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('mousedown', handleOutsideClick);
-    }
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [isOpen, onClose]);
-
   // Clean query
-  const cleanQuery = query.trim().toLowerCase();
+  const cleanQuery = (query || '').trim().toLowerCase();
 
   // 1. Matched instant item previews (Top 5)
   const matchedItems = useMemo(() => {
@@ -105,32 +90,9 @@ export function DriveSearchDropdown({
   if (!isOpen) return null;
 
   return (
-    <>
-      {/* Mobile Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs z-40 md:hidden animate-in fade-in duration-150"
-        onClick={onClose} 
-      />
-
-      <div
-        ref={dropdownRef}
-        className="fixed inset-x-2.5 sm:inset-x-4 top-16 max-h-[80vh] md:absolute md:inset-x-0 md:top-full md:mt-2 md:max-h-[480px] bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col"
-      >
-        {/* Mobile Header Bar */}
-        <div className="md:hidden flex items-center justify-between px-3.5 py-2.5 border-b border-zinc-100 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80">
-          <div className="flex items-center gap-2 text-xs font-bold text-zinc-900 dark:text-zinc-100">
-            <Search className="w-3.5 h-3.5 text-rose-500" />
-            <span>Search Drive & Quick Look</span>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 cursor-pointer"
-            aria-label="Close search dropdown"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+    <div
+      className="absolute left-0 right-0 top-full mt-2 max-h-[380px] sm:max-h-[480px] bg-white dark:bg-zinc-900 border border-zinc-200/90 dark:border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150 flex flex-col"
+    >
 
         <div className="p-3 overflow-y-auto space-y-4">
           {/* SECTION 1: INSTANT MATCHED DOCUMENTS (When Query Exists) */}
@@ -279,8 +241,6 @@ export function DriveSearchDropdown({
           <span>Tip: Use <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-3xs">⌘K</kbd> for Global Omnisearch across files & tools</span>
           <span className="text-rose-500 font-bold">Smart Search Active</span>
         </div>
-      </div>
     </div>
-    </>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useSearchParams, useParams, useRouter } from 'next/navigation';
 import { DriveProvider, useDrive } from '@/lib/drive/drive-context';
 import { DriveSidebar } from '@/components/drive/DriveSidebar';
@@ -120,6 +120,7 @@ function DriveWorkspaceInner() {
     navigateToFolder,
     searchTerm,
     setSearchTerm,
+    debouncedSearchTerm,
 
     // Vault
     isVaultUnlocked,
@@ -221,6 +222,8 @@ function DriveWorkspaceInner() {
     }
   }, [routeFolderId, currentFolderId, navigateToFolder]);
 
+  const hasInitializedSearchRef = useRef(false);
+
   // Remaining query params from Global Search / Deep Links: preview, tab, q.
   useEffect(() => {
     if (!searchParams) return;
@@ -235,9 +238,13 @@ function DriveWorkspaceInner() {
     } else if (tabParam === 'duplicates') {
       setIsDedupModalOpen(true);
     }
-    if (qParam && qParam !== searchTerm) {
+
+    // Only apply q from searchParams once on initial mount if searchTerm is empty
+    if (qParam && !hasInitializedSearchRef.current && !searchTerm) {
+      hasInitializedSearchRef.current = true;
       setSearchTerm(qParam);
     }
+
     if (previewParam && items.length > 0 && previewItem?.id !== previewParam) {
       const match = items.find((it) => it.id === previewParam);
       if (match) {
