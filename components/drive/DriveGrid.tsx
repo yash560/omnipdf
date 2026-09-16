@@ -139,7 +139,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
               {areAllFoldersSelected ? 'Deselect All Folders' : 'Select All Folders'}
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3.5">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-3.5">
             {folders.map((folder) => {
               const isSelected = selectedIds.includes(folder.id);
               const colorConfig = FOLDER_COLORS[folder.color || 'default'] || FOLDER_COLORS.default;
@@ -166,7 +166,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                     onClick={(e) => toggleSelect(folder.id, e.shiftKey || e.metaKey || e.ctrlKey)}
                     onDoubleClick={() => navigateToFolder(folder.id)}
                     onContextMenu={(e) => handleOpenItemOptions(folder, e)}
-                    className={`group relative p-3 sm:p-3.5 rounded-2xl border transition-all select-none cursor-pointer flex items-center justify-between gap-3 ${
+                    className={`group relative p-2 sm:p-3.5 rounded-2xl border transition-all select-none cursor-pointer flex items-center justify-between gap-1.5 sm:gap-3 ${
                       isDragTarget
                         ? 'border-rose-500 bg-rose-500/10 ring-4 ring-rose-500/30 scale-[1.02] shadow-xl'
                         : isSelected
@@ -174,7 +174,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                         : 'border-zinc-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/90 hover:border-zinc-300 dark:hover:border-zinc-700 shadow-2xs hover:shadow-sm'
                     }`}
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
                       {/* Checkbox for Folder */}
                       <div 
                         onClick={(e) => {
@@ -182,7 +182,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                           triggerHaptic('selection');
                           toggleSelect(folder.id, true);
                         }}
-                        className={`p-1 rounded-md transition-opacity cursor-pointer ${
+                        className={`p-0.5 sm:p-1 rounded-md transition-opacity cursor-pointer ${
                           isSelected
                             ? 'opacity-100'
                             : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-zinc-100/80 dark:bg-zinc-800/80 sm:bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800'
@@ -192,12 +192,12 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => {}}
-                          className="w-3.5 h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none"
+                          className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none"
                         />
                       </div>
 
-                      <div className={`p-2 rounded-xl ${colorConfig.bgClass} ${colorConfig.textClass} shrink-0`}>
-                        <Folder className="w-5 h-5 fill-current" />
+                      <div className={`p-1.5 sm:p-2 rounded-xl ${colorConfig.bgClass} ${colorConfig.textClass} shrink-0`}>
+                        <Folder className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
                       </div>
                       <div className="min-w-0" onClick={() => {
                         // On single touch on mobile inside folder name, navigate to folder
@@ -205,28 +205,28 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                           navigateToFolder(folder.id);
                         }
                       }}>
-                        <div className="font-bold text-xs text-zinc-900 dark:text-zinc-100 truncate group-hover:text-rose-500 transition-colors">
+                        <div className="font-bold text-[11px] sm:text-xs text-zinc-900 dark:text-zinc-100 truncate group-hover:text-rose-500 transition-colors">
                           {folder.name}
                         </div>
-                        <div className="text-3xs text-zinc-400 font-mono">
+                        <div className="text-[9px] sm:text-3xs text-zinc-400 font-mono">
                           {folder.itemCount !== undefined ? `${folder.itemCount} items` : 'Folder'}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
                       {folder.isVault && (
-                        <div className="p-1 text-amber-500" title="Secure Vault Protected">
-                          <Lock className="w-3.5 h-3.5" />
+                        <div className="p-0.5 sm:p-1 text-amber-500" title="Secure Vault Protected">
+                          <Lock className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                         </div>
                       )}
                       <button
                         type="button"
                         onClick={(e) => handleOpenItemOptions(folder, e)}
-                        className="p-1.5 rounded-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-zinc-100/80 dark:bg-zinc-800/80 sm:bg-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"
+                        className="p-1 sm:p-1.5 rounded-lg opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-zinc-100/80 dark:bg-zinc-800/80 sm:bg-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer"
                         title="Folder Options"
                       >
-                        <MoreVertical className="w-3.5 h-3.5" />
+                        <MoreVertical className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -252,7 +252,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
               {areAllFilesSelected ? 'Deselect All Files' : 'Select All Files'}
             </button>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2 sm:gap-4">
             {files.map((file) => {
               const isSelected = selectedIds.includes(file.id);
 
@@ -302,14 +302,14 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                           triggerHaptic('selection');
                           toggleStar(file.id);
                         }}
-                        className={`absolute top-2 left-2 p-1.5 rounded-xl transition-all z-20 ${
+                        className={`absolute top-1.5 sm:top-2 left-1.5 sm:left-2 p-1 sm:p-1.5 rounded-xl transition-all z-20 ${
                           file.isStarred
                             ? 'opacity-100 bg-amber-500/20 text-amber-500 shadow-2xs'
                             : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-400 hover:text-amber-400 shadow-2xs'
                         }`}
                         title={file.isStarred ? 'Unstar' : 'Star'}
                       >
-                        <Star className={`w-3.5 h-3.5 ${file.isStarred ? 'text-amber-400 fill-amber-400' : 'text-zinc-400'}`} />
+                        <Star className={`w-3 h-3 sm:w-3.5 sm:h-3.5 ${file.isStarred ? 'text-amber-400 fill-amber-400' : 'text-zinc-400'}`} />
                       </button>
 
                       {/* Selection Checkbox on File Card */}
@@ -320,7 +320,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                           triggerHaptic('selection');
                           toggleSelect(file.id, true);
                         }}
-                        className={`absolute top-2 left-10 p-1.5 rounded-xl transition-all z-20 ${
+                        className={`absolute top-1.5 sm:top-2 left-7 sm:left-10 p-1 sm:p-1.5 rounded-xl transition-all z-20 ${
                           isSelected
                             ? 'opacity-100 bg-rose-500/20 border border-rose-500/40 shadow-2xs'
                             : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-500 shadow-2xs'
@@ -331,22 +331,22 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                           type="checkbox"
                           checked={isSelected}
                           onChange={() => {}}
-                          className="w-3.5 h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none block"
+                          className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none block"
                         />
                       </button>
 
                       {/* Status Badges: Vault & Expiry */}
-                      <div className="absolute top-2 right-10 flex items-center gap-1 z-10">
+                      <div className="absolute top-1.5 sm:top-2 right-7 sm:right-10 flex items-center gap-1 z-10">
                         {file.isVault && (
-                          <span className="p-1 rounded-md bg-amber-500/20 text-amber-500 shadow-xs" title="Protected in Secure Vault">
-                            <Lock className="w-3 h-3" />
+                          <span className="p-0.5 sm:p-1 rounded-md bg-amber-500/20 text-amber-500 shadow-xs" title="Protected in Secure Vault">
+                            <Lock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                           </span>
                         )}
                         {file.expiryStatus === 'expired' && (
-                          <span className="w-2 h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50" title="Expired / Renewal Due" />
+                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-rose-500 shadow-sm shadow-rose-500/50" title="Expired / Renewal Due" />
                         )}
                         {file.expiryStatus === 'expiring_soon' && (
-                          <span className="w-2 h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" title="Expiring Soon" />
+                          <span className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50" title="Expiring Soon" />
                         )}
                       </div>
 
@@ -354,10 +354,10 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                       <button
                         type="button"
                         onClick={(e) => handleOpenItemOptions(file, e)}
-                        className="absolute top-2 right-2 p-1.5 rounded-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-2xs transition-all cursor-pointer z-20"
+                        className="absolute top-1.5 sm:top-2 right-1.5 sm:right-2 p-1 sm:p-1.5 rounded-xl opacity-100 sm:opacity-0 sm:group-hover:opacity-100 bg-white/90 dark:bg-zinc-900/90 backdrop-blur-xs border border-zinc-200/60 dark:border-zinc-700/60 text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-2xs transition-all cursor-pointer z-20"
                         title="File Options"
                       >
-                        <MoreVertical className="w-3.5 h-3.5" />
+                        <MoreVertical className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </button>
 
                       {/* Quick Preview Hover Pill (Desktop) */}
@@ -377,20 +377,20 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                     </div>
 
                     {/* File Metadata Footer */}
-                    <div className="p-3 space-y-1.5">
-                      <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                    <div className="p-2 sm:p-3 space-y-1 sm:space-y-1.5">
+                      <div className="text-[11px] sm:text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
                         {file.name}
                       </div>
 
                       {/* Match snippet */}
                       {file.ocrSnippet && (
-                        <div className="text-3xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-medium truncate">
+                        <div className="text-[9px] sm:text-3xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-medium truncate">
                           Excerpt: &ldquo;{file.ocrSnippet}&rdquo;
                         </div>
                       )}
 
                       {file.aiSummary && !file.ocrSnippet && (
-                        <p className="text-3xs text-zinc-500 dark:text-zinc-400 line-clamp-1 italic">
+                        <p className="text-[9px] sm:text-3xs text-zinc-500 dark:text-zinc-400 line-clamp-1 italic">
                           {file.aiSummary}
                         </p>
                       )}
@@ -405,7 +405,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                                 e.stopPropagation();
                                 setSelectedTag(tag);
                               }}
-                              className="px-1.5 py-0.2 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-rose-500 hover:text-white transition"
+                              className="px-1.5 py-0.2 rounded-md bg-zinc-100 dark:bg-zinc-800 text-[8px] sm:text-[9px] font-semibold text-zinc-600 dark:text-zinc-400 hover:bg-rose-500 hover:text-white transition"
                             >
                               #{tag}
                             </button>
@@ -413,7 +413,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                         </div>
                       )}
 
-                      <div className="flex items-center justify-between text-3xs text-zinc-400 font-mono pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
+                      <div className="flex items-center justify-between text-[9px] sm:text-3xs text-zinc-400 font-mono pt-1 border-t border-zinc-100 dark:border-zinc-800/60">
                         <span>{formatBytes(file.size)}</span>
                         <span>{formatTimeAgo(file.updatedAt || file.createdAt)}</span>
                       </div>

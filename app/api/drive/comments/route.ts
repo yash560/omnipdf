@@ -14,11 +14,11 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Missing itemId' }, { status: 400 });
     }
 
-    const comments = await getDriveComments(itemId);
+    const comments = await getDriveComments(auth.userId, itemId, auth.email);
     return NextResponse.json({ success: true, comments });
   } catch (err: any) {
     console.error('[API /api/drive/comments GET] Error:', err);
-    return NextResponse.json({ error: err.message || 'Failed to fetch comments' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Failed to fetch comments' }, { status: 403 });
   }
 }
 
@@ -34,11 +34,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing itemId or content' }, { status: 400 });
     }
 
-    const comment = await addDriveComment(auth.userId, itemId, content);
+    const comment = await addDriveComment(auth.userId, itemId, content, auth.email);
     return NextResponse.json({ success: true, comment });
   } catch (err: any) {
     console.error('[API /api/drive/comments POST] Error:', err);
-    return NextResponse.json({ error: err.message || 'Failed to add comment' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Failed to add comment' }, { status: 403 });
   }
 }
 
@@ -54,7 +54,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Missing commentId' }, { status: 400 });
     }
 
-    await resolveDriveComment(commentId, Boolean(resolved));
+    await resolveDriveComment(auth.userId, commentId, Boolean(resolved), auth.email);
     return NextResponse.json({ success: true });
   } catch (err: any) {
     console.error('[API /api/drive/comments PATCH] Error:', err);

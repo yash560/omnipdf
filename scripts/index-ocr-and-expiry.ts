@@ -22,7 +22,7 @@ function loadEnv() {
 
 loadEnv();
 
-const MONGO_URI = process.env.MONGODB_URI || 'mongodb+srv://yaashjainn:2CfKwxYEOFqjowmn@webverse.5exbv3u.mongodb.net/?retryWrites=true&w=majority';
+const MONGO_URI = process.env.MONGODB_URI || process.env.THEWEBVALE_MONGO_URI || '';
 const DB_NAME = process.env.MONGODB_DB || 'thewebvale';
 const TARGET_EMAIL = 'yaashjainn@gmail.com';
 

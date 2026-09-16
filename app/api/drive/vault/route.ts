@@ -3,8 +3,25 @@ import { getMongoDb } from '@/lib/db/mongodb';
 import { getAuthenticatedUser } from '@/lib/auth/get-server-user';
 import crypto from 'crypto';
 
-function hashPin(pin: string, salt: string = 'filecraft_vault_salt'): string {
-  return crypto.pbkdf2Sync(pin, salt, 1000, 32, 'sha256').toString('hex');
+function hashPinV2(pin: string, userId: string): string {
+  const salt = `fc_vault_${userId}_salt_2026`;
+  return `v2:${crypto.pbkdf2Sync(pin, salt, 100000, 32, 'sha256').toString('hex')}`;
+}
+
+function verifyStoredPin(pin: string, storedHash: string, userId: string): boolean {
+  try {
+    if (storedHash.startsWith('v2:')) {
+      const salt = `fc_vault_${userId}_salt_2026`;
+      const computed = `v2:${crypto.pbkdf2Sync(pin, salt, 100000, 32, 'sha256').toString('hex')}`;
+      return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(storedHash));
+    }
+    // Legacy v1 fallback
+    const legacySalt = 'filecraft_vault_salt';
+    const legacyComputed = crypto.pbkdf2Sync(pin, legacySalt, 1000, 32, 'sha256').toString('hex');
+    return crypto.timingSafeEqual(Buffer.from(legacyComputed), Buffer.from(storedHash));
+  } catch {
+    return false;
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -65,13 +82,12 @@ export async function POST(req: NextRequest) {
       }
 
       if (storedHash && currentPin) {
-        const checkHash = hashPin(currentPin);
-        if (checkHash !== storedHash) {
+        if (!verifyStoredPin(currentPin, storedHash, auth.userId)) {
           return NextResponse.json({ error: 'Current PIN is incorrect.' }, { status: 403 });
         }
       }
 
-      const pinHash = hashPin(newPin);
+      const pinHash = hashPinV2(newPin, auth.userId);
       await db.collection('filecraft_users').updateOne(
         { $or: [{ id: auth.userId }, { email: auth.email.toLowerCase() }] },
         { 
@@ -100,17 +116,16 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No PIN is configured yet. Please set an initial PIN.' }, { status: 400 });
       }
 
-      const checkHash = hashPin(currentPin);
-      if (checkHash !== storedHash) {
+      if (!verifyStoredPin(currentPin, storedHash, auth.userId)) {
         return NextResponse.json({ error: 'Current PIN is incorrect.' }, { status: 403 });
       }
 
-      const newHash = hashPin(newPin);
+      const newHash = hashPinV2(newPin, auth.userId);
       await db.collection('filecraft_users').updateOne(
         { $or: [{ id: auth.userId }, { email: auth.email.toLowerCase() }] },
         { 
           $set: { 
-            'preferences.vaultPinHash': newHash,
+            'preferences.vaultPinHash': newHash, 
             updatedAt: Date.now() 
           } 
         }
@@ -145,8 +160,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'No PIN has been configured for your vault.' }, { status: 400 });
       }
 
-      const inputHash = hashPin(pin);
-      if (inputHash !== storedHash) {
+      if (!verifyStoredPin(pin, storedHash, auth.userId)) {
         return NextResponse.json({ error: 'Incorrect PIN. Access denied.' }, { status: 403 });
       }
 

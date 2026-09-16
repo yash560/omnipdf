@@ -26,6 +26,11 @@ async function ensureDefaultUsers() {
     await collection.createIndex({ email: 1 }, { unique: true }).catch(() => {});
     await collection.createIndex({ id: 1 }, { unique: true }).catch(() => {});
 
+    // Only seed demo accounts in local development mode
+    if (process.env.NODE_ENV === 'production') {
+      return;
+    }
+
     // Check if Yash user exists
     const yashExists = await collection.findOne({ email: 'yash@thewebvale.com' });
     if (!yashExists) {

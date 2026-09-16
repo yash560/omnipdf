@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getEncryptedPackage, deleteEncryptedPackage } from '@/lib/storage/cloud-share-db';
+import { getAuthenticatedUser } from '@/lib/auth/get-server-user';
 
 export async function GET(
   _req: NextRequest,
@@ -28,10 +29,15 @@ export async function GET(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
+    const auth = await getAuthenticatedUser(req);
+    if (!auth) {
+      return NextResponse.json({ error: 'Unauthorized to revoke this share link' }, { status: 401 });
+    }
+
     const { id } = await context.params;
     if (!id) {
       return NextResponse.json({ error: 'Share ID is required' }, { status: 400 });

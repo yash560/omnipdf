@@ -27,7 +27,7 @@ async function hashPassword(password: string, saltHex?: string): Promise<{ hash:
 
 async function main() {
   loadEnv();
-  const uri = process.env.MONGODB_URI || 'mongodb+srv://yaashjainn:2CfKwxYEOFqjowmn@webverse.5exbv3u.mongodb.net/?retryWrites=true&w=majority';
+  const uri = process.env.MONGODB_URI || process.env.THEWEBVALE_MONGO_URI || '';
   const dbName = process.env.MONGODB_DB || 'thewebvale';
 
   console.log(`Connecting to MongoDB URI... DB: ${dbName}`);

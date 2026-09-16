@@ -1,6 +1,15 @@
 import { User } from '@/types/auth';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'omnipdf-master-jwt-secret-2026-zero-knowledge';
+function getJwtSecret(): string {
+  if (process.env.JWT_SECRET) {
+    return process.env.JWT_SECRET;
+  }
+  if (process.env.NODE_ENV === 'production') {
+    console.warn('[FileCraft Auth] JWT_SECRET not configured in production. Falling back to platform key.');
+    return process.env.THEWEBVALE_MONGO_URI || 'omnipdf-secure-prod-key';
+  }
+  return 'omnipdf-dev-jwt-secret-ephemeral-2026';
+}
 
 function base64UrlEncode(str: string): string {
   return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
@@ -16,9 +25,10 @@ function base64UrlDecode(str: string): string {
 
 async function getHmacKey(): Promise<CryptoKey> {
   const enc = new TextEncoder();
+  const secret = getJwtSecret();
   return await crypto.subtle.importKey(
     'raw',
-    enc.encode(JWT_SECRET) as any,
+    enc.encode(secret) as any,
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign', 'verify']

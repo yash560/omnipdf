@@ -4,7 +4,7 @@ const MONGO_URI =
   process.env.MONGODB_URI || 
   process.env.MONGO_URI || 
   process.env.THEWEBVALE_MONGO_URI || 
-  'mongodb+srv://yaashjainn:2CfKwxYEOFqjowmn@webverse.5exbv3u.mongodb.net/?retryWrites=true&w=majority';
+  '';
 
 const DB_NAME = process.env.MONGODB_DB || 'thewebvale';
 
@@ -14,6 +14,10 @@ let cachedDb: Db | null = null;
 export async function getMongoClient(): Promise<MongoClient> {
   if (cachedClient) {
     return cachedClient;
+  }
+
+  if (!MONGO_URI) {
+    throw new Error('[FileCraft DB] Missing MONGODB_URI environment variable.');
   }
 
   const client = new MongoClient(MONGO_URI, {

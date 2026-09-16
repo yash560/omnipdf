@@ -12,10 +12,10 @@ export async function GET(req: NextRequest) {
     const itemId = req.nextUrl.searchParams.get('itemId') || undefined;
     const limit = parseInt(req.nextUrl.searchParams.get('limit') || '30', 10);
 
-    const activities = await getDriveActivities(itemId, itemId ? undefined : auth.userId, limit);
+    const activities = await getDriveActivities(auth.userId, itemId, auth.email, limit);
     return NextResponse.json({ success: true, activities });
   } catch (err: any) {
     console.error('[API /api/drive/activity GET] Error:', err);
-    return NextResponse.json({ error: err.message || 'Failed to fetch activity log' }, { status: 500 });
+    return NextResponse.json({ error: err.message || 'Failed to fetch activity log' }, { status: 403 });
   }
 }
