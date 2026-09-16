@@ -22,6 +22,11 @@ export async function getAuthenticatedUser(req: NextRequest): Promise<Authentica
       }
     }
 
+    // 3. Check query param token / auth
+    if (!token) {
+      token = req.nextUrl.searchParams.get('token') || req.nextUrl.searchParams.get('auth') || undefined;
+    }
+
     if (!token) return null;
 
     const payload = await verifyUserToken(token);

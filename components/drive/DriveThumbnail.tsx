@@ -28,13 +28,12 @@ export function DriveThumbnail({
   imgClassName = '',
 }: DriveThumbnailProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isInViewport, setIsInViewport] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
 
-  // 1. Check L1 Memory Cache Synchronously
   useEffect(() => {
+    // Reset state for new item
     setImageLoaded(false);
     setLoadError(false);
     setThumbnailUrl(null);
@@ -42,65 +41,61 @@ export function DriveThumbnail({
     // If folder, no visual image thumbnail
     if (item.type === 'folder') return;
 
-    // Fast check for existing cache
+    let isMounted = true;
+    let cancelHandle: (() => void) | null = null;
+
+    // 1. Fast check for existing cache (L1 Memory & L2 IndexedDB)
     getCachedThumbnail(item).then((cached) => {
-      if (cached) {
+      if (cached && isMounted) {
         setThumbnailUrl(cached);
+        setImageLoaded(true);
       }
     });
-  }, [item.id, item.updatedAt, item.type]);
-
-  // 2. Viewport-Based Lazy Loading via IntersectionObserver
-  useEffect(() => {
-    if (item.type === 'folder' || thumbnailUrl) return;
 
     const el = containerRef.current;
     if (!el) return;
 
-    // If browser doesn't support IntersectionObserver, trigger immediately
+    const startLoading = () => {
+      if (!isMounted) return;
+      const handle = requestAsyncThumbnail(item);
+      cancelHandle = handle.cancel;
+
+      handle.promise
+        .then((url) => {
+          if (url && isMounted) {
+            setThumbnailUrl(url);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setLoadError(true);
+        });
+    };
+
+    // 2. Viewport-Based Lazy Loading via IntersectionObserver (300px ahead)
     if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
-      setIsInViewport(true);
+      startLoading();
       return;
     }
 
     const observer = new IntersectionObserver(
       (entries) => {
         const entry = entries[0];
-        if (entry.isIntersecting) {
-          setIsInViewport(true);
+        if (entry && entry.isIntersecting) {
+          startLoading();
           observer.disconnect();
         }
       },
-      { rootMargin: '200px' } // Pre-load 200px before scrolling into view
+      { rootMargin: '300px' }
     );
 
     observer.observe(el);
 
     return () => {
+      isMounted = false;
       observer.disconnect();
+      if (cancelHandle) cancelHandle();
     };
-  }, [item.id, item.type, thumbnailUrl]);
-
-  // 3. Request Thumbnail on Viewport Entry
-  useEffect(() => {
-    if (!isInViewport || item.type === 'folder' || thumbnailUrl) return;
-
-    const handle = requestAsyncThumbnail(item);
-
-    handle.promise
-      .then((url) => {
-        if (url) {
-          setThumbnailUrl(url);
-        }
-      })
-      .catch(() => {
-        setLoadError(true);
-      });
-
-    return () => {
-      handle.cancel();
-    };
-  }, [isInViewport, item, thumbnailUrl]);
+  }, [item.id, item.updatedAt, item.type]);
 
   // Render Category Icon Fallback
   const renderCategoryIcon = () => {
@@ -164,6 +159,11 @@ export function DriveThumbnail({
             decoding="async"
             onLoad={() => setImageLoaded(true)}
             onError={() => setLoadError(true)}
+            ref={(node) => {
+              if (node && node.complete && node.naturalWidth > 0 && !imageLoaded) {
+                setImageLoaded(true);
+              }
+            }}
             className={`absolute inset-0 w-full h-full ${
               view === 'grid'
                 ? isPdf

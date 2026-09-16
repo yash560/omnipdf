@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import {
   DriveItem,
   DriveViewSection,
@@ -218,6 +218,27 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const itemsRef = useRef<DriveItem[]>([]);
+  itemsRef.current = items;
+
+  const hasLoadedInitialRef = useRef(false);
+
+  // Load stats with cache/throttle
+  const lastStatsFetchRef = useRef<number>(0);
+  const loadStats = useCallback(async (force = false) => {
+    const now = Date.now();
+    if (!force && now - lastStatsFetchRef.current < 5000) {
+      return; // Throttle to at most once per 5 seconds
+    }
+    lastStatsFetchRef.current = now;
+    try {
+      const cloudStats = await fetchCloudStats();
+      setStats(cloudStats);
+    } catch (err) {
+      console.warn('Failed to fetch storage stats:', err);
+    }
+  }, []);
+
   const loadItems = useCallback(async (options?: { silent?: boolean }) => {
     if (authRequired) {
       setLoading(false);
@@ -225,7 +246,7 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
-    const isSilent = options?.silent ?? (hasLoadedInitial && items.length > 0);
+    const isSilent = options?.silent ?? (hasLoadedInitialRef.current && itemsRef.current.length > 0);
     if (!isSilent) {
       setLoading(true);
     } else {
@@ -269,9 +290,9 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       }
 
-      const cloudStats = await fetchCloudStats();
-      setStats(cloudStats);
+      hasLoadedInitialRef.current = true;
       setHasLoadedInitial(true);
+      loadStats();
     } catch (error) {
       console.error('Failed to load drive items from cloud:', error);
     } finally {
@@ -280,8 +301,6 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [
     authRequired,
-    hasLoadedInitial,
-    items.length,
     currentFolderId,
     viewSection,
     selectedCategory,
@@ -292,7 +311,14 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     activeVehicle,
     sortOption,
     isVaultUnlocked,
+    loadStats,
   ]);
+
+  // Stable ref for SSE callbacks
+  const loadItemsRef = useRef(loadItems);
+  useEffect(() => {
+    loadItemsRef.current = loadItems;
+  }, [loadItems]);
 
   // Fetch children for a given folder with 0ms in-memory caching
   const fetchFolderChildren = useCallback(
@@ -333,15 +359,24 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (authRequired || typeof window === 'undefined') return;
 
     let eventSource: EventSource | null = null;
+    let sseTimeout: NodeJS.Timeout | null = null;
+
     try {
       eventSource = new EventSource('/api/drive/live-events');
 
       eventSource.onmessage = (e) => {
         try {
           if (!e.data) return;
-          // Silent refresh & cache clear when events are received
-          setFolderCache({});
-          loadItems({ silent: true });
+          const parsed = JSON.parse(e.data);
+          // Ignore connection handshake ping
+          if (parsed.type === 'connected') return;
+
+          // Debounce real mutation events
+          if (sseTimeout) clearTimeout(sseTimeout);
+          sseTimeout = setTimeout(() => {
+            setFolderCache({});
+            loadItemsRef.current({ silent: true });
+          }, 300);
         } catch {}
       };
 
@@ -353,11 +388,12 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
 
     return () => {
+      if (sseTimeout) clearTimeout(sseTimeout);
       if (eventSource) {
         eventSource.close();
       }
     };
-  }, [authRequired, loadItems]);
+  }, [authRequired]);
 
   useEffect(() => {
     loadItems();

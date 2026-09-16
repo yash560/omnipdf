@@ -366,7 +366,12 @@ async function resolveImageThumbnail(item: DriveItem): Promise<string | null> {
   }
 
   // Use server resized thumbnail endpoint
-  return `/api/drive/thumbnail/${item.id}?w=320`;
+  let tokenParam = '';
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('omnipdf_token');
+    if (token) tokenParam = `&token=${encodeURIComponent(token)}`;
+  }
+  return `/api/drive/thumbnail/${item.id}?w=320${tokenParam}`;
 }
 
 // ==========================================
@@ -404,7 +409,12 @@ export function requestAsyncThumbnail(item: DriveItem): ThumbnailRequestHandle {
 
       // Fast image path: server handles it directly
       if (item.category === 'image') {
-        const url = `/api/drive/thumbnail/${item.id}?w=320`;
+        let tokenParam = '';
+        if (typeof window !== 'undefined') {
+          const token = localStorage.getItem('omnipdf_token');
+          if (token) tokenParam = `&token=${encodeURIComponent(token)}`;
+        }
+        const url = `/api/drive/thumbnail/${item.id}?w=320${tokenParam}`;
         setMemoryCache(cacheKey, url);
         resolve(url);
         return;

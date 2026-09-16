@@ -244,12 +244,22 @@ export async function fetchCloudStats(): Promise<DriveStats> {
 }
 
 export function getCloudFileUrl(id: string): string {
-  return `/api/drive/file/${id}`;
+  let tokenParam = '';
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('omnipdf_token');
+    if (token) tokenParam = `?token=${encodeURIComponent(token)}`;
+  }
+  return `/api/drive/file/${id}${tokenParam}`;
 }
 
 export async function getCloudFileBlob(id: string): Promise<Blob | null> {
   try {
-    const res = await fetch(`/api/drive/file/${id}`, {
+    let tokenParam = '';
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('omnipdf_token');
+      if (token) tokenParam = `?token=${encodeURIComponent(token)}`;
+    }
+    const res = await fetch(`/api/drive/file/${id}${tokenParam}`, {
       headers: getAuthHeaders(),
     });
     if (!res.ok) return null;

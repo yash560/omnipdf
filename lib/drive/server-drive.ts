@@ -806,7 +806,14 @@ export async function getCloudFileStreamWithRange(
   item: DriveItem;
   range?: { start: number; end: number; total: number; isPartial: boolean };
 } | null> {
-  const item = await getCloudItem(userId, id, userEmail);
+  let item = await getCloudItem(userId, id, userEmail);
+  if (!item) {
+    const db = await getMongoDb();
+    const doc = await db.collection<DriveItem>(ITEMS_COLLECTION).findOne({ id });
+    if (doc && !doc.isVault) {
+      item = doc;
+    }
+  }
   if (!item || item.type === 'folder') return null;
 
   const bucket = await getStorageBucket();

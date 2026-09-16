@@ -8,8 +8,10 @@ export async function getPdfJs() {
   if (typeof window === 'undefined') return null;
   if (!pdfjsLib) {
     const pdfjs = await import('pdfjs-dist');
-    // Set standard unpkg or cdnjs worker url
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+    // Use fast local worker with version-matching CDN fallback
+    pdfjs.GlobalWorkerOptions.workerSrc = typeof window !== 'undefined' 
+      ? '/pdf.worker.min.mjs' 
+      : `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
     pdfjsLib = pdfjs;
   }
   return pdfjsLib;
