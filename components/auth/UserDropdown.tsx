@@ -12,7 +12,9 @@ import {
   Sparkles, 
   PenTool, 
   Settings,
-  ShieldCheck
+  ShieldCheck,
+  LifeBuoy,
+  UserCheck
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 
@@ -70,7 +72,11 @@ export function UserDropdown() {
       {isOpen && (
         <div className="absolute right-0 top-full mt-2 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl p-4 space-y-3 z-50 animate-in fade-in zoom-in-95 duration-150">
           {/* User Header */}
-          <div className="flex items-center gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800">
+          <Link
+            href="/profile"
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 pb-3 border-b border-zinc-100 dark:border-zinc-800 hover:opacity-80 transition-opacity"
+          >
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-500 text-white font-extrabold text-sm flex items-center justify-center shadow-sm">
               {initials}
             </div>
@@ -85,7 +91,7 @@ export function UserDropdown() {
               </div>
               <div className="text-[11px] text-zinc-400 truncate">{user.email}</div>
             </div>
-          </div>
+          </Link>
 
           {/* Storage Quota Progress */}
           <div className="p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800/80 space-y-1.5">
@@ -107,30 +113,39 @@ export function UserDropdown() {
           {/* Menu Items */}
           <div className="space-y-1 text-xs">
             <Link
-              href="/dashboard"
+              href="/profile"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 font-medium transition-colors"
+              className="flex items-center gap-2.5 p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 font-semibold transition-colors"
             >
-              <FolderLock className="w-4 h-4 text-purple-500" />
-              <span>My Cloud Workspace & History</span>
+              <User className="w-4 h-4 text-rose-500" />
+              <span>My Profile & Usage</span>
             </Link>
 
             <Link
-              href="/edit"
+              href="/settings"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 font-medium transition-colors"
+              className="flex items-center gap-2.5 p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 font-semibold transition-colors"
             >
-              <Sparkles className="w-4 h-4 text-indigo-500" />
-              <span>AI Page Studio (TheWebVale AI)</span>
+              <Settings className="w-4 h-4 text-zinc-500 dark:text-zinc-400" />
+              <span>Settings & Controls</span>
             </Link>
 
             <Link
-              href="/sign"
+              href="/drive"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-2.5 p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 font-medium transition-colors"
+              className="flex items-center gap-2.5 p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 font-semibold transition-colors"
             >
-              <PenTool className="w-4 h-4 text-emerald-500" />
-              <span>Saved Signatures & Stamps</span>
+              <HardDrive className="w-4 h-4 text-blue-500" />
+              <span>FileCraft Cloud Drive</span>
+            </Link>
+
+            <Link
+              href="/support"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-2.5 p-2 rounded-xl text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/80 font-semibold transition-colors"
+            >
+              <LifeBuoy className="w-4 h-4 text-purple-500" />
+              <span>Help & Support Center</span>
             </Link>
           </div>
 

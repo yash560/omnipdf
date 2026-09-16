@@ -13,7 +13,8 @@ import {
   HardDrive,
   Menu,
   X,
-  Bot
+  Bot,
+  LifeBuoy
 } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
 import { UserDropdown } from './auth/UserDropdown';
@@ -119,6 +120,13 @@ export function Navbar() {
                   </Link>
                 );
               })}
+              <Link
+                href="/support"
+                className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl text-zinc-600 dark:text-zinc-300 hover:text-zinc-950 dark:hover:text-white hover:bg-zinc-100 dark:hover:bg-zinc-800/60 transition-all"
+              >
+                <LifeBuoy className="w-3.5 h-3.5 text-purple-500" />
+                <span>Support</span>
+              </Link>
             </nav>
           </div>
 
@@ -201,6 +209,14 @@ export function Navbar() {
                   </Link>
                 );
               })}
+              <Link
+                href="/support"
+                onClick={() => setMobileNavOpen(false)}
+                className="flex items-center gap-2.5 p-3 rounded-2xl bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200/80 dark:border-zinc-700/80 font-bold text-xs text-zinc-900 dark:text-zinc-100 hover:border-rose-500 transition-colors"
+              >
+                <LifeBuoy className="w-4 h-4 text-purple-500" />
+                <span>Support</span>
+              </Link>
             </div>
 
             <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800 space-y-2">

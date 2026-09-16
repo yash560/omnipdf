@@ -65,9 +65,9 @@ export function Footer() {
         </div>
       </div>
 
-      {/* Tier 2: Categorized Tool Matrix */}
+      {/* Tier 2: Categorized Tool Matrix & Resources */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
           <div>
             <h5 className="text-xs font-extrabold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-4 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-red-500" />
@@ -143,6 +143,57 @@ export function Footer() {
               ))}
             </ul>
           </div>
+
+          <div>
+            <h5 className="text-xs font-extrabold text-zinc-900 dark:text-zinc-100 uppercase tracking-wider mb-4 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              Account & Support
+            </h5>
+            <ul className="space-y-2.5 text-xs">
+              <li>
+                <Link
+                  href="/support"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-purple-500 dark:hover:text-purple-400 font-semibold transition-colors"
+                >
+                  Help & Support Center
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/profile"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                >
+                  My Profile & Usage
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/settings"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                >
+                  Settings & Preferences
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/drive"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+                >
+                  FileCraft Cloud Drive
+                </Link>
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/918770183178"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
+                >
+                  WhatsApp Live Desk ↗
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -177,8 +228,16 @@ export function Footer() {
           </div>
 
           <div className="flex items-center gap-4 text-zinc-500">
+            <Link href="/support" className="hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors">
+              Support
+            </Link>
+            <span>•</span>
+            <Link href="/settings" className="hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors">
+              Settings
+            </Link>
+            <span>•</span>
             <span className="flex items-center gap-1">
-              Built with Next.js 15 & WebAssembly <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              Built with Next.js & WebAssembly <Sparkles className="w-3.5 h-3.5 text-amber-500" />
             </span>
           </div>
         </div>

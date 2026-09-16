@@ -29,7 +29,10 @@ import {
   CornerDownLeft,
   ChevronRight,
   Filter,
-  Check
+  Check,
+  User,
+  Settings,
+  LifeBuoy
 } from 'lucide-react';
 import { ALL_TOOLS } from '@/lib/tools-data';
 import { useAuth } from '@/lib/auth/auth-context';
@@ -231,6 +234,42 @@ export function CommandMenu() {
         action: () => {
           setOpen(false);
           router.push('/edit');
+        },
+      },
+      {
+        id: 'action-profile',
+        title: 'My Profile & Storage Usage',
+        subtitle: 'View user identity, active plan perks, and cloud storage meters',
+        icon: User,
+        iconColor: '#f43f5e',
+        badge: 'Account',
+        action: () => {
+          setOpen(false);
+          router.push('/profile');
+        },
+      },
+      {
+        id: 'action-settings',
+        title: 'Settings & Workspace Preferences',
+        subtitle: 'Configure dark/light theme, Vault PIN rules, AI models, and passwords',
+        icon: Settings,
+        iconColor: '#64748b',
+        badge: 'Preferences',
+        action: () => {
+          setOpen(false);
+          router.push('/settings');
+        },
+      },
+      {
+        id: 'action-support',
+        title: 'Help, Support & Founder Desk',
+        subtitle: 'WhatsApp live chat, ticket submission, and searchable FAQs',
+        icon: LifeBuoy,
+        iconColor: '#8b5cf6',
+        badge: 'Support',
+        action: () => {
+          setOpen(false);
+          router.push('/support');
         },
       },
     ];

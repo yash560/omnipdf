@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Link from 'next/link';
 import { useDrive } from '@/lib/drive/drive-context';
 import { 
   Plus, 
@@ -28,6 +29,7 @@ import {
   HelpCircle,
   Layers,
   Settings,
+  LifeBuoy,
   X
 } from 'lucide-react';
 import { DriveCategory } from '@/lib/drive/drive-types';
@@ -478,10 +480,28 @@ export function DriveSidebar({
           </p>
         </div>
 
+        {/* Settings and Support Quick Links */}
+        <div className="grid grid-cols-2 gap-1.5 pt-1">
+          <Link
+            href="/settings"
+            className="p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-center gap-1.5 text-3xs font-semibold text-zinc-600 dark:text-zinc-400 transition"
+          >
+            <Settings className="w-3.5 h-3.5 text-zinc-500" />
+            <span>Settings</span>
+          </Link>
+          <Link
+            href="/support"
+            className="p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-center gap-1.5 text-3xs font-semibold text-zinc-600 dark:text-zinc-400 transition"
+          >
+            <LifeBuoy className="w-3.5 h-3.5 text-purple-500" />
+            <span>Support</span>
+          </Link>
+        </div>
+
         {/* Shortcuts Button */}
         <button
           onClick={() => setIsKeyboardShortcutsOpen(true)}
-          className="w-full p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-between text-3xs text-zinc-500 dark:text-zinc-400 transition"
+          className="w-full p-2 rounded-xl bg-zinc-50 dark:bg-zinc-900/70 hover:bg-zinc-100 dark:hover:bg-zinc-800 border border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-between text-3xs text-zinc-500 dark:text-zinc-400 transition cursor-pointer"
         >
           <div className="flex items-center gap-1.5">
             <HelpCircle className="w-3.5 h-3.5 text-violet-500 shrink-0" />
