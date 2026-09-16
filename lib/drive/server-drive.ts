@@ -51,21 +51,22 @@ async function ensureIndexes() {
   try {
     const db = await getMongoDb();
     const itemsCol = db.collection(ITEMS_COLLECTION);
-    await itemsCol.createIndex({ userId: 1, parentId: 1, isTrash: 1 });
-    await itemsCol.createIndex({ userId: 1, isStarred: 1, isTrash: 1 });
-    await itemsCol.createIndex({ userId: 1, updatedAt: -1 });
-    await itemsCol.createIndex({ userId: 1, category: 1, isTrash: 1 });
-    await itemsCol.createIndex({ id: 1, userId: 1 });
-    await itemsCol.createIndex({ id: 1 }, { unique: true });
-    await itemsCol.createIndex({ 'sharedWith.userId': 1 });
-    await itemsCol.createIndex({ 'sharedWith.email': 1 });
-    await itemsCol.createIndex({ 'shareConfig.publicId': 1 });
+    await itemsCol.createIndex({ userId: 1, parentId: 1, isTrash: 1 }).catch(() => {});
+    await itemsCol.createIndex({ userId: 1, isStarred: 1, isTrash: 1 }).catch(() => {});
+    await itemsCol.createIndex({ userId: 1, updatedAt: -1 }).catch(() => {});
+    await itemsCol.createIndex({ userId: 1, category: 1, isTrash: 1 }).catch(() => {});
+    await itemsCol.createIndex({ id: 1, userId: 1 }).catch(() => {});
+    await itemsCol.createIndex({ id: 1 }, { unique: true }).catch(() => {});
+    await itemsCol.createIndex({ ownerEmail: 1 }).catch(() => {});
+    await itemsCol.createIndex({ 'sharedWith.userId': 1 }).catch(() => {});
+    await itemsCol.createIndex({ 'sharedWith.email': 1 }).catch(() => {});
+    await itemsCol.createIndex({ 'shareConfig.publicId': 1 }).catch(() => {});
 
     const chunksCol = db.collection(CHUNKS_COLLECTION);
-    await chunksCol.createIndex({ uploadId: 1, chunkIndex: 1 }, { unique: true });
+    await chunksCol.createIndex({ uploadId: 1, chunkIndex: 1 }, { unique: true }).catch(() => {});
 
     const sessionsCol = db.collection(SESSIONS_COLLECTION);
-    await sessionsCol.createIndex({ uploadId: 1, userId: 1 }, { unique: true });
+    await sessionsCol.createIndex({ uploadId: 1, userId: 1 }, { unique: true }).catch(() => {});
 
     const commentsCol = db.collection(COMMENTS_COLLECTION);
     await commentsCol.createIndex({ itemId: 1, createdAt: 1 });
@@ -1267,6 +1268,7 @@ export async function searchCloudItems(
   const filter = {
     $or: [
       { userId },
+      ...(emailMatch ? [{ ownerEmail: emailMatch }] : []),
       { 'sharedWith.userId': userId },
       ...(emailMatch ? [{ 'sharedWith.email': emailMatch }] : []),
     ],

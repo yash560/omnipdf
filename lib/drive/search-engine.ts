@@ -119,6 +119,19 @@ export function searchDriveItems(
     if (options.aiCategory && item.aiCategory !== options.aiCategory) continue;
     if (options.parentId !== undefined && item.parentId !== options.parentId) continue;
 
+    // Type filter (files, folders, ocr, vault, expiry, or specific categories)
+    if (options.typeFilter && options.typeFilter !== 'all') {
+      const tf = options.typeFilter.toLowerCase();
+      if (tf === 'folders' && item.type !== 'folder') continue;
+      if (tf === 'files' && item.type !== 'file') continue;
+      if (tf === 'ocr' && (!item.ocrText || item.ocrText.trim().length === 0)) continue;
+      if (tf === 'vault' && !item.isVault) continue;
+      if (tf === 'expiry' && (!item.expiryStatus || item.expiryStatus === 'none')) continue;
+      if (['pdf', 'image', 'spreadsheet', 'document', 'media', 'code', 'archive', 'other'].includes(tf)) {
+        if (item.category !== tf) continue;
+      }
+    }
+
     // Person facet filter
     if (options.person) {
       const p = options.person.toLowerCase();
@@ -346,8 +359,10 @@ export function searchDriveItems(
     .map(([category, count]) => ({ category, count }))
     .sort((a, b) => b.count - a.count);
 
+  const limitedItems = (options.limit && options.limit > 0) ? finalItems.slice(0, options.limit) : finalItems;
+
   return {
-    items: finalItems,
+    items: limitedItems,
     totalMatches: finalItems.length,
     availableTags,
     availableAiCategories,

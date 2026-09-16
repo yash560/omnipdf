@@ -19,6 +19,9 @@ export async function GET(req: NextRequest) {
     const section = (searchParams.get('section') as DriveViewSection) || undefined;
     const parentId = searchParams.has('parentId') ? searchParams.get('parentId') : undefined;
     const sort = (searchParams.get('sort') as any) || (query ? 'relevance' : 'date');
+    const typeFilter = searchParams.get('type') || undefined;
+    const limit = searchParams.has('limit') ? parseInt(searchParams.get('limit')!, 10) : undefined;
+    const isVaultUnlocked = searchParams.get('isVaultUnlocked') === 'true';
 
     const options: SearchFilterOptions = {
       query,
@@ -29,6 +32,9 @@ export async function GET(req: NextRequest) {
       section,
       parentId: parentId === 'null' ? null : parentId,
       sort,
+      typeFilter,
+      limit,
+      isVaultUnlocked,
     };
 
     const results = await searchCloudItems(auth.userId, options, auth.email);

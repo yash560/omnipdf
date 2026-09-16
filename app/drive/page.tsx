@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { DriveProvider, useDrive } from '@/lib/drive/drive-context';
 import { DriveSidebar } from '@/components/drive/DriveSidebar';
 import { DriveToolbar } from '@/components/drive/DriveToolbar';
@@ -105,6 +106,8 @@ function DriveWorkspaceInner() {
     selectedIds,
     toggleSelect,
     breadcrumbs,
+    navigateToFolder,
+    setSearchTerm,
 
     // Vault
     isVaultUnlocked,
@@ -135,12 +138,43 @@ function DriveWorkspaceInner() {
     bulkDownloadZip,
   } = useDrive();
 
+  const searchParams = useSearchParams();
+
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [renameItem, setRenameItem] = useState<DriveItem | null>(null);
   const [moveModalOpen, setMoveModalOpen] = useState(false);
   const [emptyTrashConfirmOpen, setEmptyTrashConfirmOpen] = useState(false);
   const [isDragOverScreen, setIsDragOverScreen] = useState(false);
   const [showFastFilters, setShowFastFilters] = useState(true);
+
+  // Listen for query params from Global Search / Deep Links
+  useEffect(() => {
+    if (!searchParams) return;
+    const folderParam = searchParams.get('folder');
+    const previewParam = searchParams.get('preview');
+    const tabParam = searchParams.get('tab');
+    const qParam = searchParams.get('q');
+
+    if (folderParam) {
+      navigateToFolder(folderParam);
+    }
+    if (tabParam === 'expiry') {
+      setIsExpiryRadarOpen(true);
+    } else if (tabParam === 'vault') {
+      setIsVaultModalOpen(true);
+    } else if (tabParam === 'duplicates') {
+      setIsDedupModalOpen(true);
+    }
+    if (qParam) {
+      setSearchTerm(qParam);
+    }
+    if (previewParam && items.length > 0) {
+      const match = items.find((it) => it.id === previewParam);
+      if (match) {
+        openPreview(match);
+      }
+    }
+  }, [searchParams, items, navigateToFolder, openPreview, setSearchTerm, setIsExpiryRadarOpen, setIsVaultModalOpen, setIsDedupModalOpen]);
 
   // Global Keyboard Shortcuts (Space for Quick Look, Cmd+A, Del, ?, Esc)
   useEffect(() => {
@@ -480,7 +514,14 @@ function DriveWorkspaceInner() {
 export default function DrivePage() {
   return (
     <DriveProvider>
-      <DriveWorkspaceInner />
+      <Suspense fallback={
+        <div className="flex-1 flex flex-col items-center justify-center p-12 text-zinc-400">
+          <div className="w-6 h-6 rounded-full border-2 border-rose-500 border-t-transparent animate-spin mb-2" />
+          <span className="text-xs font-bold">Loading FileCraft Drive...</span>
+        </div>
+      }>
+        <DriveWorkspaceInner />
+      </Suspense>
     </DriveProvider>
   );
 }

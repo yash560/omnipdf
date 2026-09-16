@@ -134,6 +134,8 @@ export interface SearchFilterOptions {
   sort?: 'relevance' | 'date' | 'name' | 'size' | 'expiry';
   includeVault?: boolean;
   isVaultUnlocked?: boolean;
+  typeFilter?: string;
+  limit?: number;
 }
 
 export interface SearchResult {
