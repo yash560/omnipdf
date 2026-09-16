@@ -216,13 +216,13 @@ function DriveWorkspaceInner() {
     if (qParam) {
       setSearchTerm(qParam);
     }
-    if (previewParam && items.length > 0) {
+    if (previewParam && items.length > 0 && previewItem?.id !== previewParam) {
       const match = items.find((it) => it.id === previewParam);
       if (match) {
         openPreview(match);
       }
     }
-  }, [searchParams, items, navigateToFolder, openPreview, setSearchTerm, setIsExpiryRadarOpen, setIsVaultModalOpen, setIsDedupModalOpen]);
+  }, [searchParams, items, previewItem, navigateToFolder, openPreview, setSearchTerm, setIsExpiryRadarOpen, setIsVaultModalOpen, setIsDedupModalOpen]);
 
   // Global Keyboard Shortcuts (Space for Quick Look, Cmd+A, Del, ?, Esc)
   useEffect(() => {

@@ -53,6 +53,10 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
       setLoading(true);
       setTextContent(null);
       setBlob(null);
+      // Never leave a stale blob: URL as the iframe/img src while we refetch —
+      // the cleanup below revokes the previous one, and a revoked blob: URL
+      // fed to an <iframe> crashes the native PDF viewer instead of just erroring.
+      setBlobUrl(null);
 
       try {
         const fetchedBlob = (await getCloudFileBlob(item.id)) || (await getFileBlob(item.id));
