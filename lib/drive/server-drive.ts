@@ -209,6 +209,7 @@ export async function getCloudItems(
     filter = {
       userId: { $ne: userId },
       isTrash: false,
+      isVault: { $ne: true },
       $or: [
         { 'sharedWith.userId': userId },
         ...(emailMatch ? [{ 'sharedWith.email': emailMatch }] : []),
@@ -225,16 +226,20 @@ export async function getCloudItems(
     } else if (section === 'starred') {
       filter.isTrash = false;
       filter.isStarred = true;
+      filter.isVault = { $ne: true };
     } else if (section === 'recent') {
       filter.isTrash = false;
       filter.type = 'file';
+      filter.isVault = { $ne: true };
     } else if (section === 'category' && category) {
       filter.isTrash = false;
       filter.category = category;
+      filter.isVault = { $ne: true };
     } else {
       // Standard folder navigation
       filter.isTrash = false;
       filter.parentId = parentId;
+      filter.isVault = { $ne: true };
     }
   }
 
@@ -659,6 +664,11 @@ export async function replaceCloudFileContent(
     console.warn('[ServerDrive] Could not remove old file chunks:', err);
   }
 
+  // Old thumbnail (if any) is stale content the moment the source changes —
+  // drop it whether the new content is a PDF or not (a non-PDF replacing a
+  // PDF must not keep showing the old PDF's page-1 preview).
+  await deleteThumbnail(itemId);
+
   // 2. Upload new binary stream to GridFS
   const readable = new Readable();
   readable.push(finalBuffer);
@@ -700,6 +710,10 @@ export async function replaceCloudFileContent(
 
   const updated = await col.findOne({ id: itemId });
   await recordDriveActivity(userId, itemId, finalName, 'file', 'edited', 'Replaced file content via Quick Tools');
+
+  if (updated) {
+    scheduleServerPdfThumbnail(userId, updated as any as DriveItem, finalBuffer);
+  }
 
   return updated as any as DriveItem;
 }
@@ -926,6 +940,11 @@ export async function completeChunkUploadSession(
 
   await itemsCol.insertOne({ ...item } as any);
   await recordDriveActivity(userId, id, session.fileName, 'file', 'uploaded', `Uploaded ${writtenBytes} bytes via chunked engine`);
+
+  // Server-render a PDF page-1 thumbnail once, cached for every future viewer.
+  // No in-memory buffer here (chunks streamed straight to GridFS) — this lazily
+  // re-reads via getCloudFileStream, capped by MAX_PDF_THUMBNAIL_SOURCE_BYTES.
+  scheduleServerPdfThumbnail(userId, item);
 
   // Trigger async deep Gemini enrichment in background
   autoLabelFile({

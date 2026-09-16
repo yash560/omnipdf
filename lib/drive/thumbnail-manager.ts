@@ -1,7 +1,5 @@
 import { DriveItem } from './drive-types';
-import { getCloudFileBlob } from './cloud-api';
 import { getFileBlob } from './drive-db';
-import { getPdfJs, safeCloneBytes } from '../pdf/core';
 
 // ==========================================
 // 1. TRIPLE-TIER CACHE ARCHITECTURE
@@ -169,10 +167,6 @@ async function executeThumbnailRender(item: DriveItem): Promise<string | null> {
   const cached = await getCachedThumbnail(item);
   if (cached) return cached;
 
-  if (item.category === 'pdf' || item.name.toLowerCase().endsWith('.pdf')) {
-    return renderPdfThumbnail(item);
-  }
-
   if (item.category === 'media' && (item.mimeType.startsWith('video/') || ['mp4', 'webm', 'mov', 'm4v', 'mkv'].includes(item.extension))) {
     return renderVideoThumbnail(item);
   }
@@ -182,86 +176,6 @@ async function executeThumbnailRender(item: DriveItem): Promise<string | null> {
   }
 
   return null;
-}
-
-/**
- * Render single 1st page of PDF with scale optimized for 260-320px card width
- */
-async function renderPdfThumbnail(item: DriveItem): Promise<string | null> {
-  try {
-    const pdfjs = await getPdfJs();
-    if (!pdfjs) return null;
-
-    // Fetch PDF binary blob from cloud or local IndexedDB
-    let blob = await getCloudFileBlob(item.id);
-    if (!blob) {
-      blob = await getFileBlob(item.id);
-    }
-    if (!blob) return null;
-
-    const arrayBuffer = await blob.arrayBuffer();
-    const loadingTask = pdfjs.getDocument({
-      data: safeCloneBytes(arrayBuffer),
-      cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/cmaps/',
-      cMapPacked: true,
-    });
-
-    const pdfDoc = await loadingTask.promise;
-    if (pdfDoc.numPages < 1) {
-      loadingTask.destroy();
-      return null;
-    }
-
-    const page = await pdfDoc.getPage(1);
-    const unscaledViewport = page.getViewport({ scale: 1.0 });
-
-    // Target width of 280px for high quality crisp thumbnail without excessive memory
-    const targetWidth = 280;
-    const computedScale = Math.min(1.0, Math.max(0.3, targetWidth / unscaledViewport.width));
-    const viewport = page.getViewport({ scale: computedScale });
-
-    const canvas = document.createElement('canvas');
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-
-    const ctx = canvas.getContext('2d', { willReadFrequently: false, alpha: false });
-    if (!ctx) {
-      (page as any).cleanup?.();
-      loadingTask.destroy();
-      return null;
-    }
-
-    // Crisp white page background
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    await page.render({
-      canvasContext: ctx,
-      viewport: viewport,
-      canvas: canvas,
-    } as any).promise;
-
-    // Convert to high efficiency WebP or JPEG
-    let dataUrl = canvas.toDataURL('image/webp', 0.82);
-    if (!dataUrl || dataUrl.length < 50 || dataUrl === 'data:,') {
-      dataUrl = canvas.toDataURL('image/jpeg', 0.82);
-    }
-
-    // Cleanup resources immediately to guarantee zero memory leaks
-    canvas.width = 0;
-    canvas.height = 0;
-    (page as any).cleanup?.();
-    loadingTask.destroy();
-
-    if (dataUrl) {
-      await storeCachedThumbnail(item, dataUrl);
-    }
-
-    return dataUrl;
-  } catch (err) {
-    console.warn(`[ThumbnailManager] Could not render PDF thumbnail for ${item.name}:`, err);
-    return null;
-  }
 }
 
 /**
@@ -407,8 +321,9 @@ export function requestAsyncThumbnail(item: DriveItem): ThumbnailRequestHandle {
         return;
       }
 
-      // Fast image path: server handles it directly
-      if (item.category === 'image') {
+      // Fast path: PDFs and images are both server-rendered/resized on demand
+      // (see /api/drive/thumbnail/[id]) — no heavy client-side work needed.
+      if (item.category === 'image' || item.category === 'pdf') {
         let tokenParam = '';
         if (typeof window !== 'undefined') {
           const token = localStorage.getItem('omnipdf_token');
@@ -421,16 +336,12 @@ export function requestAsyncThumbnail(item: DriveItem): ThumbnailRequestHandle {
       }
 
       // Non-thumbnail categories: resolve null immediately
-      if (
-        item.category !== 'pdf' &&
-        item.category !== 'media' &&
-        !item.name.toLowerCase().endsWith('.pdf')
-      ) {
+      if (item.category !== 'media') {
         resolve(null);
         return;
       }
 
-      // Enqueue heavy PDF / video rendering
+      // Enqueue heavy video frame-capture rendering
       taskRef = {
         item,
         resolve,

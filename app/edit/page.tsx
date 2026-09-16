@@ -18,11 +18,16 @@ import { CanvasStudio } from '@/components/editor/CanvasStudio';
 import { StagedFile } from '@/types/pdf';
 import { StudioSession } from '@/types/session';
 import { getAllSessionsFromDB, deleteSessionFromDB } from '@/lib/storage/session-db';
+import { getFileBlob } from '@/lib/drive/drive-db';
+import { getCloudFileBlob } from '@/lib/drive/cloud-api';
+import { renderPageToDataUrl } from '@/lib/pdf/core';
 
 function EditPageContent() {
   const searchParams = useSearchParams();
   const requestedSessionId = searchParams.get('session');
   const isNew = searchParams.get('new') === 'true';
+  const driveId = searchParams.get('driveId') || searchParams.get('fileId');
+  const filenameParam = searchParams.get('name');
 
   const [files, setFiles] = useState<StagedFile[]>([]);
   const [activeSession, setActiveSession] = useState<StudioSession | null>(null);
@@ -35,6 +40,41 @@ function EditPageContent() {
     async function loadSessions() {
       try {
         setLoading(true);
+
+        // 1. Direct Drive File Loading
+        if (driveId) {
+          let blob: Blob | null = await getFileBlob(driveId);
+          if (!blob) blob = await getCloudFileBlob(driveId);
+          if (!blob) {
+            try {
+              const res = await fetch(`/api/drive/file/${driveId}`);
+              if (res.ok) blob = await res.blob();
+            } catch {}
+          }
+
+          if (blob && isMounted) {
+            const buf = await blob.arrayBuffer();
+            const filename = filenameParam ? decodeURIComponent(filenameParam) : (blob as any).name || 'document.pdf';
+            const f = new File([blob], filename, { type: 'application/pdf' });
+            
+            const thumb = await renderPageToDataUrl(buf, 1, 0.4).catch(() => ({ dataUrl: '' }));
+            
+            setFiles([{
+              id: driveId,
+              file: f,
+              name: filename,
+              size: blob.size,
+              pageCount: 1,
+              previewUrl: thumb.dataUrl,
+              arrayBuffer: buf,
+              rotation: 0,
+            }]);
+            setActiveSession(null);
+            setLoading(false);
+            return;
+          }
+        }
+
         const stored = await getAllSessionsFromDB();
         if (!isMounted) return;
 

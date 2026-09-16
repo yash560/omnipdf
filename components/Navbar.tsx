@@ -19,12 +19,14 @@ import {
 import { ThemeToggle } from './ThemeToggle';
 import { UserDropdown } from './auth/UserDropdown';
 import { useAuth } from '@/lib/auth/auth-context';
+import { useAI } from '@/lib/ai/ai-context';
 import { ALL_TOOLS } from '@/lib/tools-data';
 
 export function Navbar() {
   const [toolsOpen, setToolsOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { isAuthenticated, openAuthModal } = useAuth();
+  const { openDrawer } = useAI();
 
   const primarySuites = [
     { name: 'Drive', slug: 'drive', icon: HardDrive, highlight: true },
@@ -132,6 +134,16 @@ export function Navbar() {
 
           {/* Right: Quick Search, Theme Toggle, Auth, Mobile Menu */}
           <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+            {/* AI Copilot Button */}
+            <button
+              type="button"
+              onClick={openDrawer}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-indigo-500/10 hover:from-rose-500/20 hover:to-indigo-500/20 border border-purple-500/30 text-purple-600 dark:text-purple-400 font-bold text-xs transition-all cursor-pointer shadow-2xs shrink-0"
+              title="Open FileCraft AI Assistant"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-purple-500 shrink-0" />
+              <span className="hidden sm:inline">AI Copilot</span>
+            </button>
 
             {/* Search Trigger */}
             <button
@@ -194,6 +206,29 @@ export function Navbar() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+
+            {/* Featured AI Copilot Card */}
+            <button
+              type="button"
+              onClick={() => {
+                setMobileNavOpen(false);
+                openDrawer();
+              }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-rose-500/10 via-purple-500/10 to-indigo-500/10 border border-purple-500/30 font-bold text-xs text-purple-700 dark:text-purple-300 shadow-xs cursor-pointer"
+            >
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-xs">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-zinc-900 dark:text-zinc-100">FileCraft AI Copilot</div>
+                  <div className="text-[10px] text-zinc-500 font-normal">Chat with files, summaries, tables & OCR</div>
+                </div>
+              </div>
+              <span className="text-3xs font-bold uppercase tracking-wider bg-purple-500/20 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full">
+                Open
+              </span>
+            </button>
 
             <div className="grid grid-cols-2 gap-2">
               {primarySuites.map((tool) => {

@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, useRef, ChangeEvent, DragEvent } from 'react';
-import { UploadCloud, FileText, Trash2, RotateCw, Plus, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { useState, useRef, useEffect, ChangeEvent, DragEvent } from 'react';
+import { UploadCloud, FileText, Trash2, RotateCw, Plus, ShieldCheck, CheckCircle2, HardDrive } from 'lucide-react';
 import { StagedFile } from '@/types/pdf';
 import { formatBytes, fileToArrayBuffer, renderPageToDataUrl } from '@/lib/pdf/core';
+import { getFileBlob } from '@/lib/drive/drive-db';
+import { getCloudFileBlob } from '@/lib/drive/cloud-api';
 
 interface FileDropzoneProps {
   files: StagedFile[];
@@ -28,7 +30,10 @@ export function FileDropzone({
 }: FileDropzoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [loadingThumbnails, setLoadingThumbnails] = useState(false);
+  const [loadingDriveFile, setLoadingDriveFile] = useState(false);
+  const [driveFileName, setDriveFileName] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const loadedDriveIdRef = useRef<string | null>(null);
 
   const processFiles = async (fileList: FileList | File[]) => {
     const rawFiles = Array.from(fileList);
@@ -77,6 +82,63 @@ export function FileDropzone({
       onFilesChange(newStagedList);
     }
   };
+
+  // Automatic Drive file pre-loading on mount if opened with ?driveId=...
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDriveFile() {
+      if (typeof window === 'undefined') return;
+      if (files.length > 0) return;
+
+      const params = new URLSearchParams(window.location.search);
+      const driveId = params.get('driveId') || params.get('fileId');
+      const filenameParam = params.get('name');
+
+      if (!driveId || loadedDriveIdRef.current === driveId) return;
+      loadedDriveIdRef.current = driveId;
+
+      const filename = filenameParam 
+        ? decodeURIComponent(filenameParam) 
+        : 'document.pdf';
+
+      setDriveFileName(filename);
+      setLoadingDriveFile(true);
+
+      try {
+        // 1. Try local IndexedDB
+        let blob: Blob | null = await getFileBlob(driveId);
+
+        // 2. Try Cloud API if not in local DB
+        if (!blob) {
+          blob = await getCloudFileBlob(driveId);
+        }
+
+        // 3. Fallback direct HTTP endpoint
+        if (!blob) {
+          try {
+            const res = await fetch(`/api/drive/file/${driveId}`);
+            if (res.ok) {
+              blob = await res.blob();
+            }
+          } catch {}
+        }
+
+        if (!blob || !isMounted) return;
+
+        const resolvedMime = blob.type || (filename.endsWith('.pdf') ? 'application/pdf' : 'application/octet-stream');
+        const fileObj = new File([blob], filename, { type: resolvedMime });
+
+        await processFiles([fileObj]);
+      } catch (err) {
+        console.error('Failed to auto-load file from Drive:', err);
+      } finally {
+        if (isMounted) setLoadingDriveFile(false);
+      }
+    }
+
+    loadDriveFile();
+  }, []);
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -132,7 +194,22 @@ export function FileDropzone({
         className="hidden"
       />
 
-      {files.length === 0 ? (
+      {loadingDriveFile ? (
+        /* Loading Drive File Stream State */
+        <div className="flex flex-col items-center justify-center p-12 sm:p-16 border-2 border-dashed border-rose-500/40 rounded-3xl bg-rose-50/20 dark:bg-rose-950/10 text-center space-y-4 animate-pulse">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-rose-500 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-rose-500/20">
+            <HardDrive className="w-8 h-8 animate-bounce" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-lg font-black text-zinc-900 dark:text-zinc-100">
+              Loading &quot;{driveFileName || 'Document'}&quot; from Drive...
+            </h3>
+            <p className="text-xs text-zinc-400 font-medium">
+              Streaming file data directly into this studio workspace without re-uploading.
+            </p>
+          </div>
+        </div>
+      ) : files.length === 0 ? (
         /* Empty State Dropzone */
         <div
           onDragOver={handleDragOver}

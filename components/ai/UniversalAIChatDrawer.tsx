@@ -145,9 +145,9 @@ export function UniversalAIChatDrawer() {
 
   return (
     <>
-      {/* Floating Trigger Button (When Drawer is Closed) */}
+      {/* Floating Trigger Button (Desktop Only — Not sticky on Mobile) */}
       {!isOpen && (
-        <div className="fixed bottom-6 left-6 z-40 flex items-center group animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="hidden md:flex fixed bottom-6 left-6 z-40 items-center group animate-in fade-in slide-in-from-bottom-4 duration-300">
           <button
             type="button"
             onClick={openDrawer}
