@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth/get-server-user';
 import { completeChunkUploadSession } from '@/lib/drive/server-drive';
+import { driveLiveBus } from '@/lib/drive/live-bus';
 
 export async function POST(req: NextRequest) {
   try {
@@ -17,6 +18,7 @@ export async function POST(req: NextRequest) {
     }
 
     const item = await completeChunkUploadSession(auth.userId, uploadId);
+    driveLiveBus.broadcast(auth.userId, 'item_created', { itemId: item.id, parentId: item.parentId, data: item });
 
     return NextResponse.json({ success: true, item });
   } catch (err: any) {

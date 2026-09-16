@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getMongoDb } from '@/lib/db/mongodb';
 import { getAuthenticatedUser } from '@/lib/auth/get-server-user';
+import { driveLiveBus } from '@/lib/drive/live-bus';
 
 export async function POST(req: NextRequest) {
   try {
@@ -69,6 +70,7 @@ export async function POST(req: NextRequest) {
         break;
       case 'delete_permanent':
         const delResult = await col.deleteMany(filter);
+        driveLiveBus.broadcast(auth.userId, 'item_deleted', { data: { action, itemIds } });
         return NextResponse.json({
           success: true,
           action,
@@ -79,6 +81,7 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await col.updateMany(filter, update);
+    driveLiveBus.broadcast(auth.userId, 'batch_action', { data: { action, itemIds, targetParentId, tags, category } });
 
     return NextResponse.json({
       success: true,

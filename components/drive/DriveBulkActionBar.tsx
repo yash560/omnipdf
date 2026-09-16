@@ -15,13 +15,25 @@ import {
   CheckSquare,
   Sparkles,
   ShieldCheck,
+  Copy,
+  Check,
+  Layers,
+  FileStack
 } from 'lucide-react';
 import { DriveViewSection } from '@/lib/drive/drive-types';
 
 interface DriveBulkActionBarProps {
   selectedCount: number;
+  totalCount?: number;
+  selectedPdfCount?: number;
+  isMergingPdfs?: boolean;
+  copiedFeedback?: boolean;
   viewSection?: DriveViewSection;
   onClearSelection: () => void;
+  onSelectAll?: () => void;
+  onInvertSelection?: () => void;
+  onBulkCopyInfo?: () => void;
+  onBulkMergePdfs?: () => void;
   onBulkDownloadZip: () => void;
   onBulkMove: () => void;
   onBulkTag: () => void;
@@ -37,8 +49,16 @@ interface DriveBulkActionBarProps {
 
 export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
   selectedCount,
+  totalCount,
+  selectedPdfCount = 0,
+  isMergingPdfs = false,
+  copiedFeedback = false,
   viewSection = 'my-drive',
   onClearSelection,
+  onSelectAll,
+  onInvertSelection,
+  onBulkCopyInfo,
+  onBulkMergePdfs,
   onBulkDownloadZip,
   onBulkMove,
   onBulkTag,
@@ -55,21 +75,79 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
 
   const isTrashView = viewSection === 'trash';
   const isVaultView = viewSection === 'vault';
-  const isStarredView = viewSection === 'starred';
 
   return (
     <div className="fixed bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-bottom-4 duration-200 max-w-[96vw] sm:max-w-4xl">
       <div className="flex items-center gap-1 sm:gap-2 px-2.5 sm:px-4 py-2 sm:py-2.5 rounded-2xl bg-zinc-900/95 dark:bg-zinc-800/95 backdrop-blur-xl border border-white/10 shadow-2xl text-white overflow-x-auto no-scrollbar">
-        {/* Selection Count Pill */}
+        {/* Selection Count Pill & Quick Toggles */}
         <div className="flex items-center gap-1.5 sm:gap-2 pr-2.5 sm:pr-3 border-r border-zinc-700/60 text-xs font-semibold shrink-0">
           <CheckSquare className="w-4 h-4 text-rose-400 shrink-0" />
           <span className="whitespace-nowrap font-bold">
-            {selectedCount} <span className="hidden sm:inline">selected</span>
+            {selectedCount} <span className="hidden md:inline">selected</span>
           </span>
+
+          {onSelectAll && totalCount && selectedCount < totalCount && (
+            <button
+              type="button"
+              onClick={onSelectAll}
+              className="text-[10px] text-zinc-400 hover:text-white underline cursor-pointer ml-1"
+              title={`Select all ${totalCount} items`}
+            >
+              All
+            </button>
+          )}
+
+          {onInvertSelection && (
+            <button
+              type="button"
+              onClick={onInvertSelection}
+              className="text-[10px] text-zinc-400 hover:text-white underline cursor-pointer"
+              title="Invert current selection"
+            >
+              Invert
+            </button>
+          )}
         </div>
 
         {/* Action Buttons Group */}
         <div className="flex items-center gap-0.5 sm:gap-1">
+          {/* 1-Click PDF Merge if 2+ PDFs Selected */}
+          {selectedPdfCount >= 2 && !isTrashView && onBulkMergePdfs && (
+            <button
+              type="button"
+              onClick={onBulkMergePdfs}
+              disabled={isMergingPdfs}
+              className="px-2.5 py-1.5 bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 text-white rounded-xl transition flex items-center gap-1.5 text-xs font-bold shadow-sm cursor-pointer shrink-0 disabled:opacity-50"
+              title="Merge selected PDF files into one single document"
+            >
+              {isMergingPdfs ? (
+                <RotateCcw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Layers className="w-3.5 h-3.5" />
+              )}
+              <span>Merge {selectedPdfCount} PDFs</span>
+            </button>
+          )}
+
+          {/* Copy Names & Info to Clipboard */}
+          {onBulkCopyInfo && (
+            <button
+              type="button"
+              onClick={onBulkCopyInfo}
+              className="p-1.5 sm:p-2 hover:bg-white/10 rounded-xl transition text-zinc-300 hover:text-white cursor-pointer flex items-center gap-1"
+              title="Copy details of selected items to clipboard"
+            >
+              {copiedFeedback ? (
+                <>
+                  <Check className="w-4 h-4 text-emerald-400" />
+                  <span className="text-xs text-emerald-400 font-bold hidden sm:inline">Copied!</span>
+                </>
+              ) : (
+                <Copy className="w-4 h-4 text-zinc-300" />
+              )}
+            </button>
+          )}
+
           {/* Download ZIP */}
           {!isTrashView && (
             <button
@@ -230,3 +308,4 @@ export const DriveBulkActionBar: React.FC<DriveBulkActionBarProps> = ({
     </div>
   );
 };
+

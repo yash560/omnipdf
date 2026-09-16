@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth/get-server-user';
+import { driveLiveBus } from '@/lib/drive/live-bus';
 import { 
   updateCloudItem, 
   moveCloudItems, 
@@ -25,6 +26,7 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ error: 'itemIds array is required' }, { status: 400 });
       }
       await moveCloudItems(auth.userId, itemIds, targetFolderId || null);
+      driveLiveBus.broadcast(auth.userId, 'item_updated', { parentId: targetFolderId, data: { action: 'move', itemIds } });
       return NextResponse.json({ success: true, message: 'Items moved successfully' });
     }
 
@@ -35,6 +37,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const updated = await updateCloudItem(auth.userId, id, updates);
+    driveLiveBus.broadcast(auth.userId, 'item_updated', { itemId: id, data: updates });
     return NextResponse.json({
       success: true,
       item: updated,
@@ -57,6 +60,7 @@ export async function DELETE(req: NextRequest) {
 
     if (action === 'empty-trash') {
       await emptyCloudTrash(auth.userId);
+      driveLiveBus.broadcast(auth.userId, 'item_deleted', { data: { action: 'empty-trash' } });
       return NextResponse.json({ success: true, message: 'Trash emptied' });
     }
 
@@ -66,12 +70,15 @@ export async function DELETE(req: NextRequest) {
 
     if (action === 'trash') {
       await trashCloudItems(auth.userId, itemIds);
+      driveLiveBus.broadcast(auth.userId, 'item_deleted', { data: { action: 'trash', itemIds } });
       return NextResponse.json({ success: true, message: 'Moved to trash' });
     } else if (action === 'restore') {
       await restoreCloudItems(auth.userId, itemIds);
+      driveLiveBus.broadcast(auth.userId, 'item_created', { data: { action: 'restore', itemIds } });
       return NextResponse.json({ success: true, message: 'Restored from trash' });
     } else if (action === 'permanent') {
       await deleteCloudItemsPermanently(auth.userId, itemIds);
+      driveLiveBus.broadcast(auth.userId, 'item_deleted', { data: { action: 'permanent', itemIds } });
       return NextResponse.json({ success: true, message: 'Deleted permanently' });
     }
 

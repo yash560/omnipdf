@@ -31,6 +31,7 @@ import {
 import { useAuth } from '@/lib/auth/auth-context';
 import saveAs from 'file-saver';
 import JSZip from 'jszip';
+import { PDFDocument } from 'pdf-lib';
 import { chunkedUploader } from './chunked-uploader';
 
 interface DriveContextType {
@@ -91,12 +92,19 @@ interface DriveContextType {
   isKeyboardShortcutsOpen: boolean;
   setIsKeyboardShortcutsOpen: (open: boolean) => void;
 
-  // Actions
+  // Actions & Selection
   navigateToFolder: (folderId: string | null) => void;
   selectSection: (section: DriveViewSection, category?: DriveCategory) => void;
   toggleSelect: (id: string, multi?: boolean) => void;
   selectAll: () => void;
   clearSelection: () => void;
+  selectByType: (type: 'all' | 'files' | 'folders' | 'starred' | 'radar' | 'pdf' | 'image' | 'spreadsheet' | 'media' | 'vault') => void;
+  invertSelection: () => void;
+  isAllSelected: boolean;
+  isSomeSelected: boolean;
+  selectedPdfCount: number;
+  mergeSelectedPdfs: (customFileName?: string) => Promise<boolean>;
+  copySelectedInfoToClipboard: () => Promise<boolean>;
   triggerAutoLabel: (itemIds?: string[]) => Promise<void>;
   triggerBatchAction: (action: 'tag' | 'remove_tag' | 'move' | 'star' | 'unstar' | 'trash' | 'restore' | 'vault' | 'unvault' | 'category' | 'expiry' | 'delete_permanent', payload?: any) => Promise<void>;
   bulkDownloadZip: (customItems?: DriveItem[]) => Promise<void>;
@@ -122,6 +130,11 @@ interface DriveContextType {
   setDetailsItem: (item: DriveItem | null) => void;
   loadItems: (options?: { silent?: boolean }) => Promise<void>;
   refreshDrive: (options?: { silent?: boolean }) => Promise<void>;
+
+  // Real-Time Caching & Cascading Traversal
+  folderCache: Record<string, DriveItem[]>;
+  prefetchFolder: (folderId: string | null) => Promise<DriveItem[]>;
+  fetchFolderChildren: (folderId: string | null) => Promise<DriveItem[]>;
 }
 
 const DriveContext = createContext<DriveContextType | null>(null);
@@ -152,6 +165,7 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [availableAiCategories, setAvailableAiCategories] = useState<{ category: string; count: number }[]>([]);
 
   const [items, setItems] = useState<DriveItem[]>([]);
+  const [folderCache, setFolderCache] = useState<Record<string, DriveItem[]>>({});
   const [hasLoadedInitial, setHasLoadedInitial] = useState(false);
   const [loading, setLoading] = useState(true);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -247,6 +261,12 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (cloudData.breadcrumbs && cloudData.breadcrumbs.length > 0) {
           setBreadcrumbs(cloudData.breadcrumbs);
         }
+        if (viewSection === 'my-drive') {
+          setFolderCache((prev) => ({
+            ...prev,
+            [currentFolderId || 'root']: cloudData.items,
+          }));
+        }
       }
 
       const cloudStats = await fetchCloudStats();
@@ -273,6 +293,71 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     sortOption,
     isVaultUnlocked,
   ]);
+
+  // Fetch children for a given folder with 0ms in-memory caching
+  const fetchFolderChildren = useCallback(
+    async (folderId: string | null): Promise<DriveItem[]> => {
+      const key = folderId || 'root';
+      if (folderCache[key]) {
+        return folderCache[key];
+      }
+      try {
+        const data = await fetchCloudItems({
+          parentId: folderId,
+          section: 'my-drive',
+          isVaultUnlocked,
+        });
+        setFolderCache((prev) => ({
+          ...prev,
+          [key]: data.items,
+        }));
+        return data.items;
+      } catch (err) {
+        console.error(`Failed to fetch children for folder ${folderId}:`, err);
+        return [];
+      }
+    },
+    [folderCache, isVaultUnlocked]
+  );
+
+  // Pre-fetch folder contents on hover for instantaneous 0ms transitions
+  const prefetchFolder = useCallback(
+    async (folderId: string | null): Promise<DriveItem[]> => {
+      return fetchFolderChildren(folderId);
+    },
+    [fetchFolderChildren]
+  );
+
+  // SSE Real-Time Event Listener for Instant Multi-Device Sync
+  useEffect(() => {
+    if (authRequired || typeof window === 'undefined') return;
+
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource('/api/drive/live-events');
+
+      eventSource.onmessage = (e) => {
+        try {
+          if (!e.data) return;
+          // Silent refresh & cache clear when events are received
+          setFolderCache({});
+          loadItems({ silent: true });
+        } catch {}
+      };
+
+      eventSource.onerror = () => {
+        // SSE will automatically retry in background
+      };
+    } catch (err) {
+      console.warn('Failed to initialize SSE live events:', err);
+    }
+
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, [authRequired, loadItems]);
 
   useEffect(() => {
     loadItems();
@@ -336,6 +421,99 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const clearSelection = () => {
     setSelectedIds([]);
+  };
+
+  const selectByType = (type: 'all' | 'files' | 'folders' | 'starred' | 'radar' | 'pdf' | 'image' | 'spreadsheet' | 'media' | 'vault') => {
+    let matching: DriveItem[] = [];
+    switch (type) {
+      case 'all':
+        matching = items;
+        break;
+      case 'files':
+        matching = items.filter((i) => i.type === 'file');
+        break;
+      case 'folders':
+        matching = items.filter((i) => i.type === 'folder');
+        break;
+      case 'starred':
+        matching = items.filter((i) => i.isStarred);
+        break;
+      case 'radar':
+        matching = items.filter((i) => i.expiryStatus === 'expired' || i.expiryStatus === 'expiring_soon');
+        break;
+      case 'pdf':
+        matching = items.filter((i) => i.category === 'pdf' || i.name.toLowerCase().endsWith('.pdf'));
+        break;
+      case 'image':
+        matching = items.filter((i) => i.category === 'image');
+        break;
+      case 'spreadsheet':
+        matching = items.filter((i) => i.category === 'spreadsheet');
+        break;
+      case 'media':
+        matching = items.filter((i) => i.category === 'media');
+        break;
+      case 'vault':
+        matching = items.filter((i) => i.isVault);
+        break;
+      default:
+        matching = items;
+    }
+    setSelectedIds(matching.map((i) => i.id));
+  };
+
+  const invertSelection = () => {
+    setSelectedIds((prev) => items.filter((i) => !prev.includes(i.id)).map((i) => i.id));
+  };
+
+  const isAllSelected = items.length > 0 && selectedIds.length === items.length;
+  const isSomeSelected = selectedIds.length > 0 && selectedIds.length < items.length;
+  const selectedPdfCount = items.filter(
+    (i) => selectedIds.includes(i.id) && i.type === 'file' && (i.category === 'pdf' || i.name.toLowerCase().endsWith('.pdf'))
+  ).length;
+
+  const mergeSelectedPdfs = async (customFileName?: string): Promise<boolean> => {
+    const selectedPdfItems = items.filter(
+      (i) => selectedIds.includes(i.id) && i.type === 'file' && (i.category === 'pdf' || i.name.toLowerCase().endsWith('.pdf'))
+    );
+    if (selectedPdfItems.length < 2) return false;
+
+    try {
+      const mergedPdf = await PDFDocument.create();
+      for (const item of selectedPdfItems) {
+        const blob = await getCloudFileBlob(item.id);
+        if (blob) {
+          const arrayBuffer = await blob.arrayBuffer();
+          const pdf = await PDFDocument.load(arrayBuffer);
+          const copiedPages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+          copiedPages.forEach((page) => mergedPdf.addPage(page));
+        }
+      }
+      const mergedPdfBytes = await mergedPdf.save();
+      const outputName = customFileName || `Merged_${selectedPdfItems.length}_Documents_${Date.now()}.pdf`;
+      const blob = new Blob([mergedPdfBytes as any], { type: 'application/pdf' });
+      saveAs(blob, outputName);
+      return true;
+    } catch (err) {
+      console.error('Failed to merge PDFs:', err);
+      return false;
+    }
+  };
+
+  const copySelectedInfoToClipboard = async (): Promise<boolean> => {
+    const selectedItems = items.filter((i) => selectedIds.includes(i.id));
+    if (selectedItems.length === 0) return false;
+
+    const text = selectedItems
+      .map((i, idx) => `${idx + 1}. ${i.name} (${i.type === 'folder' ? 'Folder' : `${(i.size / 1024).toFixed(1)} KB`}) [ID: ${i.id}]`)
+      .join('\n');
+
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   // Batch multi-select actions (Optimistic)
@@ -764,12 +942,19 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         isKeyboardShortcutsOpen,
         setIsKeyboardShortcutsOpen,
 
-        // Actions
+        // Actions & Selection
         navigateToFolder,
         selectSection,
         toggleSelect,
         selectAll,
         clearSelection,
+        selectByType,
+        invertSelection,
+        isAllSelected,
+        isSomeSelected,
+        selectedPdfCount,
+        mergeSelectedPdfs,
+        copySelectedInfoToClipboard,
         triggerAutoLabel,
         triggerBatchAction,
         bulkDownloadZip,
@@ -794,6 +979,11 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setDetailsItem,
         loadItems,
         refreshDrive: loadItems,
+
+        // Real-Time Caching & Traversal
+        folderCache,
+        prefetchFolder,
+        fetchFolderChildren,
       }}
     >
       {children}

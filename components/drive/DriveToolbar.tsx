@@ -8,6 +8,7 @@ import {
   X,
   LayoutGrid,
   List,
+  Columns3,
   ArrowUpDown,
   Download,
   Trash2,
@@ -16,7 +17,11 @@ import {
   StarOff,
   Tag,
   CheckSquare,
+  Square,
+  Copy,
+  Check,
   ChevronRight,
+  ChevronDown,
   RotateCcw,
   Sparkles,
   FolderOpen,
@@ -26,7 +31,13 @@ import {
   SlidersHorizontal,
   HelpCircle,
   Menu,
-  Settings
+  Settings,
+  FileText,
+  Layers,
+  Files,
+  Clock,
+  Image as ImageIcon,
+  Table as TableIcon
 } from 'lucide-react';
 import { DriveSortField } from '@/lib/drive/drive-types';
 
@@ -64,9 +75,18 @@ export function DriveToolbar({
     setSearchTerm,
     selectedIds,
     items,
+    folders,
+    files,
     isSyncing,
     clearSelection,
     selectAll,
+    selectByType,
+    invertSelection,
+    isAllSelected,
+    isSomeSelected,
+    selectedPdfCount,
+    mergeSelectedPdfs,
+    copySelectedInfoToClipboard,
     trashSelected,
     restoreSelected,
     deleteSelectedPermanently,
@@ -83,6 +103,34 @@ export function DriveToolbar({
 
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
+  const [selectDropdownOpen, setSelectDropdownOpen] = useState(false);
+  const [copiedFeedback, setCopiedFeedback] = useState(false);
+  const [isMergingPdfs, setIsMergingPdfs] = useState(false);
+
+  const starredCount = items.filter((i) => i.isStarred).length;
+  const radarCount = items.filter((i) => i.expiryStatus === 'expired' || i.expiryStatus === 'expiring_soon').length;
+  const pdfCount = items.filter((i) => i.category === 'pdf' || i.name.toLowerCase().endsWith('.pdf')).length;
+  const imageCount = items.filter((i) => i.category === 'image').length;
+  const sheetCount = items.filter((i) => i.category === 'spreadsheet').length;
+  const vaultCount = items.filter((i) => i.isVault).length;
+
+  const handleCopyInfo = async () => {
+    const ok = await copySelectedInfoToClipboard();
+    if (ok) {
+      setCopiedFeedback(true);
+      setTimeout(() => setCopiedFeedback(false), 2200);
+    }
+  };
+
+  const handleMergePdfs = async () => {
+    setIsMergingPdfs(true);
+    try {
+      await mergeSelectedPdfs();
+    } finally {
+      setIsMergingPdfs(false);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -121,7 +169,6 @@ export function DriveToolbar({
     } catch {}
   };
 
-  const [sortDropdownOpen, setSortDropdownOpen] = useState(false);
   const hasSelection = selectedIds.length > 0;
 
   const sortOptions: { label: string; field: DriveSortField; order: 'asc' | 'desc' }[] = [
@@ -277,6 +324,194 @@ export function DriveToolbar({
             </button>
           </div>
 
+          {/* Master Select Dropdown Menu */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setSelectDropdownOpen(!selectDropdownOpen)}
+              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                hasSelection
+                  ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 font-bold'
+                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 text-zinc-700 dark:text-zinc-300'
+              }`}
+              title="Select items (All, Files, Folders, Starred, PDFs, etc.)"
+            >
+              <CheckSquare className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">
+                {hasSelection ? `${selectedIds.length} Selected` : 'Select'}
+              </span>
+              <ChevronDown className="w-3 h-3 text-zinc-400 shrink-0" />
+            </button>
+
+            {selectDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-30" onClick={() => setSelectDropdownOpen(false)} />
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl z-40 p-1.5 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1 text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
+                    Selection Modes ({items.length} total)
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectAll();
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CheckSquare className="w-3.5 h-3.5 text-rose-500" />
+                      <span>Select All</span>
+                    </div>
+                    <span className="text-3xs text-zinc-400 font-mono">({items.length})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectByType('files');
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Files className="w-3.5 h-3.5 text-blue-500" />
+                      <span>Files Only</span>
+                    </div>
+                    <span className="text-3xs text-zinc-400 font-mono">({files.length})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      selectByType('folders');
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2">
+                      <FolderOpen className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Folders Only</span>
+                    </div>
+                    <span className="text-3xs text-zinc-400 font-mono">({folders.length})</span>
+                  </button>
+
+                  {starredCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        selectByType('starred');
+                        setSelectDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                        <span>Starred Items</span>
+                      </div>
+                      <span className="text-3xs text-zinc-400 font-mono">({starredCount})</span>
+                    </button>
+                  )}
+
+                  {radarCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        selectByType('radar');
+                        setSelectDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-3.5 h-3.5 text-rose-500" />
+                        <span>Expiring / Radar</span>
+                      </div>
+                      <span className="text-3xs text-zinc-400 font-mono">({radarCount})</span>
+                    </button>
+                  )}
+
+                  {pdfCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        selectByType('pdf');
+                        setSelectDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-3.5 h-3.5 text-rose-500" />
+                        <span>PDF Documents</span>
+                      </div>
+                      <span className="text-3xs text-zinc-400 font-mono">({pdfCount})</span>
+                    </button>
+                  )}
+
+                  {imageCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        selectByType('image');
+                        setSelectDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <ImageIcon className="w-3.5 h-3.5 text-purple-500" />
+                        <span>Images</span>
+                      </div>
+                      <span className="text-3xs text-zinc-400 font-mono">({imageCount})</span>
+                    </button>
+                  )}
+
+                  {sheetCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        selectByType('spreadsheet');
+                        setSelectDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center justify-between cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2">
+                        <TableIcon className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Spreadsheets</span>
+                      </div>
+                      <span className="text-3xs text-zinc-400 font-mono">({sheetCount})</span>
+                    </button>
+                  )}
+
+                  <div className="my-1 border-t border-zinc-100 dark:border-zinc-800" />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      invertSelection();
+                      setSelectDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 flex items-center gap-2 cursor-pointer"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-indigo-500" />
+                    <span>Invert Selection</span>
+                  </button>
+
+                  {hasSelection && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        clearSelection();
+                        setSelectDropdownOpen(false);
+                      }}
+                      className="w-full text-left px-3 py-1.5 rounded-xl text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 flex items-center gap-2 cursor-pointer"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Clear Selection (Esc)</span>
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+
           {/* Sort Dropdown */}
           <div className="relative">
             <button
@@ -324,7 +559,7 @@ export function DriveToolbar({
             )}
           </div>
 
-          {/* Grid vs List View Toggle */}
+          {/* Grid vs List vs Columns View Toggle */}
           <div className="flex items-center p-0.5 sm:p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900">
             <button
               type="button"
@@ -349,6 +584,18 @@ export function DriveToolbar({
               }`}
             >
               <List className="w-3.5 h-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewLayout('columns')}
+              title="Cascading Columns View (Finder Miller Columns)"
+              className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                viewLayout === 'columns'
+                  ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'
+                  : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200'
+              }`}
+            >
+              <Columns3 className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -421,13 +668,58 @@ export function DriveToolbar({
               <button
                 type="button"
                 onClick={selectAll}
-                className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline text-3xs cursor-pointer ml-1"
+                className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline text-3xs cursor-pointer ml-0.5"
               >
                 Select All ({items.length})
+              </button>
+              <button
+                type="button"
+                onClick={invertSelection}
+                className="text-zinc-500 hover:text-zinc-900 dark:hover:text-white underline text-3xs cursor-pointer ml-0.5 hidden sm:inline"
+              >
+                Invert
               </button>
             </div>
 
             <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+              {/* 1-Click PDF Merge if 2+ PDFs are selected */}
+              {selectedPdfCount >= 2 && viewSection !== 'trash' && (
+                <button
+                  type="button"
+                  onClick={handleMergePdfs}
+                  disabled={isMergingPdfs}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-700 hover:to-rose-600 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0 disabled:opacity-50"
+                  title="Merge selected PDF files into one document"
+                >
+                  {isMergingPdfs ? (
+                    <RotateCcw className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Layers className="w-3.5 h-3.5" />
+                  )}
+                  <span>Merge {selectedPdfCount} PDFs</span>
+                </button>
+              )}
+
+              {/* Copy Selected Info / Names to Clipboard */}
+              <button
+                type="button"
+                onClick={handleCopyInfo}
+                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                title="Copy names and details of selected items to clipboard"
+              >
+                {copiedFeedback ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="text-emerald-600 dark:text-emerald-400">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-zinc-500" />
+                    <span className="hidden md:inline">Copy Info</span>
+                  </>
+                )}
+              </button>
+
               {viewSection === 'trash' ? (
                 <>
                   <button

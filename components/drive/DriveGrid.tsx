@@ -34,6 +34,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
     files,
     selectedIds,
     toggleSelect,
+    selectByType,
     navigateToFolder,
     openPreview,
     toggleStar,
@@ -44,6 +45,31 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
   const [contextItem, setContextItem] = useState<DriveItem | null>(null);
   const [contextPos, setContextPos] = useState<{ x: number; y: number } | undefined>(undefined);
   const [dragOverFolderId, setDragOverFolderId] = useState<string | null>(null);
+
+  const areAllFoldersSelected = folders.length > 0 && folders.every((f) => selectedIds.includes(f.id));
+  const areAllFilesSelected = files.length > 0 && files.every((f) => selectedIds.includes(f.id));
+
+  const handleToggleAllFolders = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (areAllFoldersSelected) {
+      folders.forEach((f) => {
+        if (selectedIds.includes(f.id)) toggleSelect(f.id, true);
+      });
+    } else {
+      selectByType('folders');
+    }
+  };
+
+  const handleToggleAllFiles = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (areAllFilesSelected) {
+      files.forEach((f) => {
+        if (selectedIds.includes(f.id)) toggleSelect(f.id, true);
+      });
+    } else {
+      selectByType('files');
+    }
+  };
 
   const handleContextMenu = (e: React.MouseEvent, item: DriveItem) => {
     e.preventDefault();
@@ -103,6 +129,13 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
             <span className="text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
               Folders ({folders.length})
             </span>
+            <button
+              type="button"
+              onClick={handleToggleAllFolders}
+              className="text-3xs font-bold text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
+            >
+              {areAllFoldersSelected ? 'Deselect All Folders' : 'Select All Folders'}
+            </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-3.5">
             {folders.map((folder) => {
@@ -130,6 +163,26 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
+                    {/* Checkbox for Folder */}
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSelect(folder.id, true);
+                      }}
+                      className={`p-1 rounded-md transition-opacity cursor-pointer ${
+                        isSelected
+                          ? 'opacity-100'
+                          : 'opacity-0 group-hover:opacity-100 hover:bg-zinc-100 dark:hover:bg-zinc-800'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {}}
+                        className="w-3.5 h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none"
+                      />
+                    </div>
+
                     <div className={`p-2 rounded-xl ${colorConfig.bgClass} ${colorConfig.textClass} shrink-0`}>
                       <Folder className="w-5 h-5 fill-current" />
                     </div>
@@ -176,6 +229,13 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
             <span className="text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
               Files ({files.length})
             </span>
+            <button
+              type="button"
+              onClick={handleToggleAllFiles}
+              className="text-3xs font-bold text-zinc-500 hover:text-rose-600 dark:hover:text-rose-400 transition cursor-pointer"
+            >
+              {areAllFilesSelected ? 'Deselect All Files' : 'Select All Files'}
+            </button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4">
             {files.map((file) => {
@@ -213,6 +273,28 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                       }`}
                     >
                       <Star className={`w-3.5 h-3.5 ${file.isStarred ? 'text-amber-400 fill-amber-400' : 'text-zinc-400'}`} />
+                    </button>
+
+                    {/* Selection Checkbox on File Card */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleSelect(file.id, true);
+                      }}
+                      className={`absolute top-2 left-8 p-1 rounded-lg transition-opacity ${
+                        isSelected
+                          ? 'opacity-100'
+                          : 'opacity-0 group-hover:opacity-100 hover:bg-black/10 dark:hover:bg-white/10'
+                      }`}
+                      title="Select File"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => {}}
+                        className="w-3.5 h-3.5 rounded-sm accent-rose-500 cursor-pointer pointer-events-none"
+                      />
                     </button>
 
                     {/* Status Badges: Vault & Expiry */}

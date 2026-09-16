@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth/get-server-user';
 import { createCloudFolder } from '@/lib/drive/server-drive';
+import { driveLiveBus } from '@/lib/drive/live-bus';
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,6 +17,7 @@ export async function POST(req: NextRequest) {
     }
 
     const folder = await createCloudFolder(auth.userId, name.trim(), parentId, color);
+    driveLiveBus.broadcast(auth.userId, 'folder_created', { itemId: folder.id, parentId: folder.parentId, data: folder });
 
     return NextResponse.json({
       success: true,

@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { DriveCategory } from '@/lib/drive/drive-types';
 import { formatBytes } from '@/lib/drive/drive-helpers';
+import { DriveFolderTree } from './DriveFolderTree';
 
 interface DriveSidebarProps {
   onOpenNewFolderModal: () => void;
@@ -251,6 +252,18 @@ export function DriveSidebar({
               </span>
             )}
           </button>
+
+          {/* Expandable Nested Folder Tree */}
+          {viewSection === 'my-drive' && (
+            <div className="pl-2 pr-1 py-1 border-l-2 border-rose-500/30 ml-3.5 my-1 animate-in fade-in slide-in-from-top-1 duration-150">
+              <DriveFolderTree
+                onNavigate={() => {
+                  if (isMobileDrawer && onCloseMobileDrawer) onCloseMobileDrawer();
+                }}
+                onOpenNewFolderModal={onOpenNewFolderModal}
+              />
+            </div>
+          )}
 
           {/* Secure Vault Item */}
           <div className="relative group">

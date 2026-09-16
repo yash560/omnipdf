@@ -213,7 +213,24 @@ export interface DriveSortOption {
   order: DriveSortOrder;
 }
 
-export type DriveViewLayout = 'grid' | 'list';
+export type DriveViewLayout = 'grid' | 'list' | 'columns';
+
+export type DriveLiveEventType =
+  | 'item_created'
+  | 'item_updated'
+  | 'item_deleted'
+  | 'folder_created'
+  | 'batch_action'
+  | 'sync';
+
+export interface DriveLiveEvent {
+  type: DriveLiveEventType;
+  userId: string;
+  itemId?: string;
+  parentId?: string | null;
+  timestamp: number;
+  data?: any;
+}
 
 export interface DriveStats {
   totalBytes: number;

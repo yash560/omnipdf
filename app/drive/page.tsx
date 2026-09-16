@@ -8,6 +8,7 @@ import { DriveToolbar } from '@/components/drive/DriveToolbar';
 import { DriveFastFilters } from '@/components/drive/DriveFastFilters';
 import { DriveGrid } from '@/components/drive/DriveGrid';
 import { DriveTable } from '@/components/drive/DriveTable';
+import { DriveColumnView } from '@/components/drive/DriveColumnView';
 import { DriveQuickLookModal } from '@/components/drive/DriveQuickLookModal';
 import { DriveDetailsDrawer } from '@/components/drive/DriveDetailsDrawer';
 import { DriveUploadManager } from '@/components/drive/DriveUploadManager';
@@ -143,7 +144,11 @@ function DriveWorkspaceInner() {
     selectedAiCategory,
     setSelectedAiCategory,
 
-    // Batch Actions
+    // Batch Actions & Selection
+    invertSelection,
+    selectedPdfCount,
+    mergeSelectedPdfs,
+    copySelectedInfoToClipboard,
     triggerBatchAction,
     triggerAutoLabel,
     bulkDownloadZip,
@@ -163,6 +168,25 @@ function DriveWorkspaceInner() {
   const [selectedDossier, setSelectedDossier] = useState<SmartDossier | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [isBulkTagModalOpen, setIsBulkTagModalOpen] = useState(false);
+  const [isMergingPdfs, setIsMergingPdfs] = useState(false);
+  const [copiedFeedback, setCopiedFeedback] = useState(false);
+
+  const handleBulkCopyInfo = async () => {
+    const ok = await copySelectedInfoToClipboard();
+    if (ok) {
+      setCopiedFeedback(true);
+      setTimeout(() => setCopiedFeedback(false), 2200);
+    }
+  };
+
+  const handleBulkMergePdfs = async () => {
+    setIsMergingPdfs(true);
+    try {
+      await mergeSelectedPdfs();
+    } finally {
+      setIsMergingPdfs(false);
+    }
+  };
 
   const dossiers = useMemo(() => {
     return generateSmartDossiers(items, { isVaultUnlocked });
@@ -212,7 +236,35 @@ function DriveWorkspaceInner() {
         if (selected) {
           openPreview(selected);
         }
-      } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      } else if (e.key === 'Enter' && selectedIds.length === 1) {
+        e.preventDefault();
+        const selected = items.find((i) => i.id === selectedIds[0]);
+        if (selected) {
+          if (selected.type === 'folder') {
+            navigateToFolder(selected.id);
+          } else {
+            openPreview(selected);
+          }
+        }
+      } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        if (items.length > 0) {
+          e.preventDefault();
+          const currentIndex = selectedIds.length === 1 ? items.findIndex((i) => i.id === selectedIds[0]) : -1;
+          let nextIndex = 0;
+          if (e.key === 'ArrowDown') {
+            nextIndex = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
+          } else {
+            nextIndex = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
+          }
+          toggleSelect(items[nextIndex].id, false);
+        }
+      } else if ((e.key === 'Backspace' && selectedIds.length === 0) || (e.key === 'ArrowLeft' && e.altKey)) {
+        if (breadcrumbs.length > 1) {
+          e.preventDefault();
+          const parentCrumb = breadcrumbs[breadcrumbs.length - 2];
+          navigateToFolder(parentCrumb.id);
+        }
+      } else if (e.key === 'Delete' || (e.key === 'Backspace' && selectedIds.length > 0)) {
         trashSelected();
       } else if (e.key === 'a' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -235,6 +287,9 @@ function DriveWorkspaceInner() {
   }, [
     selectedIds,
     items,
+    breadcrumbs,
+    navigateToFolder,
+    toggleSelect,
     trashSelected,
     selectAll,
     clearSelection,
@@ -492,8 +547,13 @@ function DriveWorkspaceInner() {
               onOpenRenameModal={(it) => setRenameItem(it)}
               onOpenMoveModal={() => setMoveModalOpen(true)}
             />
-          ) : (
+          ) : viewLayout === 'list' ? (
             <DriveTable
+              onOpenRenameModal={(it) => setRenameItem(it)}
+              onOpenMoveModal={() => setMoveModalOpen(true)}
+            />
+          ) : (
+            <DriveColumnView
               onOpenRenameModal={(it) => setRenameItem(it)}
               onOpenMoveModal={() => setMoveModalOpen(true)}
             />
@@ -510,8 +570,16 @@ function DriveWorkspaceInner() {
       {/* Floating Multi-Select Bulk Action Dock */}
       <DriveBulkActionBar
         selectedCount={selectedIds.length}
+        totalCount={items.length}
+        selectedPdfCount={selectedPdfCount}
+        isMergingPdfs={isMergingPdfs}
+        copiedFeedback={copiedFeedback}
         viewSection={viewSection}
         onClearSelection={clearSelection}
+        onSelectAll={selectAll}
+        onInvertSelection={invertSelection}
+        onBulkCopyInfo={handleBulkCopyInfo}
+        onBulkMergePdfs={handleBulkMergePdfs}
         onBulkDownloadZip={bulkDownloadZip}
         onBulkMove={() => setMoveModalOpen(true)}
         onBulkTag={() => setIsBulkTagModalOpen(true)}
