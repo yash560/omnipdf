@@ -6,7 +6,6 @@ import {
   FileText, 
   ChevronDown, 
   Search, 
-  ShieldCheck, 
   Image as ImageIcon, 
   FileEdit, 
   Sparkles,
@@ -123,13 +122,8 @@ export function Navbar() {
             </nav>
           </div>
 
-          {/* Right: Quick Search, Privacy Badge, Theme Toggle, Auth, Mobile Menu */}
+          {/* Right: Quick Search, Theme Toggle, Auth, Mobile Menu */}
           <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            {/* Privacy Badge */}
-            <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/50 text-[11px] font-semibold text-emerald-700 dark:text-emerald-300">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-              <span>100% Client-Side Private</span>
-            </div>
 
             {/* Search Trigger */}
             <button
@@ -227,10 +221,7 @@ export function Navbar() {
               </div>
             </div>
 
-            <div className="pt-2 flex items-center justify-between text-xs text-zinc-500">
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-semibold">
-                <ShieldCheck className="w-4 h-4" /> 100% Client-Side
-              </span>
+            <div className="pt-2 flex items-center justify-end text-xs text-zinc-500">
               <Link
                 href="/"
                 onClick={() => setMobileNavOpen(false)}
