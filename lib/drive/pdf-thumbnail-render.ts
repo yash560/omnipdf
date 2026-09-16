@@ -10,7 +10,13 @@ let pdfjsPromise: Promise<typeof import('pdfjs-dist/legacy/build/pdf.mjs')> | nu
 function getPdfJsNode() {
   if (!pdfjsPromise) {
     pdfjsPromise = import('pdfjs-dist/legacy/build/pdf.mjs').then((pdfjs) => {
-      pdfjs.GlobalWorkerOptions.workerSrc = '';
+      // Node's isNodeJS auto-detection isn't reliable across every runner
+      // (works under Next.js's bundler, fails under plain node/tsx), so point
+      // the worker at the real legacy build instead of relying on it.
+      pdfjs.GlobalWorkerOptions.workerSrc = path.join(
+        process.cwd(),
+        'node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs'
+      );
       return pdfjs;
     });
   }
