@@ -113,11 +113,49 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
   const isSpreadsheet = ['xlsx', 'xls', 'csv', 'tsv'].includes(item.extension) || item.category === 'spreadsheet';
   const isCodeOrText = textContent !== null || item.category === 'code';
 
+  const [dragStartY, setDragStartY] = useState<number | null>(null);
+  const [dragCurrentY, setDragCurrentY] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setDragStartY(e.touches[0].clientY);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (dragStartY !== null) {
+      const delta = e.touches[0].clientY - dragStartY;
+      if (delta > 0) {
+        setDragCurrentY(delta);
+      }
+    }
+  };
+
+  const handleTouchEnd = () => {
+    if (dragCurrentY && dragCurrentY > 100) {
+      onClose();
+    }
+    setDragStartY(null);
+    setDragCurrentY(null);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-5xl h-[88vh] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-150">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div 
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{
+          transform: dragCurrentY ? `translateY(${dragCurrentY}px)` : undefined,
+          transition: dragCurrentY ? 'none' : 'transform 200ms ease-out',
+        }}
+        className="relative w-full max-w-5xl h-[92vh] sm:h-[88vh] bg-white dark:bg-zinc-900 border-t sm:border border-zinc-200 dark:border-zinc-800 rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom sm:zoom-in-95 duration-150"
+      >
+        {/* Mobile Swipe-Down Handle */}
+        <div className="sm:hidden w-full pt-2.5 pb-1 flex justify-center bg-zinc-50 dark:bg-zinc-950/80 cursor-grab">
+          <div className="w-10 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
+        </div>
+
         {/* Header Bar */}
-        <div className="p-4 bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-4 shrink-0">
+        <div className="p-3 sm:p-4 bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 sm:gap-4 shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
               <FileText className="w-4 h-4" />

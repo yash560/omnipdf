@@ -21,8 +21,11 @@ import { autoLabelFile, getHeuristicLabels } from '@/lib/ai/auto-labeler';
 import { searchDriveItems } from './search-engine';
 import { Readable } from 'stream';
 import sharp from 'sharp';
+import { driveLiveBus } from './live-bus';
+import { renderPdfFirstPageToPng, PDF_THUMBNAIL_CANONICAL_WIDTH } from './pdf-thumbnail-render';
+import { saveThumbnail, deleteThumbnail } from './thumbnail-store';
 
-const ITEMS_COLLECTION = 'filecraft_drive_items';
+export const ITEMS_COLLECTION = 'filecraft_drive_items';
 const BUCKET_NAME = 'filecraft_drive_storage';
 const SESSIONS_COLLECTION = 'filecraft_upload_sessions';
 const CHUNKS_COLLECTION = 'filecraft_upload_chunks';
@@ -77,6 +80,55 @@ async function ensureIndexes() {
   } catch (err) {
     console.warn('[ServerDrive] Index creation warning:', err);
   }
+}
+
+// Cap render-time memory use for the (rare) chunked/lazy path where we have to
+// pull the full original back from GridFS instead of reusing an in-memory buffer.
+const MAX_PDF_THUMBNAIL_SOURCE_BYTES = 80 * 1024 * 1024;
+
+/**
+ * Fire-and-forget: render a PDF's first page to a cached webp thumbnail and
+ * notify any open Drive sessions once ready via the live-events bus. Never
+ * throws — a failed or oversized render just leaves the generic file icon in
+ * place, which the client already handles gracefully.
+ */
+function scheduleServerPdfThumbnail(userId: string, item: DriveItem, buffer?: Buffer): void {
+  if (item.category !== 'pdf' && item.extension !== 'pdf') return;
+  if (item.size > MAX_PDF_THUMBNAIL_SOURCE_BYTES) return;
+
+  (async () => {
+    try {
+      let source = buffer;
+      if (!source) {
+        const fileData = await getCloudFileStream(userId, item.id);
+        if (!fileData) return;
+        const chunks: Buffer[] = [];
+        for await (const chunk of fileData.stream) {
+          chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+        }
+        source = Buffer.concat(chunks);
+      }
+
+      const png = await renderPdfFirstPageToPng(source);
+      if (!png) return;
+
+      const webp = await sharp(png)
+        .resize({ width: PDF_THUMBNAIL_CANONICAL_WIDTH, withoutEnlargement: true, fit: 'inside' })
+        .webp({ quality: 78, effort: 4 })
+        .toBuffer();
+
+      await saveThumbnail(item.id, PDF_THUMBNAIL_CANONICAL_WIDTH, webp);
+
+      const db = await getMongoDb();
+      await db
+        .collection<DriveItem>(ITEMS_COLLECTION)
+        .updateOne({ id: item.id }, { $set: { updatedAt: Date.now() } });
+
+      driveLiveBus.broadcast(userId, 'item_updated', { itemId: item.id });
+    } catch (err) {
+      console.warn('[ServerDrive] Background PDF thumbnail generation failed:', err);
+    }
+  })();
 }
 
 /**
@@ -526,6 +578,9 @@ export async function uploadCloudFile(
 
   await col.insertOne({ ...item } as any);
   await recordDriveActivity(userId, id, name, 'file', 'uploaded');
+
+  // Server-render a PDF page-1 thumbnail once, cached for every future viewer
+  scheduleServerPdfThumbnail(userId, item, buffer);
 
   // Trigger async deep Gemini enrichment in background
   autoLabelFile({

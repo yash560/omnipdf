@@ -5,7 +5,9 @@ import { useDrive } from '@/lib/drive/drive-context';
 import { DriveItem, FOLDER_COLORS } from '@/lib/drive/drive-types';
 import { formatBytes, formatTimeAgo } from '@/lib/drive/drive-helpers';
 import { DriveContextMenu } from './DriveContextMenu';
+import { DriveMobileActionSheet } from './DriveMobileActionSheet';
 import { DriveThumbnail } from './DriveThumbnail';
+import { triggerHaptic } from '@/lib/drive/haptics';
 import {
   Folder,
   FileText,
@@ -59,9 +61,11 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
 
   const [contextItem, setContextItem] = useState<DriveItem | null>(null);
   const [contextPos, setContextPos] = useState<{ x: number; y: number } | undefined>(undefined);
+  const [mobileSheetItem, setMobileSheetItem] = useState<DriveItem | null>(null);
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false);
 
   const headerCheckboxRef = useRef<HTMLInputElement>(null);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (headerCheckboxRef.current) {
@@ -69,37 +73,43 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
     }
   }, [isSomeSelected]);
 
-  const handleContextMenu = (e: React.MouseEvent, item: DriveItem) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!selectedIds.includes(item.id)) {
-      toggleSelect(item.id, false);
+  const handleOpenItemOptions = (item: DriveItem, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
     }
-    setContextPos({ x: e.clientX, y: e.clientY });
-    setContextItem(item);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      triggerHaptic('light');
+      setMobileSheetItem(item);
+    } else {
+      if (!selectedIds.includes(item.id)) {
+        toggleSelect(item.id, false);
+      }
+      setContextPos(e ? { x: e.clientX, y: e.clientY } : undefined);
+      setContextItem(item);
+    }
+  };
+
+  const handleTouchStart = (item: DriveItem) => {
+    longPressTimer.current = setTimeout(() => {
+      triggerHaptic('medium');
+      setMobileSheetItem(item);
+    }, 450);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
   };
 
   const handleSort = (field: 'name' | 'updatedAt' | 'size' | 'category' | 'expiry') => {
+    triggerHaptic('selection');
     if (sortOption.field === field) {
       setSortOption({ field, order: sortOption.order === 'asc' ? 'desc' : 'asc' });
     } else {
       setSortOption({ field, order: 'asc' });
-    }
-  };
-
-  const getSmallIcon = (item: DriveItem) => {
-    if (item.type === 'folder') {
-      const col = FOLDER_COLORS[item.color || 'default'] || FOLDER_COLORS.default;
-      return <Folder className={`w-4 h-4 fill-current ${col.textClass}`} />;
-    }
-    switch (item.category) {
-      case 'pdf': return <FileText className="w-4 h-4 text-rose-500" />;
-      case 'image': return <ImageIcon className="w-4 h-4 text-purple-500" />;
-      case 'spreadsheet': return <TableIcon className="w-4 h-4 text-emerald-500" />;
-      case 'media': return <Film className="w-4 h-4 text-amber-500" />;
-      case 'archive': return <FolderArchive className="w-4 h-4 text-cyan-500" />;
-      case 'code': return <FileCode className="w-4 h-4 text-blue-500" />;
-      default: return <File className="w-4 h-4 text-zinc-400" />;
     }
   };
 
@@ -125,6 +135,7 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                     type="checkbox"
                     checked={isAllSelected}
                     onChange={() => {
+                      triggerHaptic('selection');
                       if (isAllSelected || isSomeSelected) {
                         clearSelection();
                       } else {
@@ -184,49 +195,31 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                         <span>Folders Only</span>
                         <span className="text-3xs text-zinc-400 font-mono">({folders.length})</span>
                       </button>
-                      {starredCount > 0 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            selectByType('starred');
-                            setHeaderMenuOpen(false);
-                          }}
-                          className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center justify-between cursor-pointer"
-                        >
-                          <span>Starred Items</span>
-                          <span className="text-3xs text-zinc-400 font-mono">({starredCount})</span>
-                        </button>
-                      )}
+
                       <div className="my-1 border-t border-zinc-100 dark:border-zinc-800" />
+
                       <button
                         type="button"
                         onClick={() => {
                           invertSelection();
                           setHeaderMenuOpen(false);
                         }}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center gap-1.5 cursor-pointer"
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 flex items-center gap-2 cursor-pointer"
                       >
-                        <RotateCcw className="w-3 h-3 text-indigo-500" />
+                        <RotateCcw className="w-3.5 h-3.5 text-indigo-500" />
                         <span>Invert Selection</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          clearSelection();
-                          setHeaderMenuOpen(false);
-                        }}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-semibold hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <span>Deselect All</span>
                       </button>
                     </div>
                   </>
                 )}
               </th>
 
+              {/* Star Column */}
               <th className="w-8 px-2 py-3 text-center">
-                <span className="sr-only">Star</span>
+                <Star className="w-3.5 h-3.5 text-zinc-400 inline" />
               </th>
+
+              {/* Name Column */}
               <th
                 onClick={() => handleSort('name')}
                 className="px-4 py-3 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors"
@@ -236,6 +229,8 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                   <ArrowUpDown className="w-3 h-3 text-zinc-400" />
                 </div>
               </th>
+
+              {/* Category / Type Column */}
               <th
                 onClick={() => handleSort('category')}
                 className="hidden md:table-cell px-4 py-3 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors"
@@ -245,6 +240,8 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                   <ArrowUpDown className="w-3 h-3 text-zinc-400" />
                 </div>
               </th>
+
+              {/* Last Modified Column */}
               <th
                 onClick={() => handleSort('updatedAt')}
                 className="hidden sm:table-cell px-4 py-3 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors"
@@ -254,6 +251,8 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                   <ArrowUpDown className="w-3 h-3 text-zinc-400" />
                 </div>
               </th>
+
+              {/* Size Column */}
               <th
                 onClick={() => handleSort('size')}
                 className="px-4 py-3 cursor-pointer hover:text-zinc-900 dark:hover:text-white transition-colors text-right"
@@ -263,6 +262,8 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                   <ArrowUpDown className="w-3 h-3 text-zinc-400" />
                 </div>
               </th>
+
+              {/* Actions Column */}
               <th className="w-10 px-4 py-3 text-center">
                 <span className="sr-only">Actions</span>
               </th>
@@ -277,10 +278,13 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
               return (
                 <tr
                   key={item.id}
+                  onTouchStart={() => handleTouchStart(item)}
+                  onTouchEnd={handleTouchEnd}
+                  onTouchCancel={handleTouchEnd}
                   onClick={(e) => toggleSelect(item.id, e.shiftKey || e.metaKey || e.ctrlKey)}
                   onDoubleClick={() => (isFolder ? navigateToFolder(item.id) : openPreview(item))}
-                  onContextMenu={(e) => handleContextMenu(e, item)}
-                  className={`group transition-colors select-none cursor-pointer ${
+                  onContextMenu={(e) => handleOpenItemOptions(item, e)}
+                  className={`group transition-colors select-none cursor-pointer active:bg-zinc-100/80 dark:active:bg-zinc-800/80 ${
                     isSelected
                       ? 'bg-rose-500/10 dark:bg-rose-950/30'
                       : 'hover:bg-zinc-50 dark:hover:bg-zinc-800/50'
@@ -291,7 +295,10 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                     <input
                       type="checkbox"
                       checked={isSelected}
-                      onChange={() => toggleSelect(item.id, true)}
+                      onChange={() => {
+                        triggerHaptic('selection');
+                        toggleSelect(item.id, true);
+                      }}
                       className="w-4 h-4 rounded-sm border-zinc-300 dark:border-zinc-700 text-rose-600 focus:ring-rose-500 cursor-pointer accent-rose-500"
                     />
                   </td>
@@ -302,6 +309,7 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
+                        triggerHaptic('selection');
                         toggleStar(item.id);
                       }}
                       className="p-1 rounded-md text-zinc-300 dark:text-zinc-600 hover:text-amber-400"
@@ -317,7 +325,16 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                   </td>
 
                   {/* Name + Icon + Tags + Status */}
-                  <td className="px-4 py-3">
+                  <td 
+                    className="px-4 py-3"
+                    onClick={() => {
+                      // On single touch on mobile inside row name, open folder or preview
+                      if (typeof window !== 'undefined' && window.innerWidth < 640) {
+                        if (isFolder) navigateToFolder(item.id);
+                        else openPreview(item);
+                      }
+                    }}
+                  >
                     <div className="flex items-center gap-2.5 min-w-0 max-w-sm sm:max-w-md">
                       <div className="shrink-0 relative">
                         <DriveThumbnail item={item} view="table" />
@@ -387,7 +404,7 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
 
                   {/* Date Modified */}
                   <td className="hidden sm:table-cell px-4 py-3 text-zinc-500 font-mono text-3xs">
-                    {formatTimeAgo(item.updatedAt)}
+                    {formatTimeAgo(item.updatedAt || item.createdAt)}
                   </td>
 
                   {/* Size */}
@@ -399,11 +416,7 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                   <td className="px-4 py-3 text-center">
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setContextItem(item);
-                        setContextPos({ x: e.clientX, y: e.clientY });
-                      }}
+                      onClick={(e) => handleOpenItemOptions(item, e)}
                       className="p-1.5 rounded-lg text-zinc-500 hover:text-zinc-900 dark:hover:text-white opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity cursor-pointer"
                       title="Item Options"
                     >
@@ -417,7 +430,7 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
         </table>
       </div>
 
-      {/* Context Menu */}
+      {/* Desktop Context Menu */}
       {contextItem && (
         <DriveContextMenu
           item={contextItem}
@@ -425,6 +438,17 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
           position={contextPos}
           onClose={() => setContextItem(null)}
           onOpenRenameModal={() => onOpenRenameModal(contextItem)}
+          onOpenMoveModal={onOpenMoveModal}
+        />
+      )}
+
+      {/* Mobile Action Bottom Sheet */}
+      {mobileSheetItem && (
+        <DriveMobileActionSheet
+          item={mobileSheetItem}
+          isOpen={Boolean(mobileSheetItem)}
+          onClose={() => setMobileSheetItem(null)}
+          onOpenRenameModal={(item) => onOpenRenameModal(item)}
           onOpenMoveModal={onOpenMoveModal}
         />
       )}
