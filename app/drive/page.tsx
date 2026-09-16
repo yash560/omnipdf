@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import React, { useState, useEffect, useMemo, useRef, Suspense } from 'react';
 import { useSearchParams, useParams, useRouter } from 'next/navigation';
 import { DriveProvider, useDrive } from '@/lib/drive/drive-context';
