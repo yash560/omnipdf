@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useParams, useRouter } from 'next/navigation';
 import { DriveProvider, useDrive } from '@/lib/drive/drive-context';
 import { DriveSidebar } from '@/components/drive/DriveSidebar';
 import { DriveToolbar } from '@/components/drive/DriveToolbar';
@@ -116,6 +116,7 @@ function DriveWorkspaceInner() {
     selectedIds,
     toggleSelect,
     breadcrumbs,
+    currentFolderId,
     navigateToFolder,
     searchTerm,
     setSearchTerm,
@@ -160,6 +161,9 @@ function DriveWorkspaceInner() {
   } = useDrive();
 
   const searchParams = useSearchParams();
+  const routeParams = useParams();
+  const router = useRouter();
+  const routeFolderId = (routeParams?.id as string | undefined) || null;
 
   const [newFolderOpen, setNewFolderOpen] = useState(false);
   const [renameItem, setRenameItem] = useState<DriveItem | null>(null);
@@ -195,17 +199,35 @@ function DriveWorkspaceInner() {
     return generateSmartDossiers(items, { isVaultUnlocked });
   }, [items, isVaultUnlocked]);
 
-  // Listen for query params from Global Search / Deep Links
+  // Legacy `?folder=` deep links (old Cmd+K results, old bookmarks) -> canonical /drive/folder/<id> path.
+  // Preserves any other params (preview/tab/q) that rode along with the old link shape.
   useEffect(() => {
     if (!searchParams) return;
     const folderParam = searchParams.get('folder');
+    if (!folderParam) return;
+
+    const rest = new URLSearchParams(searchParams.toString());
+    rest.delete('folder');
+    const qs = rest.toString();
+    router.replace(`/drive/folder/${folderParam}${qs ? `?${qs}` : ''}`);
+  }, [searchParams, router]);
+
+  // Keep client folder state in sync with the URL's /drive/folder/<id> segment —
+  // covers first load, browser back/forward, and any direct/shared link.
+  // pushUrl=false: this is reacting to the URL, not the other way around.
+  useEffect(() => {
+    if (routeFolderId !== currentFolderId) {
+      navigateToFolder(routeFolderId, false);
+    }
+  }, [routeFolderId, currentFolderId, navigateToFolder]);
+
+  // Remaining query params from Global Search / Deep Links: preview, tab, q.
+  useEffect(() => {
+    if (!searchParams) return;
     const previewParam = searchParams.get('preview');
     const tabParam = searchParams.get('tab');
     const qParam = searchParams.get('q');
 
-    if (folderParam) {
-      navigateToFolder(folderParam);
-    }
     if (tabParam === 'expiry') {
       setIsExpiryRadarOpen(true);
     } else if (tabParam === 'vault') {
@@ -213,7 +235,7 @@ function DriveWorkspaceInner() {
     } else if (tabParam === 'duplicates') {
       setIsDedupModalOpen(true);
     }
-    if (qParam) {
+    if (qParam && qParam !== searchTerm) {
       setSearchTerm(qParam);
     }
     if (previewParam && items.length > 0 && previewItem?.id !== previewParam) {
@@ -222,7 +244,7 @@ function DriveWorkspaceInner() {
         openPreview(match);
       }
     }
-  }, [searchParams, items, previewItem, navigateToFolder, openPreview, setSearchTerm, setIsExpiryRadarOpen, setIsVaultModalOpen, setIsDedupModalOpen]);
+  }, [searchParams, items, previewItem, searchTerm, openPreview, setSearchTerm, setIsExpiryRadarOpen, setIsVaultModalOpen, setIsDedupModalOpen]);
 
   // Global Keyboard Shortcuts (Space for Quick Look, Cmd+A, Del, ?, Esc)
   useEffect(() => {

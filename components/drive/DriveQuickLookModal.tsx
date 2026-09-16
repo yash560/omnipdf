@@ -43,6 +43,8 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
   const [zoom, setZoom] = useState(1.0);
   const [rotation, setRotation] = useState(0);
   const [showRelated, setShowRelated] = useState(false);
+  const [dragStartY, setDragStartY] = useState<number | null>(null);
+  const [dragCurrentY, setDragCurrentY] = useState<number | null>(null);
 
   useEffect(() => {
     let url: string | null = null;
@@ -116,9 +118,6 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
   const isZipArchive = ['zip', 'jar', 'tar', 'gz', 'rar'].includes(item.extension) || item.category === 'archive';
   const isSpreadsheet = ['xlsx', 'xls', 'csv', 'tsv'].includes(item.extension) || item.category === 'spreadsheet';
   const isCodeOrText = textContent !== null || item.category === 'code';
-
-  const [dragStartY, setDragStartY] = useState<number | null>(null);
-  const [dragCurrentY, setDragCurrentY] = useState<number | null>(null);
 
   const handleTouchStart = (e: React.TouchEvent) => {
     setDragStartY(e.touches[0].clientY);

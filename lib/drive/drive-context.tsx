@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter, usePathname } from 'next/navigation';
 import {
   DriveItem,
   DriveViewSection,
@@ -102,7 +103,7 @@ interface DriveContextType {
   saveAsNewFile: (name: string, blob: Blob, mimeType?: string, parentId?: string | null) => Promise<DriveItem>;
 
   // Actions & Selection
-  navigateToFolder: (folderId: string | null) => void;
+  navigateToFolder: (folderId: string | null, pushUrl?: boolean) => void;
   selectSection: (section: DriveViewSection, category?: DriveCategory) => void;
   toggleSelect: (id: string, multi?: boolean) => void;
   selectAll: () => void;
@@ -158,9 +159,17 @@ export const useDrive = () => {
 
 export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, isAuthenticated, isLoading } = useAuth();
-  
+  const router = useRouter();
+  const pathname = usePathname();
+  // Set right before any programmatic setSearchTerm('') that's part of a
+  // navigation (folder change, section switch) so the q= URL-sync effect
+  // below doesn't fire a stale/racing router.replace against a URL that
+  // navigateToFolder/selectSection is already pushing in the same tick.
+  const skipNextSearchUrlSync = useRef(false);
+  const loadItemsRequestIdRef = useRef(0);
+
   const [currentFolderId, setCurrentFolderId] = useState<string | null>(null);
-  const [breadcrumbs, setBreadcrumbs] = useState<DriveBreadcrumb[]>([{ id: null, name: 'My Drive' }]);
+  const [breadcrumbs, setBreadcrumbs] = useState<DriveBreadcrumb[]>([{ id: null, name: 'Cloud Drive' }]);
   const [viewSection, setViewSection] = useState<DriveViewSection>('my-drive');
   const [selectedCategory, setSelectedCategory] = useState<DriveCategory | null>(null);
   const [viewLayout, setViewLayout] = useState<DriveViewLayout>('grid');
@@ -185,6 +194,26 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }, 280);
     return () => clearTimeout(timer);
   }, [searchTerm]);
+
+  // Reflect the active search term in the URL (?q=) so it survives refresh
+  // and is shareable — but skip when a navigation (folder change/section
+  // switch) just cleared search itself, since that already pushes its own
+  // clean URL and this effect racing it with a stale pathname would revert it.
+  useEffect(() => {
+    if (skipNextSearchUrlSync.current) {
+      skipNextSearchUrlSync.current = false;
+      return;
+    }
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    if (debouncedSearchTerm) {
+      params.set('q', debouncedSearchTerm);
+    } else {
+      params.delete('q');
+    }
+    const qs = params.toString();
+    router.replace(pathname + (qs ? `?${qs}` : ''), { scroll: false });
+  }, [debouncedSearchTerm, pathname, router]);
 
   const [items, setItems] = useState<DriveItem[]>([]);
   const [folderCache, setFolderCache] = useState<Record<string, DriveItem[]>>({});
@@ -280,6 +309,12 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       return;
     }
 
+    // Guard against out-of-order responses: if currentFolderId/section/etc.
+    // change again (e.g. rapid back/forward, quick folder-to-folder clicks)
+    // before this request resolves, an older in-flight fetch could otherwise
+    // resolve after the newer one and silently overwrite it with stale data.
+    const requestId = ++loadItemsRequestIdRef.current;
+
     const isSilent = options?.silent ?? (hasLoadedInitialRef.current && itemsRef.current.length > 0);
     if (!isSilent) {
       setLoading(true);
@@ -304,6 +339,7 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           isVaultUnlocked,
         });
 
+        if (requestId !== loadItemsRequestIdRef.current) return;
         setItems(searchResult.items || []);
         setAvailableTags(searchResult.availableTags || []);
         setAvailableAiCategories(searchResult.availableAiCategories || []);
@@ -314,6 +350,7 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           category: selectedCategory || undefined,
           isVaultUnlocked,
         });
+        if (requestId !== loadItemsRequestIdRef.current) return;
         setItems(cloudData.items);
         if (cloudData.breadcrumbs && cloudData.breadcrumbs.length > 0) {
           setBreadcrumbs(cloudData.breadcrumbs);
@@ -332,8 +369,10 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     } catch (error) {
       console.error('Failed to load drive items from cloud:', error);
     } finally {
-      setLoading(false);
-      setIsSyncing(false);
+      if (requestId === loadItemsRequestIdRef.current) {
+        setLoading(false);
+        setIsSyncing(false);
+      }
     }
   }, [
     authRequired,
@@ -440,15 +479,21 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const files = items.filter((item) => item.type === 'file');
 
   // Navigation handlers
-  const navigateToFolder = async (folderId: string | null) => {
+  const navigateToFolder = async (folderId: string | null, pushUrl: boolean = true) => {
     setCurrentFolderId(folderId);
     setSelectedIds([]);
+    // Only arm the skip if a search was actually active — otherwise
+    // setSearchTerm('') is a no-op, the debounce effect never re-fires, and
+    // the flag would sit armed and wrongly swallow the *next* real search sync.
+    if (searchTerm || debouncedSearchTerm) {
+      skipNextSearchUrlSync.current = true;
+    }
     setSearchTerm('');
     setSelectedTag(null);
     setSelectedAiCategory(null);
 
     if (folderId === null) {
-      setBreadcrumbs([{ id: null, name: 'My Drive' }]);
+      setBreadcrumbs([{ id: null, name: 'Cloud Drive' }]);
     } else {
       const folderItem = items.find((i) => i.id === folderId);
       if (folderItem) {
@@ -461,6 +506,13 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         });
       }
     }
+
+    // Reflect the folder in the URL so refresh/back-forward/share-links work.
+    // pushUrl=false is used when this call is itself reacting to a URL change
+    // (route param sync, browser back/forward) to avoid double-pushing history.
+    if (pushUrl) {
+      router.push(folderId ? `/drive/folder/${folderId}` : '/drive');
+    }
   };
 
   const selectSection = (section: DriveViewSection, category?: DriveCategory) => {
@@ -471,8 +523,15 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setViewSection(section);
     setSelectedCategory(category || null);
     setCurrentFolderId(null);
-    setBreadcrumbs([{ id: null, name: section === 'shared' ? 'Shared with Me' : section === 'vault' ? 'Secure Vault' : 'My Drive' }]);
+    // Sections aren't URL-routed yet, but leaving a folder must still drop
+    // its /drive/folder/<id> URL — otherwise the address bar keeps showing a
+    // folder path while the UI has switched to Starred/Trash/Shared/etc.
+    router.replace('/drive');
+    setBreadcrumbs([{ id: null, name: section === 'shared' ? 'Shared with Me' : section === 'vault' ? 'Secure Vault' : 'Cloud Drive' }]);
     setSelectedIds([]);
+    if (searchTerm || debouncedSearchTerm) {
+      skipNextSearchUrlSync.current = true;
+    }
     setSearchTerm('');
     setSelectedTag(null);
     setSelectedAiCategory(null);

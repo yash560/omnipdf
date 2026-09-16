@@ -377,9 +377,13 @@ export function CommandMenu() {
     } else if (item.type === 'tool') {
       router.push(`/${item.data.slug}`);
     } else if (item.type === 'folder') {
-      router.push(`/drive?folder=${item.data.id}`);
+      router.push(`/drive/folder/${item.data.id}`);
     } else if (item.type === 'file') {
-      router.push(`/drive?preview=${item.data.id}&folder=${item.data.parentId || ''}`);
+      router.push(
+        item.data.parentId
+          ? `/drive/folder/${item.data.parentId}?preview=${item.data.id}`
+          : `/drive?preview=${item.data.id}`
+      );
     }
   };
 
