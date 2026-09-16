@@ -13,13 +13,35 @@ function getAuthHeaders(): Record<string, string> {
   return headers;
 }
 
+const itemsCache = new Map<string, { data: { items: DriveItem[]; breadcrumbs: DriveBreadcrumb[] }; timestamp: number }>();
+const CACHE_TTL_MS = 15_000;
+
+export function invalidateCloudCache() {
+  itemsCache.clear();
+}
+
 export async function fetchCloudItems(options: {
   section?: DriveViewSection;
   parentId?: string | null;
   category?: DriveCategory;
   query?: string;
   isVaultUnlocked?: boolean;
+  forceRefresh?: boolean;
 } = {}): Promise<{ items: DriveItem[]; breadcrumbs: DriveBreadcrumb[] }> {
+  const cacheKey = JSON.stringify({
+    section: options.section || 'my-drive',
+    parentId: options.parentId || null,
+    category: options.category || null,
+    query: options.query || null,
+  });
+
+  if (!options.forceRefresh && itemsCache.has(cacheKey)) {
+    const entry = itemsCache.get(cacheKey)!;
+    if (Date.now() - entry.timestamp < CACHE_TTL_MS) {
+      return entry.data;
+    }
+  }
+
   const params = new URLSearchParams();
   if (options.section) params.set('section', options.section);
   if (options.parentId) params.set('parentId', options.parentId);
@@ -39,7 +61,9 @@ export async function fetchCloudItems(options: {
   }
 
   const data = await res.json();
-  return { items: data.items || [], breadcrumbs: data.breadcrumbs || [] };
+  const result = { items: data.items || [], breadcrumbs: data.breadcrumbs || [] };
+  itemsCache.set(cacheKey, { data: result, timestamp: Date.now() });
+  return result;
 }
 
 export async function uploadCloudFiles(
@@ -69,6 +93,7 @@ export async function uploadCloudFiles(
     throw new Error(err.error || 'Failed to upload files');
   }
 
+  invalidateCloudCache();
   const data = await res.json();
   return data.items || [];
 }
@@ -97,6 +122,7 @@ export async function uploadCloudDirectoryStructure(
     throw new Error(err.error || 'Failed to upload directory');
   }
 
+  invalidateCloudCache();
   const data = await res.json();
   return data.count || files.length;
 }
@@ -120,6 +146,7 @@ export async function createCloudFolderApi(
     throw new Error(err.error || 'Failed to create folder');
   }
 
+  invalidateCloudCache();
   const data = await res.json();
   return data.folder;
 }
@@ -142,6 +169,7 @@ export async function updateCloudItemApi(
     throw new Error(err.error || 'Failed to update item');
   }
 
+  invalidateCloudCache();
   const data = await res.json();
   return data.item;
 }
@@ -163,6 +191,8 @@ export async function moveCloudItemsApi(
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Failed to move items');
   }
+
+  invalidateCloudCache();
 }
 
 export async function trashCloudItemsApi(itemIds: string[]): Promise<void> {
@@ -179,6 +209,8 @@ export async function trashCloudItemsApi(itemIds: string[]): Promise<void> {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Failed to trash items');
   }
+
+  invalidateCloudCache();
 }
 
 export async function restoreCloudItemsApi(itemIds: string[]): Promise<void> {
@@ -195,6 +227,8 @@ export async function restoreCloudItemsApi(itemIds: string[]): Promise<void> {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Failed to restore items');
   }
+
+  invalidateCloudCache();
 }
 
 export async function deleteCloudItemsPermanentlyApi(itemIds: string[]): Promise<void> {
@@ -211,6 +245,8 @@ export async function deleteCloudItemsPermanentlyApi(itemIds: string[]): Promise
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Failed to delete items permanently');
   }
+
+  invalidateCloudCache();
 }
 
 export async function emptyCloudTrashApi(): Promise<void> {
@@ -220,13 +256,15 @@ export async function emptyCloudTrashApi(): Promise<void> {
       'Content-Type': 'application/json',
       ...getAuthHeaders(),
     },
-    body: JSON.stringify({ action: 'empty-trash' }),
+    body: JSON.stringify({ action: 'empty_trash' }),
   });
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error(err.error || 'Failed to empty trash');
   }
+
+  invalidateCloudCache();
 }
 
 export async function fetchCloudStats(): Promise<DriveStats> {

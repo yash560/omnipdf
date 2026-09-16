@@ -29,9 +29,9 @@ export const DriveKeyboardShortcutsModal: React.FC<DriveKeyboardShortcutsModalPr
       title: 'Actions & Management',
       shortcuts: [
         { keys: ['Cmd', 'K'], description: 'Focus smart search bar' },
+        { keys: ['U'], description: 'Smart Upload & Document Scanner Studio' },
         { keys: ['Delete'], description: 'Move selected items to Trash' },
         { keys: ['Cmd', 'Shift', 'N'], description: 'Create new folder' },
-        { keys: ['Cmd', 'U'], description: 'Upload file or folder' },
         { keys: ['?'], description: 'Open this keyboard shortcuts guide' },
       ],
     },

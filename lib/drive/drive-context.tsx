@@ -99,6 +99,12 @@ interface DriveContextType {
   isKeyboardShortcutsOpen: boolean;
   setIsKeyboardShortcutsOpen: (open: boolean) => void;
 
+  // Smart Upload & Scanner Studio
+  isSmartUploadOpen: boolean;
+  setIsSmartUploadOpen: (open: boolean) => void;
+  smartUploadInitialTab: 'files' | 'camera' | 'clipboard';
+  openSmartUpload: (tab?: 'files' | 'camera' | 'clipboard') => void;
+
   // In-Place Quick Tools (Crop, Edit, Transform & Convert)
   quickToolsItem: DriveItem | null;
   quickToolsInitialTab?: string;
@@ -253,6 +259,14 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const [isDedupModalOpen, setIsDedupModalOpen] = useState(false);
   const [isKeyboardShortcutsOpen, setIsKeyboardShortcutsOpen] = useState(false);
+  const [isSmartUploadOpen, setIsSmartUploadOpen] = useState(false);
+  const [smartUploadInitialTab, setSmartUploadInitialTab] = useState<'files' | 'camera' | 'clipboard'>('files');
+
+  const openSmartUpload = (tab: 'files' | 'camera' | 'clipboard' = 'files') => {
+    setSmartUploadInitialTab(tab);
+    setIsSmartUploadOpen(true);
+  };
+
   const [quickToolsItem, setQuickToolsItem] = useState<DriveItem | null>(null);
   const [quickToolsInitialTab, setQuickToolsInitialTab] = useState<string | undefined>(undefined);
 
@@ -1117,6 +1131,12 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsDedupModalOpen,
         isKeyboardShortcutsOpen,
         setIsKeyboardShortcutsOpen,
+
+        // Smart Upload & Scanner Studio
+        isSmartUploadOpen,
+        setIsSmartUploadOpen,
+        smartUploadInitialTab,
+        openSmartUpload,
 
         // In-Place Quick Tools
         quickToolsItem,

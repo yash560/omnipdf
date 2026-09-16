@@ -46,41 +46,47 @@ async function getStorageBucket(): Promise<GridFSBucket> {
 }
 
 /**
- * Initialize indexes on all collections
+ * Initialize indexes on all collections (non-blocking background execution)
  */
 let indexesCreated = false;
-async function ensureIndexes() {
+async function ensureIndexes(): Promise<void> {
   if (indexesCreated) return;
   indexesCreated = true;
-  try {
-    const db = await getMongoDb();
-    const itemsCol = db.collection(ITEMS_COLLECTION);
-    await itemsCol.createIndex({ userId: 1, parentId: 1, isTrash: 1 }).catch(() => {});
-    await itemsCol.createIndex({ userId: 1, isStarred: 1, isTrash: 1 }).catch(() => {});
-    await itemsCol.createIndex({ userId: 1, updatedAt: -1 }).catch(() => {});
-    await itemsCol.createIndex({ userId: 1, category: 1, isTrash: 1 }).catch(() => {});
-    await itemsCol.createIndex({ id: 1, userId: 1 }).catch(() => {});
-    await itemsCol.createIndex({ id: 1 }, { unique: true }).catch(() => {});
-    await itemsCol.createIndex({ ownerEmail: 1 }).catch(() => {});
-    await itemsCol.createIndex({ 'sharedWith.userId': 1 }).catch(() => {});
-    await itemsCol.createIndex({ 'sharedWith.email': 1 }).catch(() => {});
-    await itemsCol.createIndex({ 'shareConfig.publicId': 1 }).catch(() => {});
 
-    const chunksCol = db.collection(CHUNKS_COLLECTION);
-    await chunksCol.createIndex({ uploadId: 1, chunkIndex: 1 }, { unique: true }).catch(() => {});
+  // Run in background so request execution is instant
+  (async () => {
+    try {
+      const db = await getMongoDb();
+      const itemsCol = db.collection(ITEMS_COLLECTION);
+      await Promise.allSettled([
+        itemsCol.createIndex({ userId: 1, parentId: 1, isTrash: 1 }),
+        itemsCol.createIndex({ userId: 1, isStarred: 1, isTrash: 1 }),
+        itemsCol.createIndex({ userId: 1, updatedAt: -1 }),
+        itemsCol.createIndex({ userId: 1, category: 1, isTrash: 1 }),
+        itemsCol.createIndex({ id: 1, userId: 1 }),
+        itemsCol.createIndex({ id: 1 }, { unique: true }),
+        itemsCol.createIndex({ ownerEmail: 1 }),
+        itemsCol.createIndex({ 'sharedWith.userId': 1 }),
+        itemsCol.createIndex({ 'sharedWith.email': 1 }),
+        itemsCol.createIndex({ 'shareConfig.publicId': 1 }),
+      ]);
 
-    const sessionsCol = db.collection(SESSIONS_COLLECTION);
-    await sessionsCol.createIndex({ uploadId: 1, userId: 1 }, { unique: true }).catch(() => {});
+      const chunksCol = db.collection(CHUNKS_COLLECTION);
+      const sessionsCol = db.collection(SESSIONS_COLLECTION);
+      const commentsCol = db.collection(COMMENTS_COLLECTION);
+      const activityCol = db.collection(ACTIVITY_COLLECTION);
 
-    const commentsCol = db.collection(COMMENTS_COLLECTION);
-    await commentsCol.createIndex({ itemId: 1, createdAt: 1 });
-
-    const activityCol = db.collection(ACTIVITY_COLLECTION);
-    await activityCol.createIndex({ itemId: 1, timestamp: -1 });
-    await activityCol.createIndex({ userId: 1, timestamp: -1 });
-  } catch (err) {
-    console.warn('[ServerDrive] Index creation warning:', err);
-  }
+      await Promise.allSettled([
+        chunksCol.createIndex({ uploadId: 1, chunkIndex: 1 }, { unique: true }),
+        sessionsCol.createIndex({ uploadId: 1, userId: 1 }, { unique: true }),
+        commentsCol.createIndex({ itemId: 1, createdAt: 1 }),
+        activityCol.createIndex({ itemId: 1, timestamp: -1 }),
+        activityCol.createIndex({ userId: 1, timestamp: -1 }),
+      ]);
+    } catch (err) {
+      console.warn('[ServerDrive] Non-blocking index creation notice:', err);
+    }
+  })();
 }
 
 // Cap render-time memory use for the (rare) chunked/lazy path where we have to

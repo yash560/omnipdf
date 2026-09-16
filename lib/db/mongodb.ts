@@ -1,8 +1,5 @@
 import { MongoClient, Db } from 'mongodb';
 
-let cachedClient: MongoClient | null = null;
-let cachedDb: Db | null = null;
-
 function getMongoUri(): string {
   return (
     process.env.MONGODB_URI ||
@@ -16,9 +13,28 @@ function getDbName(): string {
   return process.env.MONGODB_DB || 'thewebvale';
 }
 
+interface MongoGlobalCache {
+  conn: MongoClient | null;
+  promise: Promise<MongoClient> | null;
+  db: Db | null;
+}
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __mongoGlobalCache: MongoGlobalCache | undefined;
+}
+
+function getCache(): MongoGlobalCache {
+  if (!global.__mongoGlobalCache) {
+    global.__mongoGlobalCache = { conn: null, promise: null, db: null };
+  }
+  return global.__mongoGlobalCache;
+}
+
 export async function getMongoClient(): Promise<MongoClient> {
-  if (cachedClient) {
-    return cachedClient;
+  const cache = getCache();
+  if (cache.conn) {
+    return cache.conn;
   }
 
   const uri = getMongoUri();
@@ -26,24 +42,39 @@ export async function getMongoClient(): Promise<MongoClient> {
     throw new Error('[FileCraft DB] Missing MONGODB_URI environment variable.');
   }
 
-  const client = new MongoClient(uri, {
-    maxPoolSize: 10,
-    serverSelectionTimeoutMS: 5000,
-    socketTimeoutMS: 45000,
-  });
+  if (!cache.promise) {
+    const client = new MongoClient(uri, {
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      maxIdleTimeMS: 30000,
+      serverSelectionTimeoutMS: 4000,
+      connectTimeoutMS: 4000,
+      socketTimeoutMS: 30000,
+      retryWrites: true,
+    });
+    cache.promise = client.connect().then((c) => {
+      cache.conn = c;
+      return c;
+    });
+  }
 
-  await client.connect();
-  cachedClient = client;
-  return client;
+  try {
+    cache.conn = await cache.promise;
+  } catch (e) {
+    cache.promise = null;
+    throw e;
+  }
+
+  return cache.conn;
 }
 
 export async function getMongoDb(): Promise<Db> {
-  if (cachedDb) {
-    return cachedDb;
+  const cache = getCache();
+  if (cache.db && cache.conn) {
+    return cache.db;
   }
 
   const client = await getMongoClient();
-  const db = client.db(getDbName());
-  cachedDb = db;
-  return db;
+  cache.db = client.db(getDbName());
+  return cache.db;
 }

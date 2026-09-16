@@ -37,6 +37,8 @@ import {
   Layers,
   Files,
   Clock,
+  UploadCloud,
+  Camera,
   Image as ImageIcon,
   Table as TableIcon
 } from 'lucide-react';
@@ -100,6 +102,7 @@ export function DriveToolbar({
     openVaultModal,
     setIsFolderChatOpen,
     setIsKeyboardShortcutsOpen,
+    openSmartUpload,
   } = useDrive();
 
   const [isSearchDropdownOpen, setIsSearchDropdownOpen] = useState(false);
@@ -276,8 +279,21 @@ export function DriveToolbar({
           />
         </div>
 
-        {/* Quick Tools on Top Row: Chat + Filters */}
+        {/* Quick Tools on Top Row: Smart Upload/Scan + Chat + Filters */}
         <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+          {/* Smart Upload & Scanner Studio */}
+          <Tooltip content="Smart Multi-Upload, Document Camera Scanner, PDF Merge & ZIP Package" side="bottom">
+            <button
+              type="button"
+              onClick={() => openSmartUpload('files')}
+              className="inline-flex items-center justify-center gap-1 sm:gap-1.5 p-2 sm:px-3 sm:py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-xs font-black text-white shadow-xs shadow-rose-500/20 transition-all active:scale-95 cursor-pointer shrink-0"
+              aria-label="Smart Upload & Scan Hub"
+            >
+              <UploadCloud className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">Upload & Scan</span>
+            </button>
+          </Tooltip>
+
           {/* Chat with Folder / AI RAG */}
           <Tooltip content="Chat with Gemini AI across all documents in this folder" side="bottom">
             <button

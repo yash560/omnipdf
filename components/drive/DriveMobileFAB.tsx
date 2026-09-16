@@ -26,6 +26,7 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
     setIsExpiryRadarOpen,
     selectAll,
     selectedIds,
+    openSmartUpload,
   } = useDrive();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -88,18 +89,34 @@ export function DriveMobileFAB({ onOpenNewFolderModal }: DriveMobileFABProps) {
       <div className="fixed bottom-6 right-4 z-40 flex flex-col items-end gap-2.5 lg:hidden select-none">
         {isOpen && (
           <div className="flex flex-col items-end gap-2.5 mb-1 animate-in slide-in-from-bottom-3 fade-in duration-200">
-            {/* Upload Camera Snap */}
+            {/* Smart Studio / Multi-Upload */}
             <button
               type="button"
               onClick={() => {
                 triggerHaptic('light');
-                cameraInputRef.current?.click();
                 setIsOpen(false);
+                openSmartUpload('files');
+              }}
+              className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-rose-500 to-rose-600 text-white shadow-xl text-xs font-black active:scale-95 transition-transform"
+            >
+              <span>Smart Upload & Merge</span>
+              <div className="w-8 h-8 rounded-xl bg-white/20 text-white flex items-center justify-center">
+                <Sparkles className="w-4 h-4" />
+              </div>
+            </button>
+
+            {/* Document Camera Scanner */}
+            <button
+              type="button"
+              onClick={() => {
+                triggerHaptic('light');
+                setIsOpen(false);
+                openSmartUpload('camera');
               }}
               className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-xs font-bold text-zinc-800 dark:text-zinc-200 active:scale-95 transition-transform"
             >
-              <span>Scan / Photo</span>
-              <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+              <span>Scan Documents</span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                 <Camera className="w-4 h-4" />
               </div>
             </button>

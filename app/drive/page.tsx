@@ -25,6 +25,7 @@ import { DriveKeyboardShortcutsModal } from '@/components/drive/DriveKeyboardSho
 import { DriveBulkActionBar } from '@/components/drive/DriveBulkActionBar';
 import { DriveBulkTagModal } from '@/components/drive/DriveBulkTagModal';
 import { DriveQuickToolsModal } from '@/components/drive/quick-tools/DriveQuickToolsModal';
+import { DriveSmartUploadModal } from '@/components/drive/DriveSmartUploadModal';
 import { DriveMobileFAB } from '@/components/drive/DriveMobileFAB';
 import { DrivePullToRefresh } from '@/components/drive/DrivePullToRefresh';
 import {
@@ -142,6 +143,7 @@ function DriveWorkspaceInner() {
     setIsDedupModalOpen,
     isKeyboardShortcutsOpen,
     setIsKeyboardShortcutsOpen,
+    openSmartUpload,
 
     // Fast Filters
     activePerson,
@@ -313,6 +315,9 @@ function DriveWorkspaceInner() {
         setIsVaultModalOpen(false);
       } else if (e.key === '?') {
         setIsKeyboardShortcutsOpen(true);
+      } else if ((e.key === 'u' || e.key === 'U') && !e.metaKey && !e.ctrlKey) {
+        e.preventDefault();
+        openSmartUpload('files');
       }
     };
 
@@ -749,6 +754,9 @@ function DriveWorkspaceInner() {
 
       {/* In-Place Quick Tools (Crop, Rotate, Split, Clean & Transform) Modal */}
       <DriveQuickToolsModal />
+
+      {/* Universal Smart Upload, Multi-Doc Scanner & Batch Processing Hub */}
+      <DriveSmartUploadModal />
     </div>
   );
 }

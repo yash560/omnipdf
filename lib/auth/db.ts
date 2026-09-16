@@ -14,9 +14,23 @@ const memoryCache = new Map<string, UserRecord>();
 
 let dbInitialized = false;
 
-async function ensureDefaultUsers() {
+async function ensureDefaultUsers(): Promise<void> {
   if (dbInitialized) return;
   dbInitialized = true;
+
+  if (process.env.NODE_ENV === 'production') {
+    (async () => {
+      try {
+        const db = await getMongoDb();
+        const collection = db.collection<UserRecord>(USERS_COLLECTION);
+        await Promise.allSettled([
+          collection.createIndex({ email: 1 }, { unique: true }),
+          collection.createIndex({ id: 1 }, { unique: true }),
+        ]);
+      } catch {}
+    })();
+    return;
+  }
 
   try {
     const db = await getMongoDb();
@@ -25,11 +39,6 @@ async function ensureDefaultUsers() {
     // Create unique index on email
     await collection.createIndex({ email: 1 }, { unique: true }).catch(() => {});
     await collection.createIndex({ id: 1 }, { unique: true }).catch(() => {});
-
-    // Only seed demo accounts in local development mode
-    if (process.env.NODE_ENV === 'production') {
-      return;
-    }
 
     // Check if Yash user exists
     const yashExists = await collection.findOne({ email: 'yash@thewebvale.com' });
@@ -107,9 +116,13 @@ export function sanitizeUser(record: UserRecord): User {
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
   const normalized = email.toLowerCase().trim();
-  await ensureDefaultUsers();
+  if (memoryCache.has(normalized)) {
+    return memoryCache.get(normalized)!;
+  }
 
-  // Try MongoDB first
+  ensureDefaultUsers().catch(() => {});
+
+  // Try MongoDB
   try {
     const db = await getMongoDb();
     const collection = db.collection<UserRecord>(USERS_COLLECTION);
@@ -123,14 +136,20 @@ export async function findUserByEmail(email: string): Promise<UserRecord | null>
     console.warn('[FileCraft Auth] MongoDB query error:', err);
   }
 
-  // Fallback to memory cache
-  return memoryCache.get(normalized) || null;
+  return null;
 }
 
 export async function findUserById(id: string): Promise<UserRecord | null> {
-  await ensureDefaultUsers();
+  if (memoryCache.has(id)) {
+    return memoryCache.get(id)!;
+  }
+  for (const user of memoryCache.values()) {
+    if (user.id === id) return user;
+  }
 
-  // Try MongoDB first
+  ensureDefaultUsers().catch(() => {});
+
+  // Try MongoDB
   try {
     const db = await getMongoDb();
     const collection = db.collection<UserRecord>(USERS_COLLECTION);
@@ -144,13 +163,6 @@ export async function findUserById(id: string): Promise<UserRecord | null> {
     console.warn('[FileCraft Auth] MongoDB findUserById error:', err);
   }
 
-  // Fallback to memory cache
-  if (memoryCache.has(id)) {
-    return memoryCache.get(id)!;
-  }
-  for (const user of memoryCache.values()) {
-    if (user.id === id) return user;
-  }
   return null;
 }
 

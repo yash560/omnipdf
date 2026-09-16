@@ -20,6 +20,8 @@ import {
   FolderArchive, 
   ShieldCheck, 
   Sparkles,
+  Camera,
+  ScanLine,
   PieChart,
   Users,
   Lock,
@@ -65,6 +67,7 @@ export function DriveSidebar({
     setIsExpiryRadarOpen,
     setIsDedupModalOpen,
     setIsKeyboardShortcutsOpen,
+    openSmartUpload,
   } = useDrive();
 
   const [newDropdownOpen, setNewDropdownOpen] = useState(false);
@@ -181,6 +184,40 @@ export function DriveSidebar({
                 onClick={() => setNewDropdownOpen(false)}
               />
               <div className="absolute top-full left-0 mt-2 w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-xl p-1.5 z-30 space-y-1 animate-in fade-in zoom-in-95 duration-150">
+                <Tooltip content="Upload multiple files, merge to PDF, package to ZIP, or process batch" side="right">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewDropdownOpen(false);
+                      openSmartUpload('files');
+                      if (isMobileDrawer && onCloseMobileDrawer) onCloseMobileDrawer();
+                    }}
+                    className="w-full flex items-center justify-between p-2.5 rounded-xl bg-rose-500/10 dark:bg-rose-950/30 hover:bg-rose-500/20 text-xs font-black text-rose-600 dark:text-rose-400 transition-colors cursor-pointer border border-rose-500/20"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Sparkles className="w-4 h-4 text-rose-500" />
+                      <span>Smart Upload Studio</span>
+                    </div>
+                    <span className="px-1.5 py-0.5 rounded-md text-[9px] font-bold bg-rose-500 text-white uppercase tracking-wider">
+                      Batch
+                    </span>
+                  </button>
+                </Tooltip>
+                <Tooltip content="Capture multi-page documents with live camera & high-contrast scanner filters" side="right">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewDropdownOpen(false);
+                      openSmartUpload('camera');
+                      if (isMobileDrawer && onCloseMobileDrawer) onCloseMobileDrawer();
+                    }}
+                    className="w-full flex items-center gap-2.5 p-2.5 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-800 dark:text-zinc-200 transition-colors cursor-pointer"
+                  >
+                    <Camera className="w-4 h-4 text-emerald-500" />
+                    <span>Scan with Camera</span>
+                  </button>
+                </Tooltip>
+                <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />
                 <Tooltip content="Create a new organized folder in current directory" side="right">
                   <button
                     type="button"
