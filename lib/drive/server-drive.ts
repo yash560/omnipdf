@@ -987,14 +987,7 @@ export async function getCloudFileStreamWithRange(
   item: DriveItem;
   range?: { start: number; end: number; total: number; isPartial: boolean };
 } | null> {
-  let item = await getCloudItem(userId, id, userEmail);
-  if (!item) {
-    const db = await getMongoDb();
-    const doc = await db.collection<DriveItem>(ITEMS_COLLECTION).findOne({ id });
-    if (doc && !doc.isVault) {
-      item = doc;
-    }
-  }
+  const item = await getCloudItem(userId, id, userEmail);
   if (!item || item.type === 'folder') return null;
 
   const bucket = await getStorageBucket();
@@ -1180,16 +1173,16 @@ export async function updateShareConfig(
 export async function addDriveComment(
   userId: string,
   itemId: string,
-  content: string
+  content: string,
+  userEmail?: string
 ): Promise<DriveComment> {
   await ensureIndexes();
   const db = await getMongoDb();
   const col = db.collection<DriveComment>(COMMENTS_COLLECTION);
-  const itemsCol = db.collection<DriveItem>(ITEMS_COLLECTION);
   const user = await findUserById(userId);
 
-  const item = await itemsCol.findOne({ id: itemId });
-  if (!item) throw new Error('Item not found.');
+  const item = await getCloudItem(userId, itemId, userEmail || user?.email);
+  if (!item) throw new Error('Item not found or access denied.');
 
   const comment: DriveComment = {
     id: generateId('cmt'),
@@ -1207,24 +1200,51 @@ export async function addDriveComment(
   return comment;
 }
 
-export async function getDriveComments(itemId: string): Promise<DriveComment[]> {
+export async function getDriveComments(
+  userId: string,
+  itemId: string,
+  userEmail?: string
+): Promise<DriveComment[]> {
   await ensureIndexes();
+  const item = await getCloudItem(userId, itemId, userEmail);
+  if (!item) throw new Error('Item not found or access denied.');
+
   const db = await getMongoDb();
   const col = db.collection<DriveComment>(COMMENTS_COLLECTION);
   const docs = await col.find({ itemId }).sort({ createdAt: 1 }).toArray();
   return docs.map(({ _id, ...c }: any) => c as DriveComment);
 }
 
-export async function resolveDriveComment(commentId: string, resolved: boolean = true): Promise<void> {
+export async function resolveDriveComment(
+  userId: string,
+  commentId: string,
+  resolved: boolean = true,
+  userEmail?: string
+): Promise<void> {
   await ensureIndexes();
   const db = await getMongoDb();
   const col = db.collection<DriveComment>(COMMENTS_COLLECTION);
+
+  const comment = await col.findOne({ id: commentId });
+  if (!comment) throw new Error('Comment not found.');
+
+  const item = await getCloudItem(userId, comment.itemId, userEmail);
+  if (!item) throw new Error('Item not found or access denied.');
+
+  const isAuthor = comment.userId === userId;
+  const isOwner = item.userId === userId;
+  const isEditor = item.myRole === 'editor' || item.myRole === 'admin';
+  if (!isAuthor && !isOwner && !isEditor) {
+    throw new Error('You do not have permission to resolve this comment.');
+  }
+
   await col.updateOne({ id: commentId }, { $set: { resolved, updatedAt: Date.now() } });
 }
 
 export async function getDriveActivities(
+  userId: string,
   itemId?: string,
-  userId?: string,
+  userEmail?: string,
   limit: number = 30
 ): Promise<DriveActivity[]> {
   await ensureIndexes();
@@ -1232,8 +1252,13 @@ export async function getDriveActivities(
   const col = db.collection<DriveActivity>(ACTIVITY_COLLECTION);
 
   const filter: any = {};
-  if (itemId) filter.itemId = itemId;
-  if (userId) filter.userId = userId;
+  if (itemId) {
+    const item = await getCloudItem(userId, itemId, userEmail);
+    if (!item) throw new Error('Item not found or access denied.');
+    filter.itemId = itemId;
+  } else {
+    filter.userId = userId;
+  }
 
   const docs = await col.find(filter).sort({ timestamp: -1 }).limit(limit).toArray();
   return docs.map(({ _id, ...a }: any) => a as DriveActivity);
