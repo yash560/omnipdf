@@ -121,7 +121,7 @@ export async function recordDriveActivity(
 export async function getCloudItems(
   userId: string,
   options: {
-    section?: 'my-drive' | 'starred' | 'recent' | 'trash' | 'shared' | 'category';
+    section?: 'my-drive' | 'starred' | 'recent' | 'trash' | 'shared' | 'category' | 'vault';
     parentId?: string | null;
     category?: DriveCategory;
     query?: string;
@@ -167,6 +167,9 @@ export async function getCloudItems(
 
     if (section === 'trash') {
       filter.isTrash = true;
+    } else if (section === 'vault') {
+      filter.isTrash = false;
+      filter.isVault = true;
     } else if (section === 'starred') {
       filter.isTrash = false;
       filter.isStarred = true;

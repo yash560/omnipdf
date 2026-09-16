@@ -54,6 +54,26 @@ export async function POST(req: NextRequest) {
           update = { $set: { category, updatedAt: Date.now() } };
         }
         break;
+      case 'expiry':
+        const { expiryDate, expiryStatus } = body;
+        if (expiryDate === null) {
+          update = { $set: { expiryDate: null, expiryStatus: null, updatedAt: Date.now() } };
+        } else if (expiryDate) {
+          update = { $set: { expiryDate, expiryStatus: expiryStatus || 'active', updatedAt: Date.now() } };
+        }
+        break;
+      case 'remove_tag':
+        if (Array.isArray(tags)) {
+          update = { $pullAll: { tags }, $set: { updatedAt: Date.now() } };
+        }
+        break;
+      case 'delete_permanent':
+        const delResult = await col.deleteMany(filter);
+        return NextResponse.json({
+          success: true,
+          action,
+          deletedCount: delResult.deletedCount,
+        });
       default:
         return NextResponse.json({ error: `Unknown batch action: ${action}` }, { status: 400 });
     }

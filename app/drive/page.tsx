@@ -21,6 +21,7 @@ import { DriveRecommendationHero } from '@/components/drive/DriveRecommendationH
 import { DriveSmartDossiersModal } from '@/components/drive/DriveSmartDossiersModal';
 import { DriveKeyboardShortcutsModal } from '@/components/drive/DriveKeyboardShortcutsModal';
 import { DriveBulkActionBar } from '@/components/drive/DriveBulkActionBar';
+import { DriveBulkTagModal } from '@/components/drive/DriveBulkTagModal';
 import {
   NewFolderModal,
   RenameModal,
@@ -37,6 +38,7 @@ import {
   Sparkles, 
   Inbox,
   Lock,
+  Shield,
   ArrowRight,
   Users
 } from 'lucide-react';
@@ -115,8 +117,11 @@ function DriveWorkspaceInner() {
     // Vault
     isVaultUnlocked,
     unlockVault,
+    lockVault,
     isVaultModalOpen,
     setIsVaultModalOpen,
+    vaultModalMode,
+    openVaultModal,
 
     // Modals
     isFolderChatOpen,
@@ -138,7 +143,10 @@ function DriveWorkspaceInner() {
 
     // Batch Actions
     triggerBatchAction,
+    triggerAutoLabel,
     bulkDownloadZip,
+    restoreSelected,
+    deleteSelectedPermanently,
   } = useDrive();
 
   const searchParams = useSearchParams();
@@ -152,6 +160,7 @@ function DriveWorkspaceInner() {
   const [isDossiersModalOpen, setIsDossiersModalOpen] = useState(false);
   const [selectedDossier, setSelectedDossier] = useState<SmartDossier | null>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [isBulkTagModalOpen, setIsBulkTagModalOpen] = useState(false);
 
   const dossiers = useMemo(() => {
     return generateSmartDossiers(items, { isVaultUnlocked });
@@ -381,6 +390,44 @@ function DriveWorkspaceInner() {
             }}
           />
 
+          {/* Vault Active Management Banner */}
+          {viewSection === 'vault' && isVaultUnlocked && (
+            <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-150">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 shadow-inner">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
+                    <span>Secure Personal Vault Unlocked</span>
+                    <span className="text-3xs font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-bold">
+                      Session Active
+                    </span>
+                  </h3>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400">
+                    Sensitive IDs, bank cards, and tax records are unmasked. Auto-locks upon inactivity.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => openVaultModal('configure')}
+                  className="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 shadow-2xs transition-colors cursor-pointer"
+                >
+                  ⚙️ Configure Vault PIN
+                </button>
+                <button
+                  type="button"
+                  onClick={lockVault}
+                  className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-xs font-bold text-white shadow-sm shadow-amber-500/20 transition-colors cursor-pointer"
+                >
+                  🔒 Lock Vault Now
+                </button>
+              </div>
+            </div>
+          )}
+
           {loading && items.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center space-y-3 text-zinc-400 py-24">
               <span className="w-6 h-6 rounded-full bg-rose-500 animate-ping" />
@@ -461,16 +508,37 @@ function DriveWorkspaceInner() {
       {/* Floating Multi-Select Bulk Action Dock */}
       <DriveBulkActionBar
         selectedCount={selectedIds.length}
+        viewSection={viewSection}
         onClearSelection={clearSelection}
         onBulkDownloadZip={bulkDownloadZip}
         onBulkMove={() => setMoveModalOpen(true)}
-        onBulkTag={() => {
-          const tag = prompt('Enter tag to apply to all selected items:');
-          if (tag) triggerBatchAction('tag', { tags: [tag.trim()] });
-        }}
+        onBulkTag={() => setIsBulkTagModalOpen(true)}
         onBulkVault={() => triggerBatchAction('vault')}
+        onBulkUnvault={() => triggerBatchAction('unvault')}
         onBulkStar={() => triggerBatchAction('star')}
+        onBulkUnstar={() => triggerBatchAction('unstar')}
+        onBulkAutoLabel={() => triggerAutoLabel(selectedIds)}
         onBulkTrash={trashSelected}
+        onBulkRestore={restoreSelected}
+        onBulkDeletePermanent={deleteSelectedPermanently}
+      />
+
+      {/* Bulk Tag, Category & Expiry Editor Modal */}
+      <DriveBulkTagModal
+        isOpen={isBulkTagModalOpen}
+        onClose={() => setIsBulkTagModalOpen(false)}
+        selectedCount={selectedIds.length}
+        onApply={({ tags, category, expiryDate }) => {
+          if (tags && tags.length > 0) {
+            triggerBatchAction('tag', { tags });
+          }
+          if (category) {
+            triggerBatchAction('category', { category });
+          }
+          if (expiryDate !== undefined) {
+            triggerBatchAction('expiry', { expiryDate });
+          }
+        }}
       />
 
       {/* Modals & Dialogs */}
@@ -513,7 +581,7 @@ function DriveWorkspaceInner() {
       <DriveVaultModal
         isOpen={isVaultModalOpen}
         onClose={() => setIsVaultModalOpen(false)}
-        hasPin={true}
+        initialMode={vaultModalMode}
         onSuccess={() => {
           unlockVault();
           loadItems();

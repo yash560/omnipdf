@@ -27,6 +27,7 @@ import {
   Shield,
   HelpCircle,
   Layers,
+  Settings,
   X
 } from 'lucide-react';
 import { DriveCategory } from '@/lib/drive/drive-types';
@@ -56,6 +57,7 @@ export function DriveSidebar({
     uploadProgress,
     isVaultUnlocked,
     setIsVaultModalOpen,
+    openVaultModal,
     setIsExpiryRadarOpen,
     setIsDedupModalOpen,
     setIsKeyboardShortcutsOpen,
@@ -251,31 +253,51 @@ export function DriveSidebar({
           </button>
 
           {/* Secure Vault Item */}
-          <button
-            type="button"
-            onClick={() => handleNavClick(() => selectSection('vault'))}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
-              viewSection === 'vault'
-                ? 'bg-amber-500 text-white font-bold shadow-md shadow-amber-500/20'
-                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              {isVaultUnlocked ? (
-                <Shield className="w-4 h-4 text-amber-500 fill-amber-500/20" />
-              ) : (
-                <Lock className="w-4 h-4 text-amber-500" />
-              )}
-              <span>Secure Vault</span>
-            </div>
-            <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${
-              viewSection === 'vault' 
-                ? 'bg-black/20 text-white' 
-                : 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
-            }`}>
-              {isVaultUnlocked ? 'Unlocked' : 'PIN'}
-            </span>
-          </button>
+          <div className="relative group">
+            <button
+              type="button"
+              onClick={() => handleNavClick(() => selectSection('vault'))}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all cursor-pointer ${
+                viewSection === 'vault'
+                  ? 'bg-amber-500 text-white font-bold shadow-md shadow-amber-500/20'
+                  : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                {isVaultUnlocked ? (
+                  <Shield className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+                ) : (
+                  <Lock className="w-4 h-4 text-amber-500" />
+                )}
+                <span>Secure Vault</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className={`text-3xs font-mono px-2 py-0.5 rounded-full ${
+                  viewSection === 'vault' 
+                    ? 'bg-black/20 text-white' 
+                    : 'bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400'
+                }`}>
+                  {isVaultUnlocked ? 'Unlocked' : 'PIN'}
+                </span>
+              </div>
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                openVaultModal('configure');
+              }}
+              title="Configure Vault PIN & Auto-Lock Settings"
+              aria-label="Configure Vault PIN & Auto-Lock Settings"
+              className={`absolute right-14 top-1/2 -translate-y-1/2 p-1 rounded-lg transition-all cursor-pointer ${
+                viewSection === 'vault'
+                  ? 'text-white/80 hover:text-white hover:bg-white/20'
+                  : 'text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 opacity-60 group-hover:opacity-100'
+              }`}
+            >
+              <Settings className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
           {/* Expiry Radar Item */}
           <button

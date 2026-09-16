@@ -77,6 +77,9 @@ interface DriveContextType {
   lockVault: () => void;
   isVaultModalOpen: boolean;
   setIsVaultModalOpen: (open: boolean) => void;
+  vaultModalMode: 'unlock' | 'configure';
+  setVaultModalMode: (mode: 'unlock' | 'configure') => void;
+  openVaultModal: (mode?: 'unlock' | 'configure') => void;
 
   // Feature Modals
   isFolderChatOpen: boolean;
@@ -95,7 +98,7 @@ interface DriveContextType {
   selectAll: () => void;
   clearSelection: () => void;
   triggerAutoLabel: (itemIds?: string[]) => Promise<void>;
-  triggerBatchAction: (action: 'tag' | 'move' | 'star' | 'unstar' | 'trash' | 'restore' | 'vault' | 'unvault', payload?: any) => Promise<void>;
+  triggerBatchAction: (action: 'tag' | 'remove_tag' | 'move' | 'star' | 'unstar' | 'trash' | 'restore' | 'vault' | 'unvault' | 'category' | 'expiry' | 'delete_permanent', payload?: any) => Promise<void>;
   bulkDownloadZip: (customItems?: DriveItem[]) => Promise<void>;
   
   // Cloud CRUD Operations
@@ -161,6 +164,12 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Vault Security
   const [isVaultUnlocked, setIsVaultUnlocked] = useState(false);
   const [isVaultModalOpen, setIsVaultModalOpen] = useState(false);
+  const [vaultModalMode, setVaultModalMode] = useState<'unlock' | 'configure'>('unlock');
+
+  const openVaultModal = (mode: 'unlock' | 'configure' = 'unlock') => {
+    setVaultModalMode(mode);
+    setIsVaultModalOpen(true);
+  };
 
   // Feature Modals
   const [isFolderChatOpen, setIsFolderChatOpen] = useState(false);
@@ -331,7 +340,7 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Batch multi-select actions (Optimistic)
   const triggerBatchAction = async (
-    action: 'tag' | 'move' | 'star' | 'unstar' | 'trash' | 'restore' | 'vault' | 'unvault',
+    action: 'tag' | 'remove_tag' | 'move' | 'star' | 'unstar' | 'trash' | 'restore' | 'vault' | 'unvault' | 'category' | 'expiry' | 'delete_permanent',
     payload?: any
   ) => {
     if (selectedIds.length === 0) return;
@@ -341,14 +350,57 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     // Optimistic UI updates
     if (action === 'trash' && viewSection !== 'trash') {
       setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+    } else if (action === 'delete_permanent') {
+      setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
     } else if (action === 'restore' && viewSection === 'trash') {
       setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
     } else if (action === 'move') {
       setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
     } else if (action === 'star' || action === 'unstar') {
       const isStarred = action === 'star';
+      if (viewSection === 'starred' && !isStarred) {
+        setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+      } else {
+        setItems((prev) =>
+          prev.map((i) => (targetIds.includes(i.id) ? { ...i, isStarred, updatedAt: Date.now() } : i))
+        );
+      }
+    } else if (action === 'vault') {
       setItems((prev) =>
-        prev.map((i) => (targetIds.includes(i.id) ? { ...i, isStarred, updatedAt: Date.now() } : i))
+        prev.map((i) => (targetIds.includes(i.id) ? { ...i, isVault: true, updatedAt: Date.now() } : i))
+      );
+    } else if (action === 'unvault') {
+      if (viewSection === 'vault') {
+        setItems((prev) => prev.filter((i) => !targetIds.includes(i.id)));
+      } else {
+        setItems((prev) =>
+          prev.map((i) => (targetIds.includes(i.id) ? { ...i, isVault: false, updatedAt: Date.now() } : i))
+        );
+      }
+    } else if (action === 'category' && payload?.category) {
+      setItems((prev) =>
+        prev.map((i) => (targetIds.includes(i.id) ? { ...i, category: payload.category, updatedAt: Date.now() } : i))
+      );
+    } else if (action === 'tag' && payload?.tags) {
+      setItems((prev) =>
+        prev.map((i) => {
+          if (!targetIds.includes(i.id)) return i;
+          const currentTags = i.tags || [];
+          const merged = Array.from(new Set([...currentTags, ...payload.tags]));
+          return { ...i, tags: merged, updatedAt: Date.now() };
+        })
+      );
+    } else if (action === 'expiry') {
+      setItems((prev) =>
+        prev.map((i) => {
+          if (!targetIds.includes(i.id)) return i;
+          return {
+            ...i,
+            expiryDate: payload?.expiryDate ?? null,
+            expiryStatus: payload?.expiryDate ? 'valid' : 'none',
+            updatedAt: Date.now(),
+          };
+        })
       );
     }
 
@@ -362,6 +414,8 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           targetParentId: payload?.targetParentId,
           tags: payload?.tags,
           category: payload?.category,
+          expiryDate: payload?.expiryDate,
+          expiryStatus: payload?.expiryStatus,
         }),
       });
       loadItems({ silent: true });
@@ -696,6 +750,9 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         lockVault,
         isVaultModalOpen,
         setIsVaultModalOpen,
+        vaultModalMode,
+        setVaultModalMode,
+        openVaultModal,
 
         // Modals
         isFolderChatOpen,

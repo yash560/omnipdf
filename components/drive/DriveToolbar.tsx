@@ -12,6 +12,8 @@ import {
   Trash2,
   FolderInput,
   Star,
+  StarOff,
+  Tag,
   CheckSquare,
   ChevronRight,
   RotateCcw,
@@ -22,7 +24,8 @@ import {
   Unlock,
   SlidersHorizontal,
   HelpCircle,
-  Menu
+  Menu,
+  Settings
 } from 'lucide-react';
 import { DriveSortField } from '@/lib/drive/drive-types';
 
@@ -66,9 +69,12 @@ export function DriveToolbar({
     trashSelected,
     restoreSelected,
     deleteSelectedPermanently,
+    triggerBatchAction,
+    bulkDownloadZip,
     isVaultUnlocked,
     lockVault,
     setIsVaultModalOpen,
+    openVaultModal,
     setIsFolderChatOpen,
     setIsKeyboardShortcutsOpen,
   } = useDrive();
@@ -158,31 +164,42 @@ export function DriveToolbar({
           )}
 
           {/* Secure Vault Status Toggle */}
-          <button
-            type="button"
-            onClick={() => {
-              if (isVaultUnlocked) lockVault();
-              else setIsVaultModalOpen(true);
-            }}
-            className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
-              isVaultUnlocked
-                ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold'
-                : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'
-            }`}
-            title={isVaultUnlocked ? 'Vault is Unlocked. Click to Lock Now.' : 'Unlock Secure Vault with PIN'}
-          >
-            {isVaultUnlocked ? (
-              <>
-                <Unlock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-                <span className="hidden lg:inline">Vault Unlocked</span>
-              </>
-            ) : (
-              <>
-                <Lock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                <span className="hidden lg:inline">Vault Locked</span>
-              </>
-            )}
-          </button>
+          <div className="inline-flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => {
+                if (isVaultUnlocked) lockVault();
+                else openVaultModal('unlock');
+              }}
+              className={`inline-flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-xs font-semibold transition cursor-pointer ${
+                isVaultUnlocked
+                  ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30 font-bold'
+                  : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100'
+              }`}
+              title={isVaultUnlocked ? 'Vault is Unlocked. Click to Lock Now.' : 'Unlock Secure Vault with PIN'}
+            >
+              {isVaultUnlocked ? (
+                <>
+                  <Unlock className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span className="hidden lg:inline">Vault Unlocked</span>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                  <span className="hidden lg:inline">Vault Locked</span>
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => openVaultModal('configure')}
+              className="p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-zinc-500 dark:text-zinc-400 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+              title="Configure Vault PIN & Security Settings"
+              aria-label="Configure Vault PIN & Security Settings"
+            >
+              <Settings className="w-3.5 h-3.5" />
+            </button>
+          </div>
 
           {/* Sort Dropdown */}
           <div className="relative">
@@ -334,21 +351,23 @@ export function DriveToolbar({
               </button>
             </div>
 
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0.5">
               {viewSection === 'trash' ? (
                 <>
                   <button
                     type="button"
                     onClick={restoreSelected}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                    title="Restore selected items"
                   >
-                    <RotateCcw className="w-3.5 h-3.5 text-emerald-500" />
+                    <RotateCcw className="w-3.5 h-3.5" />
                     <span>Restore</span>
                   </button>
                   <button
                     type="button"
                     onClick={deleteSelectedPermanently}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-2xs cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                    title="Delete selected items permanently"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Delete Forever</span>
@@ -356,21 +375,94 @@ export function DriveToolbar({
                 </>
               ) : (
                 <>
+                  {/* Download ZIP */}
+                  <button
+                    type="button"
+                    onClick={() => bulkDownloadZip()}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                    title="Download selected as ZIP"
+                  >
+                    <Download className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="hidden md:inline">ZIP</span>
+                  </button>
+
+                  {/* Star All */}
+                  <button
+                    type="button"
+                    onClick={() => triggerBatchAction('star')}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                    title="Star selected items"
+                  >
+                    <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                    <span className="hidden sm:inline">Star</span>
+                  </button>
+
+                  {/* Unstar All */}
+                  <button
+                    type="button"
+                    onClick={() => triggerBatchAction('unstar')}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-600 dark:text-zinc-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                    title="Unstar selected items"
+                  >
+                    <StarOff className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Unstar</span>
+                  </button>
+
+                  {/* Lock in Vault */}
+                  {viewSection !== 'vault' && (
+                    <button
+                      type="button"
+                      onClick={() => triggerBatchAction('vault')}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-amber-50 text-amber-600 dark:text-amber-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                      title="Lock selected items in Secure Vault"
+                    >
+                      <Lock className="w-3.5 h-3.5" />
+                      <span className="hidden lg:inline">Vault</span>
+                    </button>
+                  )}
+
+                  {/* Unlock from Vault */}
+                  <button
+                    type="button"
+                    onClick={() => triggerBatchAction('unvault')}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-emerald-50 text-emerald-600 dark:text-emerald-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                    title="Unlock / Remove from Secure Vault"
+                  >
+                    <Unlock className="w-3.5 h-3.5" />
+                    <span className="hidden lg:inline">Unlock</span>
+                  </button>
+
+                  {/* AI Auto-Label */}
+                  <button
+                    type="button"
+                    onClick={() => triggerAutoLabel(selectedIds)}
+                    className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 hover:bg-purple-100 text-purple-700 dark:text-purple-300 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                    title="Auto-label selected items with AI"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-purple-500" />
+                    <span className="hidden xl:inline">AI Label</span>
+                  </button>
+
+                  {/* Move */}
                   <button
                     type="button"
                     onClick={onOpenMoveModal}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 text-zinc-800 dark:text-zinc-200 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                    title="Move to folder..."
                   >
                     <FolderInput className="w-3.5 h-3.5 text-blue-500" />
                     <span>Move</span>
                   </button>
+
+                  {/* Move to Trash */}
                   <button
                     type="button"
                     onClick={trashSelected}
-                    className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-rose-50 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-rose-50 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs cursor-pointer shrink-0"
+                    title="Move selected items to Trash"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
-                    <span>Move to Trash</span>
+                    <span className="hidden sm:inline">Trash</span>
                   </button>
                 </>
               )}
