@@ -65,7 +65,7 @@ export function UserDropdown() {
           </div>
           <span className="text-[10px] text-zinc-400 capitalize">{user.plan} Tier</span>
         </div>
-        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown className={`w-3.5 h-3.5 text-zinc-400 transition-transform hidden sm:inline ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown Menu */}
