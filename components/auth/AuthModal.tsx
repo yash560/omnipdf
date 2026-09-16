@@ -18,9 +18,11 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { FileCraftLogo } from '@/components/brand/FileCraftLogo';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 export function AuthModal() {
   const { authModalOpen, authModalTab, closeAuthModal, login, register } = useAuth();
+  useBodyScrollLock(authModalOpen);
   const [tab, setTab] = useState<'login' | 'register'>(authModalTab === 'register' ? 'register' : 'login');
 
   // Form fields

@@ -51,6 +51,7 @@ import {
   toggleTorch, 
   ScanFilter 
 } from '@/lib/scanner/document-scanner';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 export interface StagedItem {
   id: string;
@@ -84,6 +85,7 @@ export function DriveSmartUploadModal() {
     folders,
     loadItems,
   } = useDrive();
+  useBodyScrollLock(isSmartUploadOpen);
 
   // Active Main Tab: 'files' | 'camera' | 'clipboard'
   const [activeTab, setActiveTab] = useState<'files' | 'camera' | 'clipboard'>('files');
@@ -92,6 +94,10 @@ export function DriveSmartUploadModal() {
   const [stagedItems, setStagedItems] = useState<StagedItem[]>([]);
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const [draggedItemIndex, setDraggedItemIndex] = useState<number | null>(null);
+
+  // Upload Intelligence Options
+  const [optimizeImages, setOptimizeImages] = useState(false);
+  const [lastSkippedJunkCount, setLastSkippedJunkCount] = useState(0);
 
   // Batch Processing Action
   const [selectedAction, setSelectedAction] = useState<BatchAction>('merge_pdf');
@@ -217,12 +223,101 @@ export function DriveSmartUploadModal() {
     return () => window.removeEventListener('paste', handlePaste);
   }, [isSmartUploadOpen]);
 
-  // Add files to staging list
-  const addFilesToStaging = (files: File[] | FileList) => {
-    const list = Array.from(files);
+  // Junk file names/patterns to auto-filter from folder uploads
+  const JUNK_PATTERNS = [
+    /^\.DS_Store$/i,
+    /^Thumbs\.db$/i,
+    /^desktop\.ini$/i,
+    /^\.git$/i,
+    /^node_modules$/i,
+    /^__pycache__$/i,
+    /^\.next$/i,
+    /^\.vscode$/i,
+    /^\.idea$/i,
+    /^\._/,            // macOS fork files
+    /^\.Spotlight-V100$/i,
+    /^\.Trashes$/i,
+  ];
+
+  const isJunkFile = (file: File): boolean => {
+    const name = file.name;
+    // Check the filename itself
+    if (JUNK_PATTERNS.some((rx) => rx.test(name))) return true;
+    // Check path segments (folder names) via webkitRelativePath
+    const path = (file as any).webkitRelativePath || '';
+    if (path) {
+      const segments = path.split('/');
+      for (const seg of segments) {
+        if (JUNK_PATTERNS.some((rx) => rx.test(seg))) return true;
+      }
+    }
+    return false;
+  };
+
+  // Compress a raw image File to WebP via Canvas (client-side, quality 0.8, max 1920px)
+  const compressImageToWebP = (file: File): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const MAX_DIM = 1920;
+      const img = new Image();
+      const blobUrl = URL.createObjectURL(file);
+      img.onload = () => {
+        URL.revokeObjectURL(blobUrl);
+        let { width, height } = img;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          const ratio = Math.min(MAX_DIM / width, MAX_DIM / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return reject(new Error('Canvas not available'));
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) return reject(new Error('Compression failed'));
+            const newName = file.name.replace(/\.(jpe?g|png|gif|bmp|tiff?)$/i, '') + '.webp';
+            resolve(new File([blob], newName, { type: 'image/webp' }));
+          },
+          'image/webp',
+          0.82
+        );
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(blobUrl);
+        resolve(file); // fallback: keep original
+      };
+      img.src = blobUrl;
+    });
+  };
+
+  // Add files to staging list (with junk filtering + optional image compression)
+  const addFilesToStaging = async (files: File[] | FileList) => {
+    let list = Array.from(files);
     if (list.length === 0) return;
 
-    const newItems: StagedItem[] = list.map((f) => {
+    // 1. Filter junk files silently
+    const junkFiles = list.filter(isJunkFile);
+    list = list.filter((f) => !isJunkFile(f));
+    if (junkFiles.length > 0) {
+      setLastSkippedJunkCount(junkFiles.length);
+      setTimeout(() => setLastSkippedJunkCount(0), 4000);
+    }
+
+    if (list.length === 0) return;
+
+    // 2. Optionally compress images via Canvas WebP
+    const processedFiles: File[] = await Promise.all(
+      list.map(async (f) => {
+        if (optimizeImages && f.type.match(/^image\/(jpeg|png|gif|bmp|webp)/)) {
+          try { return await compressImageToWebP(f); } catch { return f; }
+        }
+        return f;
+      })
+    );
+
+    const newItems: StagedItem[] = processedFiles.map((f) => {
       const isImg = f.type.startsWith('image/');
       return {
         id: 'stg_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7),
@@ -897,16 +992,43 @@ export function DriveSmartUploadModal() {
           {/* STAGING CANVAS: Visual List & Drag-to-Reorder */}
           {stagedItems.length > 0 && (
             <div className="space-y-3 pt-2">
-              <div className="flex items-center justify-between">
+              {/* Junk Files Skipped Notification */}
+              {lastSkippedJunkCount > 0 && (
+                <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-bold animate-pulse">
+                  <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                  <span>Smart filter: {lastSkippedJunkCount} junk file{lastSkippedJunkCount > 1 ? 's' : ''} auto-removed (.DS_Store, node_modules, etc.)</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black uppercase tracking-wider text-zinc-500">
-                    Staged Documents & Pages ({stagedItems.length})
+                    Staged Documents &amp; Pages ({stagedItems.length})
                   </span>
                   <span className="text-[11px] font-mono text-zinc-400">
                     • Total: {formatBytes(totalBytes)}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  {/* Optimize Images Toggle */}
+                  <label className="flex items-center gap-2 cursor-pointer select-none group" title="Compress images to WebP (max 1920px, ~82% quality) before staging">
+                    <div className={`relative w-8 h-4 rounded-full transition-colors ${optimizeImages ? 'bg-emerald-500' : 'bg-zinc-300 dark:bg-zinc-700'}`}>
+                      <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white shadow transition-transform ${optimizeImages ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={optimizeImages}
+                      onChange={(e) => setOptimizeImages(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <span className="text-[11px] font-bold text-zinc-500 dark:text-zinc-400 group-hover:text-zinc-700 dark:group-hover:text-zinc-200 transition-colors">
+                      Optimize Images
+                    </span>
+                    {optimizeImages && (
+                      <span className="px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-extrabold uppercase tracking-wider">WebP ON</span>
+                    )}
+                  </label>
+
                   <button
                     type="button"
                     onClick={handleClearAll}

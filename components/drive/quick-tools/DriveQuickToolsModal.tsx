@@ -30,6 +30,7 @@ import { DataQuickStudio } from './DataQuickStudio';
 import { TextQuickStudio } from './TextQuickStudio';
 import { MediaQuickStudio } from './MediaQuickStudio';
 import { ArchiveQuickStudio } from './ArchiveQuickStudio';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 export function DriveQuickToolsModal() {
   const {
@@ -38,6 +39,7 @@ export function DriveQuickToolsModal() {
     replaceItemContent,
     saveAsNewFile,
   } = useDrive();
+  useBodyScrollLock(!!quickToolsItem);
 
   const [blob, setBlob] = useState<Blob | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

@@ -26,6 +26,7 @@ import {
   ChevronRight,
   Filter
 } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 export function DriveToolSearchModal() {
   const router = useRouter();
@@ -34,6 +35,7 @@ export function DriveToolSearchModal() {
     setIsToolSearchOpen,
     toolSearchTargetItem,
   } = useDrive();
+  useBodyScrollLock(!!toolSearchTargetItem);
 
   const [query, setQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ToolCategory | 'all' | 'recommended'>('all');

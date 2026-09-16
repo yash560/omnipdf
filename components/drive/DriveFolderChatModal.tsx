@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Sparkles, Send, X, Bot, User, Loader2, Copy, Check, Trash2, Folder, RefreshCw } from 'lucide-react';
 import { DriveItem } from '@/lib/drive/drive-types';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveFolderChatModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const DriveFolderChatModal: React.FC<DriveFolderChatModalProps> = ({
   folderName,
   items,
 }) => {
+  useBodyScrollLock(isOpen);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);

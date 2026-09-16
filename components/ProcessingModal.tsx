@@ -7,6 +7,7 @@ import { formatBytes } from '@/lib/pdf/core';
 import { uploadCloudFiles } from '@/lib/drive/cloud-api';
 import { useAuth } from '@/lib/auth/auth-context';
 import Link from 'next/link';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface ProcessingModalProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export function ProcessingModal({
   onReset,
   actionTitle = 'Processing Document',
 }: ProcessingModalProps) {
+  useBodyScrollLock(isOpen);
   const { isAuthenticated, openAuthModal } = useAuth();
   const [isSavingToDrive, setIsSavingToDrive] = useState(false);
   const [savedToDrive, setSavedToDrive] = useState(false);

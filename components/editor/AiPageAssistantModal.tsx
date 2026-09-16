@@ -18,6 +18,7 @@ import {
   Sliders
 } from 'lucide-react';
 import { Annotation } from '@/types/pdf';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface AiPageAssistantModalProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export function AiPageAssistantModal({
   viewportSize,
   onApplyAnnotations,
 }: AiPageAssistantModalProps) {
+  useBodyScrollLock(isOpen);
   const [activeTab, setActiveTab] = useState<'autofill' | 'prompt' | 'redact' | 'pool'>('autofill');
 
   // Form Autofill State

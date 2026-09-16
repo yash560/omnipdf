@@ -16,7 +16,8 @@ import {
   UploadCloud,
   FileText,
   Folder,
-  RotateCw
+  RotateCw,
+  Sparkles
 } from 'lucide-react';
 
 export function DriveUploadManager() {
@@ -34,7 +35,7 @@ export function DriveUploadManager() {
   const totalFiles = uploads.length;
   const completedFiles = uploads.filter((u) => u.status === 'completed').length;
   const failedFiles = uploads.filter((u) => u.status === 'error').length;
-  const inProgressFiles = uploads.filter((u) => u.status === 'uploading' || u.status === 'assembling' || u.status === 'queued');
+  const inProgressFiles = uploads.filter((u) => u.status === 'uploading' || u.status === 'assembling' || u.status === 'queued' || u.status === 'indexing');
   const activeSpeed = inProgressFiles.reduce((acc, u) => acc + (u.speedBytesPerSec || 0), 0);
 
   const totalBytes = uploads.reduce((acc, u) => acc + u.totalBytes, 0);
@@ -172,6 +173,11 @@ export function DriveUploadManager() {
                       <Loader2 className="w-3 h-3 animate-spin" /> Assembling
                     </span>
                   )}
+                  {item.status === 'indexing' && (
+                    <span className="text-[10px] font-bold text-amber-500 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 animate-pulse" /> AI Indexing
+                    </span>
+                  )}
                   {item.status === 'uploading' && (
                     <button
                       onClick={() => chunkedUploader.pause(item.uploadId)}
@@ -226,6 +232,8 @@ export function DriveUploadManager() {
                     className={`h-full transition-all duration-200 ${
                       item.status === 'completed' 
                         ? 'bg-emerald-500' 
+                        : item.status === 'indexing'
+                        ? 'bg-gradient-to-r from-amber-500 to-rose-500 animate-pulse'
                         : item.status === 'error' 
                         ? 'bg-rose-500' 
                         : item.status === 'paused'

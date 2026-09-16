@@ -16,6 +16,7 @@ import {
 import { StudioSession } from '@/types/session';
 import { formatBytes } from '@/lib/pdf/core';
 import { exportWorkspaceBackup, clearAllSessionsFromDB } from '@/lib/storage/session-db';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface SessionDrawerProps {
   isOpen: boolean;
@@ -36,6 +37,7 @@ export function SessionDrawer({
   onDeleteSession,
   onClearAll,
 }: SessionDrawerProps) {
+  useBodyScrollLock(isOpen);
   if (!isOpen) return null;
 
   const handleExportAll = async () => {

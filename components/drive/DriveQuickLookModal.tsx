@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { DriveRelatedItems } from './DriveRelatedItems';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveQuickLookModalProps {
   item: DriveItem | null;
@@ -36,6 +37,7 @@ interface DriveQuickLookModalProps {
 }
 
 export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLookModalProps) {
+  useBodyScrollLock(!!item);
   const { openDrawer, setActiveFile } = useAI();
   const { openQuickTools, openToolSearch } = useDrive();
   const [blob, setBlob] = useState<Blob | null>(null);

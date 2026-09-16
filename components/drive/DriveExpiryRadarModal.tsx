@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Calendar, AlertTriangle, CheckCircle, Clock, X, FileText, ArrowRight, ShieldCheck } from 'lucide-react';
 import { DriveItem, ExpiryStatus } from '@/lib/drive/drive-types';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveExpiryRadarModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export const DriveExpiryRadarModal: React.FC<DriveExpiryRadarModalProps> = ({
   items,
   onSelectItem,
 }) => {
+  useBodyScrollLock(isOpen);
   const [filter, setFilter] = useState<'all' | ExpiryStatus>('all');
 
   if (!isOpen) return null;

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ShieldCheck, Code, Lock, Terminal, Copy, Check, Info, FileCheck } from 'lucide-react';
 import { OpenSecurityAuditInfo } from '@/types/share';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface OpenSecurityInspectorProps {
   audit: OpenSecurityAuditInfo;
@@ -11,6 +12,7 @@ interface OpenSecurityInspectorProps {
 }
 
 export function OpenSecurityInspector({ audit, isOpen, onClose }: OpenSecurityInspectorProps) {
+  useBodyScrollLock(isOpen);
   const [activeTab, setActiveTab] = useState<'params' | 'typescript' | 'python'>('params');
   const [copiedTab, setCopiedTab] = useState<string | null>(null);
 

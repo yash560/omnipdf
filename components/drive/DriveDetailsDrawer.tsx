@@ -26,9 +26,11 @@ import Link from 'next/link';
 import { DriveRelatedItems } from './DriveRelatedItems';
 import { DriveThumbnail } from './DriveThumbnail';
 import { DriveRecommendedToolsSection } from './DriveRecommendedToolsSection';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 export function DriveDetailsDrawer() {
   const { detailsItem, setDetailsItem, changeFolderColor, openShareModal, openQuickTools, openFolderChat } = useDrive();
+  useBodyScrollLock(!!detailsItem);
   const { openDrawer, setActiveFile } = useAI();
 
   const [activeTab, setActiveTab] = useState<'details' | 'comments' | 'activity'>('details');

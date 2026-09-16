@@ -21,6 +21,7 @@ import {
   Sparkles,
   Folder,
 } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveSmartDossiersModalProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ export function DriveSmartDossiersModal({
   initialDossier,
   dossiers,
 }: DriveSmartDossiersModalProps) {
+  useBodyScrollLock(isOpen);
   const { openPreview, bulkDownloadZip, setIsFolderChatOpen } = useDrive();
   const [selectedDossier, setSelectedDossier] = useState<SmartDossier | null>(
     initialDossier || (dossiers.length > 0 ? dossiers[0] : null)

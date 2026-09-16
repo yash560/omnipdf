@@ -40,6 +40,7 @@ import { DriveItem, DriveCategory } from '@/lib/drive/drive-types';
 import { formatBytes, formatTimeAgo } from '@/lib/drive/drive-helpers';
 import { DriveQuickLookModal } from './drive/DriveQuickLookModal';
 import { FileCraftLogo } from '@/components/brand/FileCraftLogo';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 type SearchTabType = 'all' | 'files' | 'folders' | 'tools' | 'ocr' | 'actions' | 'vault';
 
@@ -55,6 +56,7 @@ interface QuickActionItem {
 
 export function CommandMenu() {
   const [open, setOpen] = useState(false);
+  useBodyScrollLock(open);
   const [query, setQuery] = useState('');
   const [activeTab, setActiveTab] = useState<SearchTabType>('all');
   const [activeIndex, setActiveIndex] = useState(0);

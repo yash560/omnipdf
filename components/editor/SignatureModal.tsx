@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Pen, Type, Upload, X, Check, RotateCcw } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface SignatureModalProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export function SignatureModal({
   onClose,
   onApplySignature,
 }: SignatureModalProps) {
+  useBodyScrollLock(isOpen);
   const [activeTab, setActiveTab] = useState<'draw' | 'type' | 'upload'>('draw');
   const [signatureColor, setSignatureColor] = useState('#000000');
   const [typedName, setTypedName] = useState('Yash Jain');

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Copy, Trash2, CheckCircle2, AlertCircle, X, FileText, Loader2, Sparkles } from 'lucide-react';
 import { DuplicateCluster, DriveItem } from '@/lib/drive/drive-types';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveDedupModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ export const DriveDedupModal: React.FC<DriveDedupModalProps> = ({
   onClose,
   onRefreshItems,
 }) => {
+  useBodyScrollLock(isOpen);
   const [clusters, setClusters] = useState<DuplicateCluster[]>([]);
   const [selectedToDelete, setSelectedToDelete] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);

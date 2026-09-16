@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Keyboard, X, Command } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveKeyboardShortcutsModalProps {
   isOpen: boolean;
@@ -12,6 +13,7 @@ export const DriveKeyboardShortcutsModal: React.FC<DriveKeyboardShortcutsModalPr
   isOpen,
   onClose,
 }) => {
+  useBodyScrollLock(isOpen);
   if (!isOpen) return null;
 
   const shortcutGroups = [

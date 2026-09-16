@@ -15,6 +15,7 @@ import {
   Check,
   RefreshCw
 } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveVaultModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export const DriveVaultModal: React.FC<DriveVaultModalProps> = ({
   initialMode = 'unlock',
   onSuccess,
 }) => {
+  useBodyScrollLock(isOpen);
   const [activeTab, setActiveTab] = useState<'unlock' | 'configure'>(initialMode);
   const [isServerHasPin, setIsServerHasPin] = useState(hasPin);
   const [vaultItemsCount, setVaultItemsCount] = useState(0);

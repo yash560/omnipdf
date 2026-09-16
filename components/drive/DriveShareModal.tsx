@@ -19,6 +19,7 @@ import {
   Sparkles,
   AlertCircle
 } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveShareModalProps {
   item: DriveItem | null;
@@ -27,6 +28,7 @@ interface DriveShareModalProps {
 }
 
 export function DriveShareModal({ item, onClose, onItemUpdated }: DriveShareModalProps) {
+  useBodyScrollLock(!!item);
   const [activeTab, setActiveTab] = useState<'team' | 'link'>('team');
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<CollaboratorRole>('viewer');

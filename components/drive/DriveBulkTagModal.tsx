@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { DriveCategory } from '@/lib/drive/drive-types';
 import { Tag, Calendar, Folder, X, Plus, Sparkles, Check } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveBulkTagModalProps {
   isOpen: boolean;
@@ -47,6 +48,7 @@ export function DriveBulkTagModal({
   selectedCount,
   onApply,
 }: DriveBulkTagModalProps) {
+  useBodyScrollLock(isOpen);
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<DriveCategory | ''>('');

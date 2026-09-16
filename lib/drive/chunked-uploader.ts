@@ -203,10 +203,31 @@ class ChunkedUploadOrchestrator {
     progress.status = 'uploading';
     this.notify();
 
-    const totalChunks = Math.max(1, Math.ceil(file.size / CHUNK_SIZE));
+    // 1. Adaptive Chunking & Concurrency based on Network
+    let activeChunkSize = CHUNK_SIZE;
+    let activeMaxConcurrent = MAX_CONCURRENT_CHUNKS;
+    
+    if (typeof navigator !== 'undefined' && (navigator as any).connection) {
+      const conn = (navigator as any).connection;
+      if (conn.effectiveType === '4g' && !conn.saveData) {
+        activeChunkSize = 4 * 1024 * 1024; // 4MB
+        activeMaxConcurrent = 5;
+      } else if (conn.effectiveType === '3g' || conn.effectiveType === '2g' || conn.saveData) {
+        activeChunkSize = 512 * 1024; // 512KB
+        activeMaxConcurrent = 1;
+      }
+    }
+
+    const totalChunks = Math.max(1, Math.ceil(file.size / activeChunkSize));
 
     try {
-      // 1. Initialize Chunked Upload Session
+      // 2. Fast Client-Side Hashing & Deduplication Check
+      const sliceToHash = file.slice(0, Math.min(file.size, 1024 * 1024));
+      const hashBuffer = await crypto.subtle.digest('SHA-256', await sliceToHash.arrayBuffer());
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const fileHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      // 3. Initialize Chunked Upload Session
       const initRes = await fetch('/api/drive/upload/chunk/init', {
         method: 'POST',
         headers: {
@@ -218,9 +239,10 @@ class ChunkedUploadOrchestrator {
           fileSize: file.size,
           mimeType: file.type || 'application/octet-stream',
           totalChunks,
-          chunkSize: CHUNK_SIZE,
+          chunkSize: activeChunkSize,
           parentId,
           relativePath,
+          fileHash,
         }),
       });
 
@@ -231,7 +253,7 @@ class ChunkedUploadOrchestrator {
 
       const { uploadId: serverUploadId } = await initRes.json();
 
-      // 2. Query any already uploaded chunks (for instant resumption)
+      // 4. Query any already uploaded chunks (for instant resumption)
       let completedChunks = new Set<number>();
       try {
         const statusRes = await fetch(`/api/drive/upload/chunk/status?uploadId=${serverUploadId}`, {
@@ -245,7 +267,7 @@ class ChunkedUploadOrchestrator {
         // ignore status check failure
       }
 
-      // 3. Upload chunks concurrently with chunk throttling
+      // 5. Upload chunks concurrently with chunk throttling & Exponential Backoff
       const startTime = Date.now();
       let lastBytesLogged = 0;
       let lastTimeLogged = startTime;
@@ -263,14 +285,15 @@ class ChunkedUploadOrchestrator {
           if (queueItem.aborted || queueItem.paused) return;
 
           const chunkIndex = chunkIndicesToUpload[activeIndex++];
-          const start = chunkIndex * CHUNK_SIZE;
-          const end = Math.min(file.size, start + CHUNK_SIZE);
+          const start = chunkIndex * activeChunkSize;
+          const end = Math.min(file.size, start + activeChunkSize);
           const chunkBlob = file.slice(start, end);
 
-          let retries = 3;
+          let attempt = 0;
+          const MAX_RETRIES = 5;
           let chunkSuccess = false;
 
-          while (retries > 0 && !chunkSuccess) {
+          while (attempt < MAX_RETRIES && !chunkSuccess) {
             if (queueItem.aborted || queueItem.paused) return;
             try {
               const formData = new FormData();
@@ -294,7 +317,7 @@ class ChunkedUploadOrchestrator {
               // Update progress & calculate live throughput
               const now = Date.now();
               const timeDiff = (now - lastTimeLogged) / 1000;
-              const uploadedBytes = Math.min(file.size, completedChunks.size * CHUNK_SIZE);
+              const uploadedBytes = Math.min(file.size, completedChunks.size * activeChunkSize);
               
               if (timeDiff > 0.5) {
                 const bytesDiff = uploadedBytes - lastBytesLogged;
@@ -307,24 +330,30 @@ class ChunkedUploadOrchestrator {
               progress.percentage = Math.min(99, Math.round((uploadedBytes / file.size) * 100));
               this.notify();
             } catch (err) {
-              retries--;
-              if (retries === 0) throw err;
-              await new Promise((r) => setTimeout(r, 1000));
+              attempt++;
+              if (attempt >= MAX_RETRIES) throw err;
+              
+              // Exponential backoff with jitter: 1s, 2s, 4s, 8s + random ms
+              const baseDelay = Math.pow(2, attempt - 1) * 1000;
+              const jitter = Math.random() * 500;
+              const delay = baseDelay + jitter;
+              
+              await new Promise((r) => setTimeout(r, delay));
             }
           }
         }
       };
 
-      // Run parallel workers up to MAX_CONCURRENT_CHUNKS
+      // Run parallel workers up to activeMaxConcurrent
       const workers = Array.from(
-        { length: Math.min(MAX_CONCURRENT_CHUNKS, chunkIndicesToUpload.length) },
+        { length: Math.min(activeMaxConcurrent, chunkIndicesToUpload.length) },
         () => uploadWorker()
       );
       await Promise.all(workers);
 
       if (queueItem.aborted || queueItem.paused) return;
 
-      // 4. Assemble Chunks on Server into GridFS
+      // 6. Assemble Chunks on Server into GridFS
       progress.status = 'assembling';
       progress.percentage = 99;
       this.notify();
@@ -345,6 +374,13 @@ class ChunkedUploadOrchestrator {
 
       const completeData = await completeRes.json();
       const finalItem = completeData.item as DriveItem;
+
+      // 7. Post-Upload AI Orchestration Feedback
+      progress.status = 'indexing';
+      this.notify();
+
+      // Simulate AI labeling feedback delay
+      await new Promise((r) => setTimeout(r, 2000));
 
       progress.status = 'completed';
       progress.percentage = 100;

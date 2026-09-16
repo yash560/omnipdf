@@ -31,6 +31,7 @@ import {
   ShieldCheck,
   Layers,
 } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 interface DriveMobileActionSheetProps {
   item: DriveItem | null;
@@ -49,6 +50,7 @@ export function DriveMobileActionSheet({
   onOpenMoveModal,
   onOpenDetailsDrawer,
 }: DriveMobileActionSheetProps) {
+  useBodyScrollLock(isOpen);
   const {
     viewSection,
     openPreview,

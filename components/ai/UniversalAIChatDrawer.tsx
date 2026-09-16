@@ -41,6 +41,7 @@ import {
   Maximize2,
   Minimize2
 } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 const CHIP_ICON_MAP: Record<string, React.ElementType> = {
   Sparkles,
@@ -80,6 +81,7 @@ export function UniversalAIChatDrawer() {
     triggerQuickAction,
     clearChat,
   } = useAI();
+  useBodyScrollLock(isOpen);
 
   const [input, setInput] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);

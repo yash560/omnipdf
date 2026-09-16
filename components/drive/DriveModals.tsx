@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useDrive } from '@/lib/drive/drive-context';
 import { DriveItem, DriveFolderColor, FOLDER_COLORS } from '@/lib/drive/drive-types';
 import { fetchCloudItems } from '@/lib/drive/cloud-api';
@@ -11,9 +11,16 @@ import {
   FolderInput, 
   Trash2, 
   Folder, 
+  FolderOpen,
   ChevronRight,
-  Palette 
+  ChevronDown,
+  Search,
+  Check,
+  ArrowRight,
+  Palette,
+  Lock,
 } from 'lucide-react';
+import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
 /* ==========================================================
    1. New Folder Modal
@@ -24,6 +31,7 @@ interface NewFolderModalProps {
 }
 
 export function NewFolderModal({ isOpen, onClose }: NewFolderModalProps) {
+  useBodyScrollLock(isOpen);
   const { createFolder } = useDrive();
   const [folderName, setFolderName] = useState('');
   const [selectedColor, setSelectedColor] = useState<DriveFolderColor>('default');
@@ -136,6 +144,7 @@ interface RenameModalProps {
 }
 
 export function RenameModal({ item, onClose }: RenameModalProps) {
+  useBodyScrollLock(!!item);
   const { renameItem } = useDrive();
   const [name, setName] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -226,6 +235,7 @@ interface MoveModalProps {
 }
 
 export function MoveModal({ isOpen, onClose }: MoveModalProps) {
+  useBodyScrollLock(isOpen);
   const { selectedIds, moveItems } = useDrive();
   const [folderTree, setFolderTree] = useState<DriveItem[]>([]);
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
@@ -349,6 +359,7 @@ interface EmptyTrashModalProps {
 }
 
 export function EmptyTrashModal({ isOpen, onClose }: EmptyTrashModalProps) {
+  useBodyScrollLock(isOpen);
   const { emptyTrash } = useDrive();
   const [submitting, setSubmitting] = useState(false);
 

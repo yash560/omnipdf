@@ -268,7 +268,7 @@ export interface ChunkUploadProgress {
   totalBytes: number;
   percentage: number;
   speedBytesPerSec: number;
-  status: 'queued' | 'uploading' | 'assembling' | 'completed' | 'paused' | 'error';
+  status: 'queued' | 'uploading' | 'assembling' | 'indexing' | 'completed' | 'paused' | 'error';
   error?: string;
 }
 
