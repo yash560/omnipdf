@@ -257,7 +257,9 @@ export async function getCloudItem(
  */
 export async function getPublicSharedItem(
   shareIdOrItemId: string,
-  password?: string
+  password?: string,
+  currentUserId?: string,
+  currentUserEmail?: string
 ): Promise<{
   item?: DriveItem;
   passwordRequired?: boolean;
@@ -277,6 +279,16 @@ export async function getPublicSharedItem(
   }
 
   const { _id, ...item }: any = doc;
+
+  // If the requester is the item owner or invited collaborator, allow immediate access
+  const isOwner = (currentUserId && item.userId === currentUserId) || 
+                  (currentUserEmail && item.ownerEmail && item.ownerEmail.toLowerCase() === currentUserEmail.toLowerCase());
+  const isCollaborator = currentUserEmail && (item.sharedWith || []).some((c: any) => c.email?.toLowerCase() === currentUserEmail.toLowerCase());
+
+  if (isOwner || isCollaborator) {
+    return { item: item as DriveItem };
+  }
+
   const shareConfig = item.shareConfig as ShareConfig | undefined;
 
   if (!shareConfig?.isPublic) {

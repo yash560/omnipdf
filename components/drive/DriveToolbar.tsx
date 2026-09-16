@@ -900,7 +900,7 @@ export function DriveToolbar({
               </button>
             </div>
 
-            <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+            <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 py-0.5">
               {/* 1-Click PDF Merge if 2+ PDFs are selected */}
               {selectedPdfCount >= 2 && viewSection !== 'trash' && (
                 <button
@@ -1056,7 +1056,7 @@ export function DriveToolbar({
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-2 text-xs text-zinc-500 overflow-x-auto no-scrollbar">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-zinc-500">
             {viewSection === 'my-drive' ? (
               breadcrumbs.map((crumb, idx) => {
                 const isLast = idx === breadcrumbs.length - 1;

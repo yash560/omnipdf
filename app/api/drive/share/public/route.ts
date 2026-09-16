@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPublicSharedItem } from '@/lib/drive/server-drive';
+import { getAuthenticatedUser } from '@/lib/auth/get-server-user';
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,7 +12,8 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Missing share id parameter' }, { status: 400 });
     }
 
-    const result = await getPublicSharedItem(id, password);
+    const auth = await getAuthenticatedUser(req);
+    const result = await getPublicSharedItem(id, password, auth?.userId, auth?.email);
 
     if (result.passwordRequired) {
       return NextResponse.json({

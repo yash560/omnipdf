@@ -34,6 +34,8 @@ export function DriveShareModal({ item, onClose, onItemUpdated }: DriveShareModa
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  const [savedSuccess, setSavedSuccess] = useState(false);
+
   // Public link settings
   const [isPublic, setIsPublic] = useState(item?.shareConfig?.isPublic || false);
   const [allowDownload, setAllowDownload] = useState(item?.shareConfig?.allowDownload !== false);
@@ -71,19 +73,43 @@ export function DriveShareModal({ item, onClose, onItemUpdated }: DriveShareModa
     }
   };
 
+  const handleTogglePublic = async () => {
+    const nextPublic = !isPublic;
+    setIsPublic(nextPublic);
+    setError(null);
+    try {
+      const expiresAt = expiryHours ? Date.now() + expiryHours * 3600 * 1000 : (item.shareConfig?.expiresAt || null);
+      const updated = await updateShareConfigApi(item.id, {
+        isPublic: nextPublic,
+        allowDownload,
+        hasPassword,
+        passwordHash: password ? password : item.shareConfig?.passwordHash,
+        expiresAt,
+      });
+      onItemUpdated(updated);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 2000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to update share link status');
+      setIsPublic(!nextPublic);
+    }
+  };
+
   const handleSavePublicSettings = async () => {
     setError(null);
     setIsSubmitting(true);
     try {
-      const expiresAt = expiryHours ? Date.now() + expiryHours * 3600 * 1000 : null;
+      const expiresAt = expiryHours ? Date.now() + expiryHours * 3600 * 1000 : (item.shareConfig?.expiresAt || null);
       const updated = await updateShareConfigApi(item.id, {
         isPublic,
         allowDownload,
         hasPassword,
-        passwordHash: password ? password : undefined,
+        passwordHash: password ? password : (hasPassword ? item.shareConfig?.passwordHash : undefined),
         expiresAt,
       });
       onItemUpdated(updated);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 2000);
     } catch (err: any) {
       setError(err.message || 'Failed to update share settings');
     } finally {
@@ -91,7 +117,23 @@ export function DriveShareModal({ item, onClose, onItemUpdated }: DriveShareModa
     }
   };
 
-  const handleCopyLink = () => {
+  const handleCopyLink = async () => {
+    if (!isPublic) {
+      setIsPublic(true);
+      try {
+        const expiresAt = expiryHours ? Date.now() + expiryHours * 3600 * 1000 : null;
+        const updated = await updateShareConfigApi(item.id, {
+          isPublic: true,
+          allowDownload,
+          hasPassword,
+          passwordHash: password ? password : undefined,
+          expiresAt,
+        });
+        onItemUpdated(updated);
+      } catch (err: any) {
+        console.error('Failed to auto-enable public link:', err);
+      }
+    }
     navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -265,7 +307,7 @@ export function DriveShareModal({ item, onClose, onItemUpdated }: DriveShareModa
                 </div>
                 <button
                   type="button"
-                  onClick={() => setIsPublic(!isPublic)}
+                  onClick={handleTogglePublic}
                   className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
                     isPublic ? 'bg-rose-500' : 'bg-zinc-300 dark:bg-zinc-700'
                   }`}
@@ -365,9 +407,16 @@ export function DriveShareModal({ item, onClose, onItemUpdated }: DriveShareModa
                     type="button"
                     onClick={handleSavePublicSettings}
                     disabled={isSubmitting}
-                    className="w-full py-2.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-extrabold text-xs shadow-md transition-all active:scale-98 cursor-pointer"
+                    className="w-full py-2.5 rounded-2xl bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-extrabold text-xs shadow-md transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-1.5"
                   >
-                    Save Public Link Settings
+                    {savedSuccess ? (
+                      <>
+                        <Check className="w-4 h-4 text-emerald-500" />
+                        <span>Settings Saved!</span>
+                      </>
+                    ) : (
+                      <span>Save Public Link Settings</span>
+                    )}
                   </button>
                 </div>
               )}
