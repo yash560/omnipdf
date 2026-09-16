@@ -1,11 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect, ChangeEvent, DragEvent } from 'react';
-import { UploadCloud, FileText, Trash2, RotateCw, Plus, ShieldCheck, CheckCircle2, HardDrive } from 'lucide-react';
+import { UploadCloud, Trash2, RotateCw, Plus, ShieldCheck, CheckCircle2, HardDrive } from 'lucide-react';
 import { StagedFile } from '@/types/pdf';
 import { formatBytes, fileToArrayBuffer, renderPageToDataUrl } from '@/lib/pdf/core';
 import { getFileBlob } from '@/lib/drive/drive-db';
 import { getCloudFileBlob } from '@/lib/drive/cloud-api';
+import { FileFormatThumbnail } from '@/components/FileFormatThumbnail';
 
 interface FileDropzoneProps {
   files: StagedFile[];
@@ -23,8 +24,8 @@ export function FileDropzone({
   onFilesChange,
   accept = '.pdf,application/pdf',
   multiple = true,
-  title = 'Select PDF files',
-  subtitle = 'or drop PDF documents here',
+  title = 'Select files',
+  subtitle = 'or drop documents & files here',
   primaryColor = '#ef4444',
   renderThumbnails = true,
 }: FileDropzoneProps) {
@@ -52,14 +53,14 @@ export function FileDropzone({
       let previewUrl = '';
       let pageCount = 1;
 
-      if (renderThumbnails && (f.type === 'application/pdf' || f.name.endsWith('.pdf'))) {
+      if (renderThumbnails && (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))) {
         try {
           const thumb = await renderPageToDataUrl(arrayBuf, 1, 0.4);
           previewUrl = thumb.dataUrl;
         } catch {
           // Fallback if preview render fails
         }
-      } else if (f.type.startsWith('image/')) {
+      } else if (f.type.startsWith('image/') || /\.(jpe?g|png|webp|gif|svg|bmp|ico)$/i.test(f.name)) {
         previewUrl = URL.createObjectURL(f);
       }
 
@@ -326,22 +327,12 @@ export function FileDropzone({
 
                 {/* Thumbnail Preview */}
                 <div className="w-full aspect-[3/4] rounded-xl bg-zinc-100 dark:bg-zinc-800/60 overflow-hidden flex items-center justify-center relative mb-2.5">
-                  {fileItem.previewUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={fileItem.previewUrl}
-                      alt={fileItem.name}
-                      className="w-full h-full object-contain transition-transform duration-300"
-                      style={{
-                        transform: `rotate(${fileItem.rotation || 0}deg)`,
-                      }}
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center gap-1 text-zinc-400">
-                      <FileText className="w-10 h-10" />
-                      <span className="text-[10px]">PDF</span>
-                    </div>
-                  )}
+                  <FileFormatThumbnail
+                    name={fileItem.name}
+                    mimeType={fileItem.file?.type}
+                    previewUrl={fileItem.previewUrl}
+                    rotation={fileItem.rotation}
+                  />
                 </div>
 
                 {/* File Metadata */}
@@ -363,7 +354,7 @@ export function FileDropzone({
                 className="flex flex-col items-center justify-center p-4 aspect-[3/4] border-2 border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl hover:border-zinc-400 dark:hover:border-zinc-700 bg-zinc-50/50 dark:bg-zinc-900/30 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors cursor-pointer"
               >
                 <Plus className="w-8 h-8 mb-2" />
-                <span className="text-xs font-bold">Add PDF</span>
+                <span className="text-xs font-bold">Add File</span>
               </button>
             )}
           </div>

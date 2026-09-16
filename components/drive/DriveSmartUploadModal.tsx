@@ -38,6 +38,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { PDFDocument, rgb, StandardFonts, degrees } from 'pdf-lib';
+import { FileFormatThumbnail } from '@/components/FileFormatThumbnail';
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
 import { triggerHaptic } from '@/lib/drive/haptics';
@@ -970,23 +971,12 @@ export function DriveSmartUploadModal() {
                         onClick={() => setPreviewLightboxUrl(item.previewUrl)}
                         className="w-full aspect-[3/4] bg-zinc-100 dark:bg-zinc-950/80 flex items-center justify-center overflow-hidden cursor-pointer"
                       >
-                        {item.type.startsWith('image/') ? (
-                          <img
-                            src={item.previewUrl}
-                            alt={item.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : item.type === 'application/pdf' ? (
-                          <div className="flex flex-col items-center gap-1 text-rose-500">
-                            <FileText className="w-8 h-8" />
-                            <span className="text-[10px] font-bold">PDF</span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col items-center gap-1 text-zinc-400">
-                            <FileArchive className="w-8 h-8" />
-                            <span className="text-[10px] font-bold">Doc</span>
-                          </div>
-                        )}
+                        <FileFormatThumbnail
+                          name={item.name}
+                          mimeType={item.type}
+                          previewUrl={item.type.startsWith('image/') ? item.previewUrl : undefined}
+                          rotation={item.rotation}
+                        />
                       </div>
 
                       {/* Caption / Meta */}
