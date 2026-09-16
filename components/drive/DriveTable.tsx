@@ -34,6 +34,7 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
     toggleStar,
     sortOption,
     setSortOption,
+    setSelectedTag,
   } = useDrive();
 
   const [contextItem, setContextItem] = useState<DriveItem | null>(null);
@@ -161,13 +162,42 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                     </button>
                   </td>
 
-                  {/* Name + Icon */}
+                  {/* Name + Icon + Tags */}
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5 min-w-0 max-w-sm sm:max-w-md">
                       <div className="shrink-0">{getSmallIcon(item)}</div>
-                      <span className="font-bold text-zinc-900 dark:text-zinc-100 truncate">
-                        {item.name}
-                      </span>
+                      <div className="min-w-0">
+                        <div className="font-bold text-zinc-900 dark:text-zinc-100 truncate">
+                          {item.name}
+                        </div>
+                        {item.aiSummary && (
+                          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-1 italic">
+                            {item.aiSummary}
+                          </p>
+                        )}
+                        {item.tags && item.tags.length > 0 && (
+                          <div className="flex flex-wrap gap-1 pt-1">
+                            {item.tags.slice(0, 3).map((tag) => (
+                              <button
+                                key={tag}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedTag(tag);
+                                }}
+                                className="px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-[9px] font-bold hover:bg-rose-50 hover:text-rose-600 dark:hover:bg-rose-950/40 dark:hover:text-rose-400 transition-colors"
+                              >
+                                #{tag}
+                              </button>
+                            ))}
+                            {item.tags.length > 3 && (
+                              <span className="text-[9px] text-zinc-400 font-bold self-center">
+                                +{item.tags.length - 3}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </td>
 

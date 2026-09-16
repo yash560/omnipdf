@@ -11,11 +11,16 @@ import {
   ShareConfig,
   DriveComment,
   DriveActivity,
-  DriveActivityAction
+  DriveActivityAction,
+  SearchFilterOptions,
+  SearchResult
 } from './drive-types';
 import { categorizeFile } from './drive-helpers';
 import { findUserByEmail, findUserById } from '@/lib/auth/db';
+import { autoLabelFile, getHeuristicLabels } from '@/lib/ai/auto-labeler';
+import { searchDriveItems } from './search-engine';
 import { Readable } from 'stream';
+import sharp from 'sharp';
 
 const ITEMS_COLLECTION = 'filecraft_drive_items';
 const BUCKET_NAME = 'filecraft_drive_storage';
@@ -128,6 +133,21 @@ export async function getCloudItems(
 
   const { section = 'my-drive', parentId = null, category, query, userEmail } = options;
 
+  if (query && query.trim()) {
+    // Leverage Hybrid Semantic & Fuzzy Search Engine
+    const searchRes = await searchCloudItems(
+      userId,
+      {
+        query: query.trim(),
+        section,
+        category,
+        parentId,
+      },
+      userEmail
+    );
+    return searchRes.items;
+  }
+
   let filter: any = {};
 
   if (section === 'shared') {
@@ -144,16 +164,7 @@ export async function getCloudItems(
   } else {
     filter.userId = userId;
 
-    if (query && query.trim()) {
-      const q = query.trim();
-      filter.isTrash = false;
-      filter.$or = [
-        { name: { $regex: q, $options: 'i' } },
-        { extension: { $regex: q, $options: 'i' } },
-        { tags: { $in: [new RegExp(q, 'i')] } },
-        { description: { $regex: q, $options: 'i' } },
-      ];
-    } else if (section === 'trash') {
+    if (section === 'trash') {
       filter.isTrash = true;
     } else if (section === 'starred') {
       filter.isTrash = false;
@@ -424,18 +435,36 @@ export async function uploadCloudFile(
 
   const id = generateId('fl');
   const ext = name.split('.').pop()?.toLowerCase() || '';
-  const category = categorizeFile(name, mimeType);
+
+  let finalBuffer = buffer;
+  let finalMime = mimeType || 'application/octet-stream';
+
+  if (['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+    try {
+      const optimized = await sharp(buffer)
+        .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 80, progressive: true, mozjpeg: true })
+        .toBuffer();
+      if (optimized.length < buffer.length) {
+        finalBuffer = optimized;
+        finalMime = 'image/jpeg';
+      }
+    } catch {}
+  }
+
+  const category = categorizeFile(name, finalMime);
 
   const readable = new Readable();
-  readable.push(buffer);
+  readable.push(finalBuffer);
   readable.push(null);
 
   const uploadStream = bucket.openUploadStream(id, {
     metadata: {
       userId,
       originalName: name,
-      mimeType,
-      size: buffer.length,
+      mimeType: finalMime,
+      size: finalBuffer.length,
+      originalSize: buffer.length,
       createdAt: Date.now(),
     },
   });
@@ -446,15 +475,28 @@ export async function uploadCloudFile(
       .on('error', (err) => reject(err));
   });
 
+  const initialLabels = getHeuristicLabels({
+    fileName: name,
+    relativePath: name,
+    category,
+    mimeType: finalMime,
+    size: finalBuffer.length,
+  });
+
   const item: DriveItem = {
     id,
     name,
     parentId,
     type: 'file',
-    mimeType: mimeType || 'application/octet-stream',
-    size: buffer.length,
+    mimeType: finalMime,
+    size: finalBuffer.length,
     extension: ext,
     category,
+    tags: initialLabels.tags,
+    aiSummary: initialLabels.aiSummary,
+    aiCategory: initialLabels.aiCategory,
+    semanticKeywords: initialLabels.semanticKeywords,
+    isAutoLabeled: true,
     createdAt: Date.now(),
     updatedAt: Date.now(),
     lastAccessedAt: Date.now(),
@@ -468,6 +510,31 @@ export async function uploadCloudFile(
 
   await col.insertOne({ ...item } as any);
   await recordDriveActivity(userId, id, name, 'file', 'uploaded');
+
+  // Trigger async deep Gemini enrichment in background
+  autoLabelFile({
+    fileName: name,
+    relativePath: name,
+    category,
+    mimeType,
+    size: buffer.length,
+  }).then(async (aiLabels) => {
+    if (aiLabels.confidence >= 0.8) {
+      await col.updateOne(
+        { id },
+        {
+          $set: {
+            tags: aiLabels.tags,
+            aiSummary: aiLabels.aiSummary,
+            aiCategory: aiLabels.aiCategory,
+            semanticKeywords: aiLabels.semanticKeywords,
+            updatedAt: Date.now(),
+          },
+        }
+      );
+    }
+  }).catch(() => {});
+
   return item;
 }
 
@@ -657,15 +724,29 @@ export async function completeChunkUploadSession(
   await chunksCol.deleteMany({ uploadId });
   await sessionsCol.updateOne({ uploadId }, { $set: { status: 'completed', updatedAt: Date.now() } });
 
+  const initialLabels = getHeuristicLabels({
+    fileName: session.fileName,
+    relativePath: session.relativePath || session.fileName,
+    category,
+    mimeType: session.mimeType,
+    size: writtenBytes,
+  });
+
   const item: DriveItem = {
     id,
     name: session.fileName,
     parentId: session.parentId,
+    relativePath: session.relativePath,
     type: 'file',
     mimeType: session.mimeType,
     size: writtenBytes,
     extension: ext,
     category,
+    tags: initialLabels.tags,
+    aiSummary: initialLabels.aiSummary,
+    aiCategory: initialLabels.aiCategory,
+    semanticKeywords: initialLabels.semanticKeywords,
+    isAutoLabeled: true,
     createdAt: Date.now(),
     updatedAt: Date.now(),
     lastAccessedAt: Date.now(),
@@ -679,6 +760,31 @@ export async function completeChunkUploadSession(
 
   await itemsCol.insertOne({ ...item } as any);
   await recordDriveActivity(userId, id, session.fileName, 'file', 'uploaded', `Uploaded ${writtenBytes} bytes via chunked engine`);
+
+  // Trigger async deep Gemini enrichment in background
+  autoLabelFile({
+    fileName: session.fileName,
+    relativePath: session.relativePath || session.fileName,
+    category,
+    mimeType: session.mimeType,
+    size: writtenBytes,
+  }).then(async (aiLabels) => {
+    if (aiLabels.confidence >= 0.8) {
+      await itemsCol.updateOne(
+        { id },
+        {
+          $set: {
+            tags: aiLabels.tags,
+            aiSummary: aiLabels.aiSummary,
+            aiCategory: aiLabels.aiCategory,
+            semanticKeywords: aiLabels.semanticKeywords,
+            updatedAt: Date.now(),
+          },
+        }
+      );
+    }
+  }).catch(() => {});
+
   return item;
 }
 
@@ -1142,5 +1248,128 @@ export async function getCloudBreadcrumbs(userId: string, folderId: string | nul
   }
 
   return [...crumbs, ...path];
+}
+
+// ==========================================
+// SEMANTIC & FUZZY SEARCH ENGINE INTEGRATION
+// ==========================================
+
+export async function searchCloudItems(
+  userId: string,
+  options: SearchFilterOptions,
+  userEmail?: string
+): Promise<SearchResult> {
+  await ensureIndexes();
+  const db = await getMongoDb();
+  const col = db.collection<DriveItem>(ITEMS_COLLECTION);
+
+  const emailMatch = userEmail?.toLowerCase() || '';
+  const filter = {
+    $or: [
+      { userId },
+      { 'sharedWith.userId': userId },
+      ...(emailMatch ? [{ 'sharedWith.email': emailMatch }] : []),
+    ],
+  };
+
+  const docs = await col.find(filter).toArray();
+  const allItems: DriveItem[] = docs.map(({ _id, ...item }: any) => item as DriveItem);
+
+  return searchDriveItems(allItems, options);
+}
+
+// ==========================================
+// AI AUTO-LABELING & SEMANTIC ENRICHMENT
+// ==========================================
+
+export async function autoLabelDriveItem(userId: string, itemId: string): Promise<DriveItem> {
+  await ensureIndexes();
+  const db = await getMongoDb();
+  const col = db.collection<DriveItem>(ITEMS_COLLECTION);
+
+  const item = await col.findOne({ id: itemId, userId });
+  if (!item) throw new Error('Item not found or unauthorized.');
+
+  const labels = await autoLabelFile({
+    fileName: item.name,
+    relativePath: item.relativePath || item.name,
+    category: item.category,
+    mimeType: item.mimeType,
+    size: item.size,
+  });
+
+  await col.updateOne(
+    { id: itemId, userId },
+    {
+      $set: {
+        tags: labels.tags,
+        aiSummary: labels.aiSummary,
+        aiCategory: labels.aiCategory,
+        semanticKeywords: labels.semanticKeywords,
+        isAutoLabeled: true,
+        updatedAt: Date.now(),
+      },
+    }
+  );
+
+  const updated = await col.findOne({ id: itemId });
+  const { _id, ...clean }: any = updated;
+  return clean as DriveItem;
+}
+
+export async function batchAutoLabelDriveItems(
+  userId: string,
+  itemIds?: string[],
+  allUnlabeled = false
+): Promise<{ count: number; updated: DriveItem[] }> {
+  await ensureIndexes();
+  const db = await getMongoDb();
+  const col = db.collection<DriveItem>(ITEMS_COLLECTION);
+
+  let query: any = { userId, type: 'file' };
+  if (itemIds && itemIds.length > 0) {
+    query.id = { $in: itemIds };
+  } else if (allUnlabeled) {
+    query.$or = [{ isAutoLabeled: { $ne: true } }, { tags: { $size: 0 } }, { tags: { $exists: false } }];
+  }
+
+  const docs = await col.find(query).toArray();
+  const updatedItems: DriveItem[] = [];
+
+  for (const doc of docs) {
+    try {
+      const labels = await autoLabelFile({
+        fileName: doc.name,
+        relativePath: doc.relativePath || doc.name,
+        category: doc.category,
+        mimeType: doc.mimeType,
+        size: doc.size,
+      });
+
+      await col.updateOne(
+        { id: doc.id },
+        {
+          $set: {
+            tags: labels.tags,
+            aiSummary: labels.aiSummary,
+            aiCategory: labels.aiCategory,
+            semanticKeywords: labels.semanticKeywords,
+            isAutoLabeled: true,
+            updatedAt: Date.now(),
+          },
+        }
+      );
+
+      const refreshed = await col.findOne({ id: doc.id });
+      if (refreshed) {
+        const { _id, ...clean }: any = refreshed;
+        updatedItems.push(clean as DriveItem);
+      }
+    } catch (err) {
+      console.error(`Failed to auto-label ${doc.name}:`, err);
+    }
+  }
+
+  return { count: updatedItems.length, updated: updatedItems };
 }
 

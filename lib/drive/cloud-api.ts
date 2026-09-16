@@ -1,4 +1,4 @@
-import { DriveItem, DriveCategory, DriveFolderColor, DriveStats, DriveBreadcrumb, DriveViewSection } from './drive-types';
+import { DriveItem, DriveCategory, DriveFolderColor, DriveStats, DriveBreadcrumb, DriveViewSection, SearchFilterOptions, SearchResult } from './drive-types';
 import JSZip from 'jszip';
 import saveAs from 'file-saver';
 
@@ -421,3 +421,53 @@ export async function exportCloudItemAsZip(item: DriveItem): Promise<void> {
   const zipBlob = await zip.generateAsync({ type: 'blob' });
   saveAs(zipBlob, `${item.name}.zip`);
 }
+
+/**
+ * Execute semantic and fuzzy search query against Cloud Drive
+ */
+export async function searchCloudItemsApi(options: SearchFilterOptions): Promise<SearchResult> {
+  const params = new URLSearchParams();
+  if (options.query) params.set('q', options.query);
+  if (options.tag) params.set('tag', options.tag);
+  if (options.category) params.set('category', options.category);
+  if (options.aiCategory) params.set('aiCategory', options.aiCategory);
+  if (options.dateRange) params.set('dateRange', options.dateRange);
+  if (options.section) params.set('section', options.section);
+  if (options.parentId !== undefined) params.set('parentId', options.parentId === null ? 'null' : options.parentId);
+  if (options.sort) params.set('sort', options.sort);
+
+  const res = await fetch(`/api/drive/search?${params.toString()}`, {
+    headers: getAuthHeaders(),
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) throw new Error('AUTH_REQUIRED');
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Search failed');
+  }
+
+  return await res.json();
+}
+
+/**
+ * Batch trigger AI auto-labeling on items
+ */
+export async function batchAutoLabelApi(params: { itemIds?: string[]; allUnlabeled?: boolean }): Promise<{ count: number; updated: DriveItem[] }> {
+  const res = await fetch('/api/drive/items/autolabel', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...getAuthHeaders(),
+    },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    if (res.status === 401) throw new Error('AUTH_REQUIRED');
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || 'Auto-labeling failed');
+  }
+
+  return await res.json();
+}
+

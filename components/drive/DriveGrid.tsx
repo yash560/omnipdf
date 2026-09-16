@@ -35,6 +35,7 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
     openPreview,
     toggleStar,
     moveItems,
+    setSelectedTag,
   } = useDrive();
 
   const [contextItem, setContextItem] = useState<DriveItem | null>(null);
@@ -229,11 +230,41 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                   </div>
 
                   {/* File Metadata Footer */}
-                  <div className="p-3">
-                    <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate mb-1">
+                  <div className="p-3 space-y-1.5">
+                    <div className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate">
                       {file.name}
                     </div>
-                    <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono">
+
+                    {file.aiSummary && (
+                      <p className="text-[10px] text-zinc-500 dark:text-zinc-400 line-clamp-1 italic">
+                        {file.aiSummary}
+                      </p>
+                    )}
+
+                    {file.tags && file.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {file.tags.slice(0, 2).map((tag) => (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedTag(tag);
+                            }}
+                            className="px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-[9px] font-extrabold border border-rose-200/60 dark:border-rose-900/40 hover:bg-rose-100 transition-colors"
+                          >
+                            #{tag}
+                          </button>
+                        ))}
+                        {file.tags.length > 2 && (
+                          <span className="text-[9px] text-zinc-400 font-bold self-center">
+                            +{file.tags.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono pt-1">
                       <span>{formatBytes(file.size)}</span>
                       <span>{formatTimeAgo(file.updatedAt)}</span>
                     </div>

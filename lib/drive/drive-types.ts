@@ -85,6 +85,12 @@ export interface DriveItem {
   tags?: string[];
   description?: string;
   aiSummary?: string;
+  aiCategory?: string;
+  semanticKeywords?: string[];
+  relativePath?: string;
+  isAutoLabeled?: boolean;
+  searchScore?: number;
+  matchedTerms?: string[];
   thumbnailUrl?: string;
   itemCount?: number; // for folders (computed/cached)
   // Multi-account & collaboration
@@ -95,6 +101,24 @@ export interface DriveItem {
   shareConfig?: ShareConfig;
   isSharedWithMe?: boolean;
   myRole?: CollaboratorRole;
+}
+
+export interface SearchFilterOptions {
+  query: string;
+  category?: DriveCategory;
+  aiCategory?: string;
+  tag?: string;
+  dateRange?: 'all' | 'today' | 'week' | 'month' | 'year';
+  section?: DriveViewSection;
+  parentId?: string | null;
+  sort?: 'relevance' | 'date' | 'name' | 'size';
+}
+
+export interface SearchResult {
+  items: DriveItem[];
+  totalMatches: number;
+  availableTags: { tag: string; count: number }[];
+  availableAiCategories: { category: string; count: number }[];
 }
 
 export interface DriveComment {
