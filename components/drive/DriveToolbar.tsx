@@ -185,7 +185,7 @@ export function DriveToolbar({
   const currentFolderCrumb = breadcrumbs[breadcrumbs.length - 1];
 
   return (
-    <div className="w-full border-b border-zinc-200 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 space-y-2 sm:space-y-2.5 shrink-0 select-none">
+    <div className="w-full border-b border-zinc-200 dark:border-zinc-800/80 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 space-y-2 sm:space-y-2.5 shrink-0 select-none relative z-30">
       {/* Top Row: Mobile Menu + Search Bar + Action Buttons */}
       <div className="flex items-center justify-between gap-2 sm:gap-3">
         {/* Mobile Sidebar Drawer Trigger Button */}
@@ -202,8 +202,8 @@ export function DriveToolbar({
         )}
 
         {/* Search Bar with Predictive Recommendations & Autocomplete */}
-        <div className="relative flex-1 min-w-0">
-          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 z-10" />
+        <div className="relative flex-1 min-w-0 z-40">
+          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400 absolute left-3 sm:left-3.5 top-1/2 -translate-y-1/2 z-10 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
@@ -221,17 +221,25 @@ export function DriveToolbar({
               setSearchTerm(e.target.value);
               setIsSearchDropdownOpen(true);
             }}
-            placeholder="Search files, OCR text, tax, vehicle IDs (Click for recommendations)..."
+            placeholder="Search files, scanned text, categories, tags (Click for suggestions)..."
             className="w-full pl-8 sm:pl-9 pr-8 sm:pr-9 py-1.5 sm:py-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-xs text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 focus:outline-hidden focus:ring-2 focus:ring-rose-500 shadow-inner font-medium relative z-10"
           />
           {searchTerm && (
             <button
               type="button"
               onClick={() => setSearchTerm('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer z-10"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer z-20"
             >
               <X className="w-3.5 h-3.5" />
             </button>
+          )}
+
+          {/* Transparent click-outside backdrop when search dropdown is open */}
+          {isSearchDropdownOpen && (
+            <div 
+              className="fixed inset-0 z-30" 
+              onClick={() => setIsSearchDropdownOpen(false)} 
+            />
           )}
 
           {/* Predictive Search Recommender Dropdown */}
@@ -588,7 +596,7 @@ export function DriveToolbar({
             <button
               type="button"
               onClick={() => setViewLayout('columns')}
-              title="Cascading Columns View (Finder Miller Columns)"
+              title="Cascading Columns View"
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 viewLayout === 'columns'
                   ? 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-2xs'

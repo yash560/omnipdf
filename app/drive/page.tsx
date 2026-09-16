@@ -379,7 +379,7 @@ function DriveWorkspaceInner() {
               Drop Files & Folders to Upload to FileCraft Cloud Drive
             </h2>
             <p className="text-sm text-rose-100 font-medium">
-              Files and nested directory structures will be synchronized securely via 2MB chunked streams.
+              Files and nested folders will be uploaded and safely synchronized to your private cloud storage.
             </p>
           </div>
         </div>
@@ -438,7 +438,7 @@ function DriveWorkspaceInner() {
         )}
 
         {/* Scrollable Items Feed */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative z-10">
           {/* Predictive Search Recommendation & Quick Discovery Pills */}
           <DriveSearchPills
             onSelectQuery={(q) => setSearchTerm(q)}
