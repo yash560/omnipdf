@@ -1,4 +1,5 @@
 import { getMongoDb } from '@/lib/db/mongodb';
+import { after } from 'next/server';
 import { GridFSBucket, ObjectId } from 'mongodb';
 import { 
   DriveItem, 
@@ -96,7 +97,13 @@ function scheduleServerPdfThumbnail(userId: string, item: DriveItem, buffer?: Bu
   if (item.category !== 'pdf' && item.extension !== 'pdf') return;
   if (item.size > MAX_PDF_THUMBNAIL_SOURCE_BYTES) return;
 
-  (async () => {
+  // Plain fire-and-forget only finishes on a long-lived process (local `next
+  // dev`/`next start`). On Vercel the serverless function is frozen the
+  // instant the response is sent, so this work would silently never run —
+  // every PDF would fall through to the slow lazy-generate-on-first-view
+  // path instead of arriving pre-warmed. after() keeps the function alive
+  // (via Vercel's waitUntil) until this settles, on every runtime.
+  after(async () => {
     try {
       let source = buffer;
       if (!source) {
@@ -128,7 +135,7 @@ function scheduleServerPdfThumbnail(userId: string, item: DriveItem, buffer?: Bu
     } catch (err) {
       console.warn('[ServerDrive] Background PDF thumbnail generation failed:', err);
     }
-  })();
+  });
 }
 
 /**
