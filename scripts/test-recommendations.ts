@@ -22,7 +22,7 @@ function loadEnv() {
 
 async function test() {
   loadEnv();
-  const uri = process.env.QUATTUOR_MONGODB_URI || 'mongodb://127.0.0.1:27018';
+  const uri = process.env.MONGODB_URI || process.env.QUATTUOR_MONGODB_URI || 'mongodb://127.0.0.1:27017';
   const client = new MongoClient(uri);
   await client.connect();
 
