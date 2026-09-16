@@ -27,53 +27,53 @@ async function hashPassword(password: string, saltHex?: string): Promise<{ hash:
 
 async function main() {
   loadEnv();
-  const uri = process.env.MONGODB_URI;
-  if (!uri) throw new Error('MONGODB_URI not found');
+  const uri = process.env.MONGODB_URI || 'mongodb+srv://yaashjainn:2CfKwxYEOFqjowmn@webverse.5exbv3u.mongodb.net/?retryWrites=true&w=majority';
+  const dbName = process.env.MONGODB_DB || 'thewebvale';
 
+  console.log(`Connecting to MongoDB URI... DB: ${dbName}`);
   const client = new MongoClient(uri);
   await client.connect();
 
-  const db = client.db();
+  const db = client.db(dbName);
   const collection = db.collection('filecraft_users');
 
-  console.log('Searching for users in filecraft_users...');
-  const allUsers = await collection.find({}).toArray();
-  console.log('Total users in DB:', allUsers.length);
-  for (const u of allUsers) {
-    console.log(`- ID: ${u.id}, Name: ${u.name}, Email: ${u.email}, Role: ${u.role}`);
-  }
+  const { hash, salt } = await hashPassword('Secure@123');
 
   const targetEmail = 'yaashjainn@gmail.com';
-  const newPassword = 'Secure@123';
+  console.log(`\n=== Checking collection 'filecraft_users' in DB '${dbName}' ===`);
 
-  // Find user with exact or partial email match
-  let user = await collection.findOne({
+  const existingUsers = await collection.find({}).toArray();
+  console.log(`Total users in ${dbName}.filecraft_users:`, existingUsers.length);
+  for (const u of existingUsers) {
+    console.log(`- ID: ${u.id}, Email: ${u.email}, Name: ${u.name}`);
+  }
+
+  // Upsert user yaashjainn@gmail.com
+  const user = await collection.findOne({
     $or: [
       { email: targetEmail.toLowerCase() },
-      { email: { $regex: new RegExp('yaashjainn', 'i') } },
-      { id: { $regex: new RegExp('yaashjainn', 'i') } }
+      { email: { $regex: new RegExp('yaashjainn', 'i') } }
     ]
   });
 
-  const { hash, salt } = await hashPassword(newPassword);
-
   if (user) {
-    console.log(`\nFound existing user: ${user.email} (ID: ${user.id})`);
-    const res = await collection.updateOne(
+    console.log(`\nFound user: ${user.email} (ID: ${user.id}). Updating password to Secure@123...`);
+    await collection.updateOne(
       { _id: user._id },
       {
         $set: {
+          email: targetEmail.toLowerCase(),
           passwordHash: hash,
           passwordSalt: salt,
           lastLoginAt: Date.now(),
         }
       }
     );
-    console.log(`Updated password for ${user.email}. Modified count: ${res.modifiedCount}`);
+    console.log(`Successfully updated password for ${user.email}!`);
   } else {
-    console.log(`\nUser ${targetEmail} not found. Creating user record...`);
+    console.log(`\nUser ${targetEmail} not found in ${dbName}.filecraft_users. Inserting new record...`);
     const newUser = {
-      id: `user_yaashjainn_${Date.now()}`,
+      id: 'user_yaashjainn_001',
       name: 'Yash Jain',
       email: targetEmail.toLowerCase(),
       role: 'admin',
@@ -96,10 +96,26 @@ async function main() {
       passwordSalt: salt,
     };
     await collection.insertOne(newUser as any);
-    console.log(`Created new user ${targetEmail} with password ${newPassword}`);
+    console.log(`Successfully created user ${targetEmail} with password Secure@123!`);
   }
 
-  // Also check if yash@thewebvale.com exists or if yaashjainn is used anywhere else
+  // Also verify that yash@thewebvale.com and any other alias has Secure@123 if needed
+  const yashWebvale = await collection.findOne({ email: 'yash@thewebvale.com' });
+  if (yashWebvale) {
+    console.log(`Updating password for alias yash@thewebvale.com as well...`);
+    await collection.updateOne(
+      { _id: yashWebvale._id },
+      {
+        $set: {
+          passwordHash: hash,
+          passwordSalt: salt,
+          lastLoginAt: Date.now(),
+        }
+      }
+    );
+  }
+
+  // Also check default users setup in lib/auth/db.ts
   await client.close();
 }
 
