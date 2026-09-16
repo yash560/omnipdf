@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthenticatedUser } from '@/lib/auth/get-server-user';
 import { getCloudItems, getCloudBreadcrumbs } from '@/lib/drive/server-drive';
