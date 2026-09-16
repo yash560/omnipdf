@@ -57,6 +57,16 @@ class GeminiKeyRotator {
    */
   getNextKey(): string {
     const now = Date.now();
+    if (this.keys.length === 0) {
+      const dynamicEnv = (process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '')
+        .split(',')
+        .map((k) => k.trim())
+        .filter((k) => k.startsWith('AIzaSy'));
+      for (const k of dynamicEnv) {
+        this.addKey(k);
+      }
+    }
+
     const total = this.keys.length;
 
     if (total === 0) {
