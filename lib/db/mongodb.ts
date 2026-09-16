@@ -78,3 +78,4 @@ export async function getMongoDb(): Promise<Db> {
   cache.db = client.db(getDbName());
   return cache.db;
 }
+
