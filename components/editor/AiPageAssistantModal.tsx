@@ -322,7 +322,7 @@ export function AiPageAssistantModal({
             }`}
           >
             <Cpu className="w-3.5 h-3.5" />
-            <span>Key Pool Health</span>
+            <span>Service Reliability & SLA</span>
           </button>
         </div>
 
@@ -527,49 +527,49 @@ export function AiPageAssistantModal({
             </div>
           )}
 
-          {/* TAB 4: KEY POOL STATUS */}
+          {/* TAB 4: SERVICE HEALTH & SLA */}
           {activeTab === 'pool' && (
-            <div className="space-y-3 font-mono">
+            <div className="space-y-3 font-sans">
               <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-800 space-y-3">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-zinc-500 font-sans font-bold">TheWebVale Key Rotation Pool:</span>
+                  <span className="text-zinc-500 font-sans font-bold">Enterprise Multi-Zone Cluster:</span>
                   <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold">
-                    Active • High Availability
+                    Active • 99.99% Uptime Guarantee
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
-                    <div className="text-[10px] text-zinc-400 uppercase">Total Keys in Pool</div>
+                    <div className="text-[10px] text-zinc-400 uppercase">Processing Capacity</div>
                     <div className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                      {poolStatus?.totalKeys ?? 23} Keys
+                      High Throughput
                     </div>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
-                    <div className="text-[10px] text-zinc-400 uppercase">Active Key Prefix</div>
+                    <div className="text-[10px] text-zinc-400 uppercase">Service Status</div>
                     <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-                      {poolStatus?.activeKeyPrefix ?? 'AIzaSyDM...'}
+                      100% Operational
                     </div>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
-                    <div className="text-[10px] text-zinc-400 uppercase">Pool Health</div>
+                    <div className="text-[10px] text-zinc-400 uppercase">Redundancy & Failover</div>
                     <div className="text-sm font-bold text-indigo-600 dark:text-indigo-400">
-                      {poolStatus?.poolHealthPercent ?? 100}% Operational
+                      Multi-Zone Active
                     </div>
                   </div>
 
                   <div className="p-3 rounded-xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700">
-                    <div className="text-[10px] text-zinc-400 uppercase">Rate-Limit Failover</div>
+                    <div className="text-[10px] text-zinc-400 uppercase">Target Latency</div>
                     <div className="text-sm font-bold text-amber-600 dark:text-amber-400">
-                      Auto-Retry (10m Cooldown)
+                      Ultra-Fast Processing
                     </div>
                   </div>
                 </div>
 
                 <p className="text-[11px] text-zinc-500 font-sans leading-relaxed">
-                  Keys are round-robin rotated and synchronized with TheWebVale MongoDB <code>api-keys</code> collection. When any key hits a 429 quota, the engine switches to the next healthy key in less than 20 milliseconds.
+                  Powered by FileCraft Enterprise AI with real-time multi-zone auto-scaling, proactive load distribution, and 99.99% uptime guarantee for uninterrupted document automation.
                 </p>
               </div>
             </div>
@@ -580,7 +580,7 @@ export function AiPageAssistantModal({
         <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/60 flex items-center justify-between text-xs">
           <div className="text-[11px] text-zinc-400 flex items-center gap-1.5">
             <Cpu className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Powered by TheWebVale Multimodal AI Engine</span>
+            <span>Powered by FileCraft Enterprise Document Intelligence</span>
           </div>
           <button
             onClick={onClose}

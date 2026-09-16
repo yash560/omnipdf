@@ -84,7 +84,7 @@ export default function DataVisualizerPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 text-xs font-bold mb-3">
           <BarChart3 className="w-3.5 h-3.5" />
-          <span>Instant Data Visualizer • Zero Server Uploads</span>
+          <span>Interactive Business Intelligence • 100% Confidential & Private</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Turn Spreadsheets into Interactive Charts

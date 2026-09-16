@@ -43,7 +43,7 @@ export default function UnarchiverPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800 text-orange-600 dark:text-orange-400 text-xs font-bold mb-3">
           <FolderArchive className="w-3.5 h-3.5" />
-          <span>Universal In-Browser Unarchiver • Zero Server Uploads</span>
+          <span>Universal Archive Extractor • 100% Private On-Device Processing</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Extract, Inspect & Download ZIP Archives

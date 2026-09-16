@@ -59,7 +59,7 @@ export default function BgRemoverPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-50 dark:bg-pink-950/40 border border-pink-200 dark:border-pink-800 text-pink-600 dark:text-pink-400 text-xs font-bold mb-3">
           <Wand2 className="w-3.5 h-3.5" />
-          <span>100% In-Browser Background Cutout • Zero Server Uploads</span>
+          <span>Instant AI Cutout • 100% Private On-Device Processing</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           AI Background Remover

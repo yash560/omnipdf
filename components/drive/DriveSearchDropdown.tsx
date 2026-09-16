@@ -147,7 +147,7 @@ export function DriveSearchDropdown({
                       <div className="text-3xs text-zinc-400 truncate flex items-center gap-1.5">
                         <span>{item.relativePath || 'My Drive'}</span>
                         {item.ocrText && (
-                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">• OCR text indexed</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">• Full text searchable</span>
                         )}
                       </div>
                     </div>
@@ -254,7 +254,7 @@ export function DriveSearchDropdown({
         {/* SECTION 4: SMART SHORTCUTS */}
         <div className="pt-2 border-t border-zinc-200/60 dark:border-zinc-800/60 flex items-center justify-between text-3xs text-zinc-400 px-2">
           <span>Tip: Use <kbd className="px-1 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 font-mono text-3xs">⌘K</kbd> for Global Omnisearch across files & tools</span>
-          <span className="text-rose-500 font-bold">Fuzzy & Semantic Active</span>
+          <span className="text-rose-500 font-bold">Smart Search Active</span>
         </div>
       </div>
     </div>

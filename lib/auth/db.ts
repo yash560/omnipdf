@@ -247,6 +247,7 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
   const updatedUser: UserRecord = {
     ...user,
     ...updates,
+    preferences: updates.preferences ? { ...user.preferences, ...updates.preferences } : user.preferences,
     lastLoginAt: Date.now(),
   };
 
@@ -261,4 +262,29 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
   memoryCache.set(updatedUser.email.toLowerCase(), updatedUser);
   memoryCache.set(id, updatedUser);
   return sanitizeUser(updatedUser);
+}
+
+export async function updateUserPassword(id: string, newPassword: string): Promise<boolean> {
+  const user = await findUserById(id);
+  if (!user) return false;
+
+  const { hash, salt } = await hashPassword(newPassword);
+  const updatedUser: UserRecord = {
+    ...user,
+    passwordHash: hash,
+    passwordSalt: salt,
+    lastLoginAt: Date.now(),
+  };
+
+  try {
+    const db = await getMongoDb();
+    const collection = db.collection<UserRecord>(USERS_COLLECTION);
+    await collection.updateOne({ id }, { $set: updatedUser });
+  } catch (err) {
+    console.warn('[FileCraft Auth] MongoDB update password error:', err);
+  }
+
+  memoryCache.set(updatedUser.email.toLowerCase(), updatedUser);
+  memoryCache.set(id, updatedUser);
+  return true;
 }

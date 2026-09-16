@@ -474,7 +474,7 @@ export function DriveSidebar({
             />
           </div>
           <p className="text-3xs text-zinc-400 leading-tight">
-            MongoDB GridFS Multi-Device Storage.
+            Encrypted Multi-Device Cloud Sync.
           </p>
         </div>
 

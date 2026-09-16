@@ -57,7 +57,7 @@ export default function QrBarcodePage() {
 
           <div>
             <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
-              QR Code Payload (URL / Text / WiFi)
+              QR Code Content (URL, Text, or Wi-Fi)
             </label>
             <input
               type="text"

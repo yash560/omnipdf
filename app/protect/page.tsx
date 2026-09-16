@@ -42,7 +42,7 @@ export default function ProtectPage() {
       setIsProcessing(true);
       setModalOpen(true);
       setProgress(30);
-      setStatusText('Encrypting PDF streams with AES password protection...');
+      setStatusText('Securing PDF document with password protection...');
 
       const arrayBuf = files[0].arrayBuffer;
       const protectedPdf = await protectPdf(arrayBuf, password);

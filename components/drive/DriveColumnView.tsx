@@ -5,6 +5,7 @@ import { useDrive } from '@/lib/drive/drive-context';
 import { DriveItem, FOLDER_COLORS } from '@/lib/drive/drive-types';
 import { formatBytes, formatTimeAgo, getFileCraftToolsForItem } from '@/lib/drive/drive-helpers';
 import { DriveContextMenu } from './DriveContextMenu';
+import { DriveThumbnail } from './DriveThumbnail';
 import {
   Folder,
   ChevronRight,
@@ -334,39 +335,14 @@ export function DriveColumnView({ onOpenRenameModal, onOpenMoveModal }: DriveCol
       {selectedInspectorItem && (
         <div className="w-80 sm:w-96 shrink-0 h-full flex flex-col bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 overflow-y-auto p-5 space-y-5 animate-in slide-in-from-left duration-150">
           {/* File Thumbnail / Preview Hero */}
-          <div className="w-full aspect-video rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 flex flex-col items-center justify-center p-4 relative overflow-hidden group shadow-inner">
-            {selectedInspectorItem.thumbnailUrl ? (
-              <img
-                src={selectedInspectorItem.thumbnailUrl}
-                alt={selectedInspectorItem.name}
-                className="w-full h-full object-contain rounded-lg"
-              />
-            ) : (
-              <div className="flex flex-col items-center gap-2 text-zinc-400">
-                {selectedInspectorItem.category === 'pdf' ? (
-                  <FileText className="w-16 h-16 text-rose-500 stroke-[1.5]" />
-                ) : selectedInspectorItem.category === 'image' ? (
-                  <ImageIcon className="w-16 h-16 text-purple-500 stroke-[1.5]" />
-                ) : selectedInspectorItem.category === 'spreadsheet' ? (
-                  <Table className="w-16 h-16 text-emerald-500 stroke-[1.5]" />
-                ) : selectedInspectorItem.category === 'media' ? (
-                  <Film className="w-16 h-16 text-amber-500 stroke-[1.5]" />
-                ) : selectedInspectorItem.category === 'archive' ? (
-                  <FolderArchive className="w-16 h-16 text-cyan-500 stroke-[1.5]" />
-                ) : (
-                  <File className="w-16 h-16 text-zinc-400 stroke-[1.5]" />
-                )}
-                <span className="text-3xs uppercase font-extrabold tracking-widest text-zinc-400">
-                  {selectedInspectorItem.extension || selectedInspectorItem.category}
-                </span>
-              </div>
-            )}
+          <div className="w-full aspect-video rounded-2xl bg-zinc-100 dark:bg-zinc-800/60 border border-zinc-200/80 dark:border-zinc-700/60 flex flex-col items-center justify-center relative overflow-hidden group shadow-inner">
+            <DriveThumbnail item={selectedInspectorItem} view="column" />
 
             {/* Quick Look Overlay Button */}
             <button
               type="button"
               onClick={() => openPreview(selectedInspectorItem)}
-              className="absolute inset-0 bg-black/40 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-bold cursor-pointer"
+              className="absolute inset-0 bg-black/40 backdrop-blur-2xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 text-white text-xs font-bold cursor-pointer z-10"
             >
               <Eye className="w-4 h-4" />
               <span>Quick Look (Space)</span>
@@ -378,8 +354,8 @@ export function DriveColumnView({ onOpenRenameModal, onOpenMoveModal }: DriveCol
             <h3 className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 break-words leading-snug">
               {selectedInspectorItem.name}
             </h3>
-            <p className="text-xs text-zinc-400 font-mono mt-1">
-              {formatBytes(selectedInspectorItem.size)} • {selectedInspectorItem.mimeType || selectedInspectorItem.extension}
+            <p className="text-xs text-zinc-400 font-medium mt-1">
+              {formatBytes(selectedInspectorItem.size)} • {selectedInspectorItem.extension ? `${selectedInspectorItem.extension.toUpperCase()} Document` : selectedInspectorItem.category.toUpperCase()}
             </p>
           </div>
 
@@ -456,7 +432,7 @@ export function DriveColumnView({ onOpenRenameModal, onOpenMoveModal }: DriveCol
 
             {(selectedInspectorItem.ocrSnippet || selectedInspectorItem.aiSummary) && (
               <div className="p-2.5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-800 text-3xs text-zinc-600 dark:text-zinc-300 line-clamp-4 leading-relaxed">
-                <span className="font-bold text-zinc-800 dark:text-zinc-200">AI Extract: </span>
+                <span className="font-bold text-zinc-800 dark:text-zinc-200">Recognized Content: </span>
                 {selectedInspectorItem.ocrSnippet || selectedInspectorItem.aiSummary}
               </div>
             )}
@@ -505,7 +481,7 @@ export function DriveColumnView({ onOpenRenameModal, onOpenMoveModal }: DriveCol
           {getFileCraftToolsForItem(selectedInspectorItem).length > 0 && (
             <div className="space-y-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
               <div className="text-3xs font-extrabold uppercase tracking-wider text-zinc-400">
-                Launch in FileCraft Tools
+                Open in Productivity Suite
               </div>
               <div className="space-y-1">
                 {getFileCraftToolsForItem(selectedInspectorItem).map((tool) => (

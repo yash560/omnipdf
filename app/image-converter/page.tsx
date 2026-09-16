@@ -70,13 +70,13 @@ export default function ImageConverterPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-50 dark:bg-cyan-950/40 border border-cyan-200 dark:border-cyan-800 text-cyan-600 dark:text-cyan-400 text-xs font-bold mb-3">
           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-          <span>Universal Image Converter • Zero Server Uploads</span>
+          <span>Universal Image Studio • 100% Private On-Device Processing</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Convert Any Image in Batch
         </h1>
         <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
-          Transform between PNG, JPG, WEBP, AVIF, ICO, BMP, and SVG at full resolution 100% client-side.
+          Transform between PNG, JPG, WEBP, AVIF, ICO, BMP, and SVG at full resolution with complete privacy.
         </p>
       </div>
 

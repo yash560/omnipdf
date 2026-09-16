@@ -124,7 +124,7 @@ export default function SteganographyPage() {
         <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-4">
           <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
             <Lock className="w-4 h-4" />
-            <span>Secret Message Payload</span>
+            <span>Confidential Message Content</span>
           </h2>
           <textarea
             value={secretMessage}
@@ -137,7 +137,7 @@ export default function SteganographyPage() {
             className="w-full py-3.5 rounded-xl bg-zinc-900 hover:bg-black dark:bg-white dark:hover:bg-zinc-100 text-white dark:text-zinc-900 font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all"
           >
             <EyeOff className="w-4 h-4" />
-            <span>Embed Secret Invisibly in Image Pixels</span>
+            <span>Embed Secret Message Invisibly</span>
           </button>
 
           {stegoBlob && stegoUrl && (
@@ -193,7 +193,7 @@ export default function SteganographyPage() {
         />
       )}
 
-      <ProcessingModal isOpen={processing} progress={50} statusText="Processing image bitstreams..." />
+      <ProcessingModal isOpen={processing} progress={50} statusText="Processing image data..." />
     </div>
   );
 }

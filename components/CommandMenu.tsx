@@ -408,7 +408,7 @@ export function CommandMenu() {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search all files, OCR scan text, folders, vehicle IDs, salary, or 50+ tools..."
+              placeholder="Search all files, scanned text, folders, categories, tags, or 50+ tools..."
               value={query}
               onChange={(e) => {
                 setQuery(e.target.value);
@@ -439,7 +439,7 @@ export function CommandMenu() {
               { id: 'files', label: `📄 Files (${driveFiles.length})` },
               { id: 'folders', label: `📂 Folders (${driveFolders.length})` },
               { id: 'tools', label: `🛠️ Tools (${filteredTools.length})` },
-              { id: 'ocr', label: '🔍 OCR Scans' },
+              { id: 'ocr', label: '🔍 Scanned Text' },
               { id: 'actions', label: '⚡ Actions' },
               { id: 'vault', label: isVaultUnlocked ? '🔓 Vault (Active)' : '🔒 Vault (Locked)' },
             ].map((tab) => (
@@ -625,11 +625,11 @@ export function CommandMenu() {
                             <span className="truncate">{file.relativePath || file.name}</span>
                           </div>
 
-                          {/* Highlighted OCR Match Snippet */}
+                          {/* Highlighted Match Snippet */}
                           {file.ocrSnippet && (
                             <div className="mt-1 px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-[10px] font-sans flex items-center gap-1.5 max-w-lg">
                               <Search className="w-3 h-3 text-amber-500 shrink-0" />
-                              <span className="truncate">Scan text: &ldquo;{file.ocrSnippet}&rdquo;</span>
+                              <span className="truncate">Excerpt: &ldquo;{file.ocrSnippet}&rdquo;</span>
                             </div>
                           )}
                         </div>

@@ -58,7 +58,7 @@ export default function DocxToMarkdownPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400 text-xs font-bold mb-3">
           <FileType className="w-3.5 h-3.5" />
-          <span>Word DOCX to Markdown/HTML • Zero Server Uploads</span>
+          <span>Word Document Intelligence • 100% Private On-Device Processing</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Convert Microsoft Word to Clean Markdown

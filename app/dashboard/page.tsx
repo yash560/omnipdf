@@ -86,13 +86,13 @@ export default function DashboardPage() {
                 <Crown className="w-3 h-3" />
                 <span>{user?.plan || 'Pro'} Cloud Plan</span>
               </span>
-              <span className="text-xs text-zinc-400">Zero-Knowledge Private Studio</span>
+              <span className="text-xs text-zinc-400">Enterprise Private Workspace</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Welcome back, {user?.name || 'Yash Jain'}!
             </h1>
             <p className="text-xs sm:text-sm text-zinc-400 max-w-xl">
-              Your documents are synchronized and secured with client-side encryption. You have full access to all 20+ PDF engines and TheWebVale Multimodal AI Suite.
+              Your documents are synchronized and secured with client-side encryption. You have full access to the complete Document Productivity Suite and Enterprise Intelligence.
             </p>
           </div>
 
@@ -121,7 +121,7 @@ export default function DashboardPage() {
           <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100">
             {sessions.length + (user?.usage.documentsCount || 0)}
           </div>
-          <div className="text-[11px] text-zinc-400">Synced across your browser fleet</div>
+          <div className="text-[11px] text-zinc-400">Synced across your devices</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2">
@@ -132,7 +132,7 @@ export default function DashboardPage() {
           <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100">
             {user?.usage.aiQueriesUsed || 128}
           </div>
-          <div className="text-[11px] text-emerald-500 font-bold">23-Key Pool Active</div>
+          <div className="text-[11px] text-emerald-500 font-bold">Enterprise Intelligence Active</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2">
@@ -143,7 +143,7 @@ export default function DashboardPage() {
           <div className="text-2xl font-black text-zinc-900 dark:text-zinc-100">
             {storageUsedMb} <span className="text-xs font-medium text-zinc-400">/ {maxStorageMb} MB</span>
           </div>
-          <div className="text-[11px] text-zinc-400">Encrypted binary cache</div>
+          <div className="text-[11px] text-zinc-400">Private Encrypted Storage</div>
         </div>
 
         <div className="p-5 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xs space-y-2">
@@ -154,7 +154,7 @@ export default function DashboardPage() {
           <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400">
             100%
           </div>
-          <div className="text-[11px] text-zinc-400">AES-256-GCM Zero-Knowledge</div>
+          <div className="text-[11px] text-zinc-400">Bank-Grade Confidentiality</div>
         </div>
       </div>
 

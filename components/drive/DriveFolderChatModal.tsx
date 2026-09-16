@@ -39,7 +39,7 @@ export const DriveFolderChatModal: React.FC<DriveFolderChatModalProps> = ({
         {
           id: 'welcome',
           role: 'assistant',
-          content: `👋 Hello! I have loaded all **${fileCount} files** and **${folderCount} folders** inside **"${folderName}"** with their OCR text and AI summaries.\n\nAsk me anything across these documents! For example:\n- *"Summarize everything in this folder."*\n- *"What are the key policy numbers, dates, or ID details?"*\n- *"Find documents relating to salary or bills."*`,
+          content: `👋 Hello! I have loaded all **${fileCount} files** and **${folderCount} folders** inside **"${folderName}"** with their document content and smart summaries.\n\nAsk me anything across these documents! For example:\n- *"Summarize everything in this folder."*\n- *"What are the key policy numbers, dates, or ID details?"*\n- *"Find documents relating to salary or bills."*`,
           timestamp: Date.now(),
         },
       ]);

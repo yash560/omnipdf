@@ -71,13 +71,13 @@ export default function BurnSharePage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-bold mb-3">
           <Flame className="w-3.5 h-3.5 text-red-500" />
-          <span>Zero-Knowledge AES-256-GCM Encrypted File Transfer</span>
+          <span>End-to-End Encrypted Confidential Sharing</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
-          Burn-After-Reading Secure Share
+          Burn-After-Reading Confidential Share
         </h1>
         <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
-          Files are encrypted in your browser before upload. The secret key is in the URL hash and never seen by the server. Once opened, it self-destructs.
+          Documents are securely encrypted directly on your device before transfer. The access key is embedded in your link and never stored. Once opened, the file permanently self-destructs.
         </p>
       </div>
 
@@ -88,8 +88,8 @@ export default function BurnSharePage() {
           onFilesChange={setFiles}
           accept="*/*"
           multiple={false}
-          title="Select or Drop a Sensitive File"
-          subtitle="All files are client-encrypted with AES-256-GCM"
+          title="Select or Drop a Confidential File"
+          subtitle="All documents are private and encrypted directly on your device"
           primaryColor="#ef4444"
         />
       </div>
@@ -176,7 +176,7 @@ export default function BurnSharePage() {
         />
       )}
 
-      <ProcessingModal isOpen={processing} progress={50} statusText="Encrypting payload with AES-256-GCM..." />
+      <ProcessingModal isOpen={processing} progress={50} statusText="Securing document with end-to-end encryption..." />
     </div>
   );
 }

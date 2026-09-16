@@ -43,7 +43,7 @@ export function SessionDrawer({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `omnipdf_workspace_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `filecraft_workspace_backup_${new Date().toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };

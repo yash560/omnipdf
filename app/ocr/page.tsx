@@ -30,7 +30,7 @@ export default function OcrPage() {
       setIsProcessing(true);
       setModalOpen(true);
       setProgress(5);
-      setStatusText('Booting Tesseract Web Worker...');
+      setStatusText('Initializing Document Intelligence Engine...');
 
       const arrayBuf = files[0].arrayBuffer;
       const res = await performPdfOcr(arrayBuf, 'eng', (info) => {
@@ -40,10 +40,10 @@ export default function OcrPage() {
 
       setExtractedText(res.text);
       setIsProcessing(false);
-      setStatusText('OCR Text Extraction Complete!');
+      setStatusText('Text Recognition & Extraction Complete!');
     } catch (err) {
       console.error('OCR error:', err);
-      alert('Failed to perform OCR. Please ensure the document is clear.');
+      alert('Failed to extract text. Please ensure the document is clear.');
       setIsProcessing(false);
       setModalOpen(false);
     }
@@ -86,14 +86,14 @@ export default function OcrPage() {
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-zinc-100">
-                OCR PDF (Searchable Text)
+                Text Recognition & Extraction
               </h1>
               <span className="px-2 py-0.5 text-[10px] font-extrabold uppercase rounded-full bg-violet-500/10 text-violet-600 dark:text-violet-400">
-                WASM AI
+                Smart Intelligence
               </span>
             </div>
             <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-0.5">
-              Extract selectable, searchable text from scanned paper documents and images.
+              Extract selectable, searchable text from scanned documents, invoices, and images.
             </p>
           </div>
         </div>
@@ -106,8 +106,8 @@ export default function OcrPage() {
           onFilesChange={setFiles}
           multiple={false}
           primaryColor="#7c3aed"
-          title="Select scanned PDF file for OCR"
-          subtitle="or drop a scanned document here"
+          title="Select scanned document for text extraction"
+          subtitle="or drop a scanned file here"
         />
 
         {files.length > 0 && !extractedText && (
@@ -118,7 +118,7 @@ export default function OcrPage() {
               className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-extrabold text-sm shadow-xl shadow-violet-500/25 hover:shadow-2xl transition-all active:scale-95 cursor-pointer flex items-center justify-center gap-2"
             >
               <ScanText className="w-4 h-4" />
-              <span>Run Optical Character Recognition (OCR)</span>
+              <span>Extract Searchable Text</span>
             </button>
           </div>
         )}
@@ -180,7 +180,7 @@ export default function OcrPage() {
         statusText={statusText}
         onDownload={() => {}}
         onReset={handleReset}
-        actionTitle="Running Local OCR"
+        actionTitle="Extracting Searchable Text"
       />
     </div>
   );

@@ -5,6 +5,7 @@ import { useDrive } from '@/lib/drive/drive-context';
 import { DriveItem, FOLDER_COLORS } from '@/lib/drive/drive-types';
 import { formatBytes, formatTimeAgo } from '@/lib/drive/drive-helpers';
 import { DriveContextMenu } from './DriveContextMenu';
+import { DriveThumbnail } from './DriveThumbnail';
 import {
   Folder,
   FileText,
@@ -256,8 +257,8 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                   }`}
                 >
                   {/* Thumbnail / Icon Box */}
-                  <div className="w-full aspect-[4/3] bg-zinc-50 dark:bg-zinc-950/80 flex items-center justify-center p-4 border-b border-zinc-100 dark:border-zinc-800/60 relative group">
-                    {getFileIcon(file.category)}
+                  <div className="w-full aspect-[4/3] bg-zinc-50 dark:bg-zinc-950/80 flex items-center justify-center border-b border-zinc-100 dark:border-zinc-800/60 relative group overflow-hidden">
+                    <DriveThumbnail item={file} view="grid" />
 
                     {/* Star Button */}
                     <button
@@ -347,10 +348,10 @@ export function DriveGrid({ onOpenRenameModal, onOpenMoveModal }: DriveGridProps
                       {file.name}
                     </div>
 
-                    {/* OCR match snippet */}
+                    {/* Match snippet */}
                     {file.ocrSnippet && (
-                      <div className="text-3xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-mono truncate">
-                        OCR: {file.ocrSnippet}
+                      <div className="text-3xs text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded font-medium truncate">
+                        Excerpt: &ldquo;{file.ocrSnippet}&rdquo;
                       </div>
                     )}
 

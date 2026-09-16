@@ -48,7 +48,7 @@ export default function VideoCompressPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs font-bold mb-3">
           <Video className="w-3.5 h-3.5" />
-          <span>In-Browser Video Compressor • Zero Server Uploads</span>
+          <span>Smart Video Optimizer • 100% Private On-Device Processing</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Compress & Downscale Video Clips

@@ -187,7 +187,7 @@ export function CloudShareModal({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${session.filename.replace(/\.pdf$/i, '')}_workspace.omnipdf`;
+    a.download = `${session.filename.replace(/\.pdf$/i, '')}_workspace.filecraft`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -208,12 +208,12 @@ export function CloudShareModal({
               <div>
                 <h3 className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                   <span>Encrypted Cloud Share</span>
-                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-mono font-bold uppercase">
-                    AES-256-GCM
+                  <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold uppercase">
+                    End-to-End Encrypted
                   </span>
                 </h3>
                 <p className="text-[11px] text-zinc-500">
-                  Zero-Knowledge client encryption with granular download permissions
+                  Confidential client-side encryption with granular recipient permissions
                 </p>
               </div>
             </div>
@@ -237,14 +237,14 @@ export function CloudShareModal({
                     <span>Secure Encrypted Link Ready</span>
                   </div>
                   <p className="text-[11px] text-emerald-800 dark:text-emerald-400">
-                    Your PDF was encrypted in memory using <strong>AES-256-GCM</strong>. Only holders of this link can decrypt and view the document.
+                    Your document was encrypted securely on your device before transfer. Only holders of this link can decrypt and view the document.
                   </p>
                 </div>
 
                 {/* Generated URL Box */}
                 <div>
                   <label className="block text-[11px] font-bold text-zinc-700 dark:text-zinc-300 uppercase tracking-wider mb-1.5">
-                    Shareable Zero-Knowledge Link
+                    Shareable Confidential Link
                   </label>
                   <div className="flex items-center gap-2 p-1.5 rounded-2xl border border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-800/80">
                     <input
@@ -510,7 +510,7 @@ export function CloudShareModal({
                     className="w-full py-2 px-3 rounded-xl border border-dashed border-zinc-300 dark:border-zinc-700 hover:border-zinc-400 bg-zinc-50 dark:bg-zinc-800/40 text-zinc-600 dark:text-zinc-400 text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <Download className="w-3.5 h-3.5" />
-                    <span>Or export portable offline workspace (.omnipdf)</span>
+                    <span>Or export portable offline workspace (.filecraft)</span>
                   </button>
                 </div>
               </div>
@@ -519,7 +519,7 @@ export function CloudShareModal({
 
           {/* Footer */}
           <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-between items-center text-[11px] text-zinc-400">
-            <span>Client AES-GCM 256 • Open Security</span>
+            <span>Bank-Grade Encryption • Verified Confidentiality</span>
             <button
               onClick={onClose}
               className="px-4 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 cursor-pointer"

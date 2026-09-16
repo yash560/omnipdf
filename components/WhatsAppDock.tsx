@@ -1,10 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { MessageCircle } from 'lucide-react';
+import { useAuth } from '@/lib/auth/auth-context';
 
 export function WhatsAppDock() {
   const [hovered, setHovered] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Do not render if not yet mounted (avoid hydration mismatch) or if user is logged in
+  if (!mounted || isAuthenticated) {
+    return null;
+  }
+
   const phoneNumber = '918770183178';
   const defaultMessage = encodeURIComponent(
     'Hi Yash, I was exploring FileCraft and would like to connect!'

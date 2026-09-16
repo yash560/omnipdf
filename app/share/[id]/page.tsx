@@ -182,7 +182,7 @@ export default function ShareRecipientPage() {
             <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-4">
               <Flame className="w-10 h-10 text-rose-500 animate-pulse mx-auto" />
               <h2 className="text-xl font-black text-zinc-900 dark:text-white">Decrypting Secure Share...</h2>
-              <p className="text-xs text-zinc-500">Decrypting payload in-browser via AES-256-GCM zero-knowledge key.</p>
+              <p className="text-xs text-zinc-500">Decrypting document securely on your device...</p>
             </div>
           )}
 
@@ -197,7 +197,7 @@ export default function ShareRecipientPage() {
                   {burnFileName}
                 </h2>
                 <p className="text-xs text-zinc-500">
-                  Payload decrypted successfully. This link has now burned and cannot be accessed again.
+                  Document decrypted successfully. For your privacy, this single-use link has now expired.
                 </p>
               </div>
 
@@ -206,7 +206,7 @@ export default function ShareRecipientPage() {
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-bold text-sm shadow-md shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all active:scale-[0.99] cursor-pointer"
               >
                 <Download className="w-4 h-4" />
-                <span>Download Intact File</span>
+                <span>Download Document</span>
               </button>
             </div>
           )}
@@ -214,9 +214,9 @@ export default function ShareRecipientPage() {
           {burnStatus === 'burned' && (
             <div className="p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl space-y-4">
               <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
-              <h2 className="text-xl font-black text-zinc-900 dark:text-white">This Share has Burned</h2>
+              <h2 className="text-xl font-black text-zinc-900 dark:text-white">This Link Has Expired</h2>
               <p className="text-xs text-zinc-500 leading-relaxed">
-                This file was already viewed or expired and has been permanently shredded from server memory.
+                This document was already accessed or expired, and has been permanently shredded.
               </p>
             </div>
           )}

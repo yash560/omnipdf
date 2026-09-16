@@ -5,6 +5,7 @@ import { useDrive } from '@/lib/drive/drive-context';
 import { DriveItem, FOLDER_COLORS } from '@/lib/drive/drive-types';
 import { formatBytes, formatTimeAgo } from '@/lib/drive/drive-helpers';
 import { DriveContextMenu } from './DriveContextMenu';
+import { DriveThumbnail } from './DriveThumbnail';
 import {
   Folder,
   FileText,
@@ -319,9 +320,9 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2.5 min-w-0 max-w-sm sm:max-w-md">
                       <div className="shrink-0 relative">
-                        {getSmallIcon(item)}
+                        <DriveThumbnail item={item} view="table" />
                         {item.isVault && (
-                          <div className="absolute -top-1 -right-1 p-0.5 rounded-full bg-amber-500 text-white">
+                          <div className="absolute -top-1 -right-1 p-0.5 rounded-full bg-amber-500 text-white z-10">
                             <Lock className="w-2 h-2" />
                           </div>
                         )}
@@ -342,8 +343,8 @@ export function DriveTable({ onOpenRenameModal, onOpenMoveModal }: DriveTablePro
                         </div>
 
                         {item.ocrSnippet && (
-                          <div className="text-3xs text-emerald-600 dark:text-emerald-400 font-mono truncate bg-emerald-500/10 px-1 py-0.2 rounded mt-0.5 max-w-xs">
-                            OCR: {item.ocrSnippet}
+                          <div className="text-3xs text-emerald-600 dark:text-emerald-400 font-medium truncate bg-emerald-500/10 px-1.5 py-0.5 rounded mt-0.5 max-w-xs">
+                            Excerpt: &ldquo;{item.ocrSnippet}&rdquo;
                           </div>
                         )}
 

@@ -52,20 +52,20 @@ export default function HomePage() {
 
   const faqs = [
     {
-      q: 'Is FileCraft completely private with zero server uploads?',
-      a: 'Yes! All non-AI tools (PDFs, Image conversions, Video compressions, Audio trimming, Spreadsheets, and Hash verifications) run 100% client-side in your browser using WebAssembly, Canvas 2D, SubtleCrypto, and Web Audio. Your files never leave your device.',
+      q: 'Is FileCraft completely private and secure?',
+      a: 'Yes! All core file transformations (PDF editing, image conversions, video compression, audio trimming, and data processing) run securely and privately on your device. Your documents never leave your computer.',
     },
     {
       q: 'Are there any file size caps or artificial daily limits?',
-      a: 'No! Because all processing runs directly on your local device CPU & memory, there are no artificial 25MB file caps or daily credit restrictions.',
+      a: 'No! Because processing utilizes high-performance on-device acceleration, you enjoy fast turnaround times with no artificial file size caps or daily credit restrictions.',
     },
     {
-      q: 'How does the Burn-After-Reading Secure Share work?',
-      a: 'Your file is encrypted in-browser using AES-256-GCM before upload. The secret encryption key stays in the URL hash fragment (#key=...) which the server never sees. Once the recipient downloads and decrypts it, the file permanently self-destructs.',
+      q: 'How does the Burn-After-Reading Confidential Share work?',
+      a: 'Your document is encrypted with military-grade privacy directly on your device before transfer. The secret decryption key is embedded in your link and is never stored. Once the recipient downloads the document, the link permanently self-destructs.',
     },
     {
       q: 'How do the AI File Intelligence tools work?',
-      a: 'Our suite is powered by TheWebVale AI with multi-model intelligence and automated resilience. It parses complex documents, extracts receipt tables into Excel, and transcribes audio meeting notes into action items in seconds.',
+      a: 'Our platform is powered by FileCraft Enterprise AI with multi-model intelligence and automated resilience. It analyzes complex documents, extracts structured tables into spreadsheets, and transcribes audio meeting notes into actionable summaries in seconds.',
     },
   ];
 
@@ -79,7 +79,7 @@ export default function HomePage() {
           {/* Trust Badge */}
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-extrabold mb-6 shadow-xs animate-in fade-in slide-in-from-top-3 duration-300">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Universal File OS • 50+ Powerhouse Tools with Zero Server Uploads</span>
+            <span>Universal File OS • 50+ Enterprise Tools with 100% On-Device Privacy</span>
           </div>
 
           {/* Headline */}

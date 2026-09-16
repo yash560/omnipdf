@@ -70,7 +70,7 @@ export default function AudioTrimmerPage() {
       <div className="text-center mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-violet-50 dark:bg-violet-950/40 border border-violet-200 dark:border-violet-800 text-violet-600 dark:text-violet-400 text-xs font-bold mb-3">
           <Activity className="w-3.5 h-3.5" />
-          <span>Audio Waveform Trimmer • Zero Server Uploads</span>
+          <span>Precision Audio Trimmer • 100% Private On-Device Processing</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
           Cut & Trim Audio with Visual Waveforms

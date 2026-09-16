@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { DriveRelatedItems } from './DriveRelatedItems';
+import { DriveThumbnail } from './DriveThumbnail';
 
 export function DriveDetailsDrawer() {
   const { detailsItem, setDetailsItem, changeFolderColor, openShareModal } = useDrive();
@@ -137,11 +138,17 @@ export function DriveDetailsDrawer() {
       <div className="flex-1 overflow-y-auto p-4 space-y-5">
         {activeTab === 'details' && (
           <div className="space-y-5">
-            {/* Icon & Title */}
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center mx-auto text-zinc-700 dark:text-zinc-300 shadow-xs">
-                {isFolder ? <Folder className="w-6 h-6 text-amber-500" /> : <FileText className="w-6 h-6 text-rose-500" />}
-              </div>
+            {/* Thumbnail / Icon Preview & Title */}
+            <div className="text-center space-y-2.5">
+              {!isFolder ? (
+                <div className="w-full aspect-[16/10] rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 overflow-hidden shadow-xs">
+                  <DriveThumbnail item={detailsItem} view="column" />
+                </div>
+              ) : (
+                <div className="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center mx-auto text-zinc-700 dark:text-zinc-300 shadow-xs">
+                  <Folder className="w-6 h-6 text-amber-500" />
+                </div>
+              )}
               <h4 className="text-xs font-bold text-zinc-900 dark:text-zinc-100 truncate px-2">
                 {detailsItem.name}
               </h4>
@@ -231,9 +238,9 @@ export function DriveDetailsDrawer() {
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-zinc-500">
-                  <span>Type:</span>
-                  <span className="font-mono text-zinc-900 dark:text-zinc-100 font-semibold truncate max-w-[140px]">
-                    {detailsItem.mimeType}
+                  <span>Format:</span>
+                  <span className="font-medium text-zinc-900 dark:text-zinc-100 font-semibold truncate max-w-[140px]">
+                    {isFolder ? 'Folder' : (detailsItem.extension ? `${detailsItem.extension.toUpperCase()} Document` : detailsItem.category.toUpperCase())}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-zinc-500">

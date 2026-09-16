@@ -53,10 +53,10 @@ export default function FileSplitterPage() {
           <span>Large File Splitter & Joiner</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-zinc-900 dark:text-white tracking-tight mb-2">
-          Split & Join Massive Files with Byte Integrity
+          Segment & Merge Large Files Seamlessly
         </h1>
         <p className="text-sm sm:text-base text-zinc-600 dark:text-zinc-400 max-w-xl mx-auto">
-          Split large ISOs, videos, or archives into 25MB email / Discord chunks and rejoin them intact.
+          Split oversized documents, media packages, or archives into email-friendly segments and rejoin them intact.
         </p>
       </div>
 
@@ -74,7 +74,7 @@ export default function FileSplitterPage() {
               : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300'
           }`}
         >
-          Split Large File into Chunks
+          Split File into Segments
         </button>
         <button
           onClick={() => {
@@ -88,7 +88,7 @@ export default function FileSplitterPage() {
               : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300'
           }`}
         >
-          Join .part Chunks back together
+          Recombine File Segments
         </button>
       </div>
 
@@ -99,8 +99,8 @@ export default function FileSplitterPage() {
           onFilesChange={handleFilesChange}
           accept="*/*"
           multiple={tab === 'join'}
-          title={tab === 'split' ? 'Select or Drop a Large File to Split' : 'Drop All .part Files to Re-Join'}
-          subtitle={tab === 'split' ? 'Split by exact MB size' : 'Select all chunk files simultaneously'}
+          title={tab === 'split' ? 'Select or Drop a Large File to Split' : 'Drop File Segments to Recombine'}
+          subtitle={tab === 'split' ? 'Split by exact MB size' : 'Select all segment files to reconstruct original file'}
           primaryColor="#059669"
         />
       </div>
@@ -110,7 +110,7 @@ export default function FileSplitterPage() {
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                Split into {manifest.totalChunks} Chunks
+                Split into {manifest.totalChunks} Segments
               </h2>
               <p className="text-xs text-zinc-500">
                 Total Size: {formatBytes(manifest.originalSize)} ({manifest.totalChunks} × ~{chunkSizeMb} MB)
@@ -159,7 +159,7 @@ export default function FileSplitterPage() {
         <div className="p-6 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
             <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>Chunks Re-Joined Successfully</span>
+            <span>Segments Recombined Successfully</span>
           </div>
           <h2 className="text-base font-bold text-zinc-900 dark:text-zinc-100">
             {joinedName} ({formatBytes(joinedBlob.size)})
@@ -181,7 +181,7 @@ export default function FileSplitterPage() {
           toolSlug="file-splitter"
           fileName={files[0]?.file.name}
           fileSize={files[0]?.file.size}
-          fileContext={`File: ${files[0]?.file.name} (${formatBytes(files[0]?.file.size)}), Split into ${manifest?.chunks.length || 0} chunks (${chunkSizeMb} MB each)`}
+          fileContext={`File: ${files[0]?.file.name} (${formatBytes(files[0]?.file.size)}), Split into ${manifest?.chunks.length || 0} segments (${chunkSizeMb} MB each)`}
         />
       )}
     </div>
