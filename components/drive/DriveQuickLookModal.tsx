@@ -22,7 +22,9 @@ import {
   RotateCw,
   Share2,
   Wrench,
-  Crop
+  Crop,
+  Search,
+  Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import { DriveRelatedItems } from './DriveRelatedItems';
@@ -35,7 +37,7 @@ interface DriveQuickLookModalProps {
 
 export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLookModalProps) {
   const { openDrawer, setActiveFile } = useAI();
-  const { openQuickTools } = useDrive();
+  const { openQuickTools, openToolSearch } = useDrive();
   const [blob, setBlob] = useState<Blob | null>(null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [textContent, setTextContent] = useState<string | null>(null);
@@ -197,6 +199,20 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
             >
               <Sparkles className={`w-3.5 h-3.5 ${showRelated ? 'text-white' : 'text-amber-500'}`} />
               <span>Related</span>
+            </button>
+
+            {/* Search 50+ Specialized Tools */}
+            <button
+              type="button"
+              onClick={() => {
+                onClose();
+                openToolSearch(item);
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-black border border-rose-500/20 transition-colors cursor-pointer"
+            >
+              <Search className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Tools Hub (50+)</span>
+              <span className="sm:hidden">Tools</span>
             </button>
 
             {/* In-Place Quick Tools Launcher */}

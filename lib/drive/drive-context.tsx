@@ -105,6 +105,12 @@ interface DriveContextType {
   smartUploadInitialTab: 'files' | 'camera' | 'clipboard';
   openSmartUpload: (tab?: 'files' | 'camera' | 'clipboard') => void;
 
+  // Universal Tool Search Modal
+  isToolSearchOpen: boolean;
+  setIsToolSearchOpen: (open: boolean) => void;
+  toolSearchTargetItem: DriveItem | null;
+  openToolSearch: (item?: DriveItem | null) => void;
+
   // In-Place Quick Tools (Crop, Edit, Transform & Convert)
   quickToolsItem: DriveItem | null;
   quickToolsInitialTab?: string;
@@ -265,6 +271,14 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const openSmartUpload = (tab: 'files' | 'camera' | 'clipboard' = 'files') => {
     setSmartUploadInitialTab(tab);
     setIsSmartUploadOpen(true);
+  };
+
+  const [isToolSearchOpen, setIsToolSearchOpen] = useState(false);
+  const [toolSearchTargetItem, setToolSearchTargetItem] = useState<DriveItem | null>(null);
+
+  const openToolSearch = (item?: DriveItem | null) => {
+    setToolSearchTargetItem(item || null);
+    setIsToolSearchOpen(true);
   };
 
   const [quickToolsItem, setQuickToolsItem] = useState<DriveItem | null>(null);
@@ -1137,6 +1151,12 @@ export const DriveProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setIsSmartUploadOpen,
         smartUploadInitialTab,
         openSmartUpload,
+
+        // Universal Tool Search Modal
+        isToolSearchOpen,
+        setIsToolSearchOpen,
+        toolSearchTargetItem,
+        openToolSearch,
 
         // In-Place Quick Tools
         quickToolsItem,

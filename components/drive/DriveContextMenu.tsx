@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useDrive } from '@/lib/drive/drive-context';
 import { DriveItem, DriveFolderColor, FOLDER_COLORS } from '@/lib/drive/drive-types';
 import { getFileCraftToolsForItem } from '@/lib/drive/drive-helpers';
+import { getRecommendedToolsForFile } from '@/lib/tools/tools-registry';
+import { ToolIcon } from '@/components/tools/ToolIcon';
 import {
   Eye,
   Download,
@@ -25,6 +27,8 @@ import {
   Lock,
   Unlock,
   CheckSquare,
+  Search,
+  Zap
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -63,6 +67,7 @@ export function DriveContextMenu({
     bulkDownloadZip,
     openQuickTools,
     openFolderChat,
+    openToolSearch,
   } = useDrive();
 
 
@@ -407,19 +412,40 @@ export function DriveContextMenu({
                   </button>
                 )}
 
-                {/* FileCraft Tools Submenu Drilldown */}
-                {tools.length > 0 && viewSection !== 'trash' && (
-                  <button
-                    type="button"
-                    onClick={() => setMenuView('tools')}
-                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold cursor-pointer transition-colors"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <Wrench className="w-4 h-4" />
-                      <span>Open in FileCraft Tools</span>
-                    </div>
-                    <ChevronRight className="w-3.5 h-3.5 opacity-70" />
-                  </button>
+                {/* FileCraft Recommended Tools & Search */}
+                {!isFolder && viewSection !== 'trash' && (
+                  <>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        openToolSearch(item);
+                      }}
+                      className="w-full flex items-center justify-between p-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-black cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Search className="w-4 h-4 text-rose-500" />
+                        <span>Search All 50+ Tools...</span>
+                      </div>
+                      <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-rose-500 text-white uppercase">
+                        Hub
+                      </span>
+                    </button>
+
+                    {tools.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setMenuView('tools')}
+                        className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-semibold cursor-pointer transition-colors text-xs"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Zap className="w-4 h-4 text-amber-500" />
+                          <span>Recommended Actions ({tools.length})</span>
+                        </div>
+                        <ChevronRight className="w-3.5 h-3.5 opacity-70" />
+                      </button>
+                    )}
+                  </>
                 )}
 
                 <div className="h-px bg-zinc-100 dark:bg-zinc-800 my-1" />

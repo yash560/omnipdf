@@ -38,6 +38,7 @@ import { DriveCategory } from '@/lib/drive/drive-types';
 import { formatBytes } from '@/lib/drive/drive-helpers';
 import { DriveFolderTree } from './DriveFolderTree';
 import { Tooltip } from './DriveTooltip';
+import { FileCraftLogo } from '@/components/brand/FileCraftLogo';
 
 interface DriveSidebarProps {
   onOpenNewFolderModal: () => void;
@@ -145,14 +146,7 @@ export function DriveSidebar({
         {/* Mobile Header with Close Button */}
         {isMobileDrawer && (
           <div className="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-rose-500 to-red-600 flex items-center justify-center text-white text-xs font-black shadow-xs">
-                <HardDrive className="w-4 h-4" />
-              </div>
-              <span className="font-extrabold text-sm text-zinc-900 dark:text-zinc-100">
-                FileCraft Drive
-              </span>
-            </div>
+            <FileCraftLogo size="sm" variant="withText" animated={false} />
             <button
               type="button"
               onClick={onCloseMobileDrawer}

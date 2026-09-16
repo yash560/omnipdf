@@ -17,6 +17,7 @@ import {
   AlertCircle 
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
+import { FileCraftLogo } from '@/components/brand/FileCraftLogo';
 
 export function AuthModal() {
   const { authModalOpen, authModalTab, closeAuthModal, login, register } = useAuth();
@@ -68,9 +69,7 @@ export function AuthModal() {
         {/* Header */}
         <div className="p-6 bg-gradient-to-r from-rose-600 via-red-600 to-amber-600 text-white flex items-center justify-between shadow-md">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/15 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
-              <Crown className="w-5 h-5 text-amber-300" />
-            </div>
+            <FileCraftLogo size={40} variant="icon" animated={false} />
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className="text-base font-extrabold text-white">

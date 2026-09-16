@@ -21,6 +21,7 @@ import { UserDropdown } from './auth/UserDropdown';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useAI } from '@/lib/ai/ai-context';
 import { ALL_TOOLS } from '@/lib/tools-data';
+import { FileCraftLogo } from '@/components/brand/FileCraftLogo';
 
 export function Navbar() {
   const [toolsOpen, setToolsOpen] = useState(false);
@@ -42,19 +43,7 @@ export function Navbar() {
         <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-14 sm:h-16 flex items-center justify-between gap-1.5 sm:gap-4">
           {/* Left: Brand Logo & Catalog Dropdown */}
           <div className="flex items-center gap-2 sm:gap-5 min-w-0 shrink-0">
-            <Link href="/" className="flex items-center gap-1.5 sm:gap-2.5 group shrink-0">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-500 to-cyan-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 group-hover:scale-105 transition-transform duration-200 shrink-0">
-                <FileText className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
-              </div>
-              <div className="flex flex-col shrink-0">
-                <span className="font-extrabold text-sm sm:text-lg tracking-tight bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-600 dark:from-white dark:via-zinc-200 dark:to-zinc-400 bg-clip-text text-transparent">
-                  File<span className="text-rose-500">Craft</span>
-                </span>
-                <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 -mt-1 hidden sm:inline tracking-wider uppercase">
-                  Universal File OS
-                </span>
-              </div>
-            </Link>
+            <FileCraftLogo withLink href="/" size="md" variant="full" />
 
             {/* Tools Mega Menu Dropdown */}
             <div className="relative hidden lg:block">

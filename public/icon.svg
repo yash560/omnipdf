@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+    <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E"/>
+      <stop offset="50%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <linearGradient id="foldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDA4AF"/>
+      <stop offset="100%" stop-color="#F43F5E"/>
+    </linearGradient>
+    <linearGradient id="cyanAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="24" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Background rounded squircle -->
+  <rect width="512" height="512" rx="128" fill="url(#bgGrad)"/>
+  <rect width="510" height="510" x="1" y="1" rx="127" stroke="rgba(255,255,255,0.1)" stroke-width="2" fill="none"/>
+
+  <!-- Glowing background ambient -->
+  <circle cx="256" cy="256" r="160" fill="#F43F5E" opacity="0.15" filter="url(#glow)"/>
+  <circle cx="320" cy="200" r="120" fill="#06B6D4" opacity="0.15" filter="url(#glow)"/>
+
+  <!-- Modern geometric Folded 'F' Document Mark -->
+  <g transform="translate(40, 36) scale(0.85)">
+    <!-- Main Back Document Shape -->
+    <path d="M140 100 C140 82.3 154.3 68 172 68 H310 L400 158 V412 C400 429.7 385.7 444 368 444 H172 C154.3 444 140 429.7 140 412 Z" fill="#1E293B" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+    
+    <!-- Top Fold Corner -->
+    <path d="M310 68 V140 C310 150 318 158 328 158 H400 Z" fill="url(#foldGrad)"/>
+
+    <!-- Dynamic Modern 'F' Origami Bars -->
+    <!-- Top Bar -->
+    <path d="M180 180 C180 168.9 188.9 160 200 160 H340 C351 160 360 168.9 360 180 C360 191.1 351 200 340 200 H200 C188.9 200 180 191.1 180 180 Z" fill="url(#primaryGrad)"/>
+
+    <!-- Middle Bar -->
+    <path d="M180 260 C180 248.9 188.9 240 200 240 H290 C301 240 310 248.9 310 260 C310 271.1 301 280 290 280 H200 C188.9 280 180 271.1 180 260 Z" fill="url(#cyanAccent)"/>
+
+    <!-- Vertical Spine of F -->
+    <path d="M180 160 H220 V380 C220 391 211 400 200 400 C188.9 400 180 391 180 380 Z" fill="url(#primaryGrad)"/>
+
+    <!-- Sparkle accent -->
+    <polygon points="350,320 358,340 378,348 358,356 350,376 342,356 322,348 342,340" fill="#FDA4AF" opacity="0.9"/>
+  </g>
+</svg>

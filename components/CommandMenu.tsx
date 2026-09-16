@@ -39,6 +39,7 @@ import { useAuth } from '@/lib/auth/auth-context';
 import { DriveItem, DriveCategory } from '@/lib/drive/drive-types';
 import { formatBytes, formatTimeAgo } from '@/lib/drive/drive-helpers';
 import { DriveQuickLookModal } from './drive/DriveQuickLookModal';
+import { FileCraftLogo } from '@/components/brand/FileCraftLogo';
 
 type SearchTabType = 'all' | 'files' | 'folders' | 'tools' | 'ocr' | 'actions' | 'vault';
 
@@ -414,12 +415,12 @@ export function CommandMenu() {
           onKeyDown={handleKeyDown}
         >
           {/* Header Bar */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/40">
-            <div className="flex items-center gap-2 text-xs font-extrabold text-zinc-800 dark:text-zinc-200">
-              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+          <div className="flex items-center justify-between px-4 py-2.5 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/70 dark:bg-zinc-950/40">
+            <div className="flex items-center gap-2.5 text-xs font-extrabold text-zinc-800 dark:text-zinc-200">
+              <FileCraftLogo size="xs" variant="icon" animated={false} />
               <span>Global Omnisearch</span>
               <span className="text-zinc-400 font-normal">|</span>
-              <span className="text-zinc-500 dark:text-zinc-400 font-medium">All Types & Scans</span>
+              <span className="text-zinc-500 dark:text-zinc-400 font-medium">All Types &amp; Scans</span>
             </div>
 
             <div className="flex items-center gap-2">

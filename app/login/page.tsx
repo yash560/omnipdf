@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Lock, Mail, ArrowRight, ShieldCheck, Crown, AlertCircle, Zap, FileText } from 'lucide-react';
+import { Lock, Mail, ArrowRight, ShieldCheck, Crown, AlertCircle, Zap } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
+import { FileCraftLogo } from '@/components/brand/FileCraftLogo';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -33,9 +34,9 @@ export default function LoginPage() {
     <div className="flex-1 flex items-center justify-center p-4 sm:p-8 min-h-[80vh]">
       <div className="w-full max-w-md bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-500 text-white mx-auto flex items-center justify-center shadow-lg shadow-rose-500/20">
-            <FileText className="w-6 h-6" />
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <FileCraftLogo size="lg" variant="icon" />
           </div>
           <h1 className="text-2xl font-extrabold text-zinc-900 dark:text-zinc-100">
             Sign In to FileCraft

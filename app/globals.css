@@ -19,6 +19,13 @@
   --border: #e4e4e7;
   --muted: #f4f4f5;
   --muted-foreground: #71717a;
+
+  /* Emil Kowalski Animation Easing Curves */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.15);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .dark {
@@ -77,4 +84,235 @@ body {
   -ms-overflow-style: none !important;
   scrollbar-width: none !important;
 }
+
+/* ==========================================================
+   Emil Kowalski Animation Keyframes & Performance Utilities
+   ========================================================== */
+
+@keyframes modalBackdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes modalPopIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes drawerSlideRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawerSlideLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawerSlideTop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes bottomSheetSlideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatingDockSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dropdownPop {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes shimmerWave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes staggerFadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseSubtle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.98);
+  }
+}
+
+/* Reusable Animation Utility Classes */
+.animate-modal-backdrop {
+  animation: modalBackdropFadeIn 180ms var(--ease-out) forwards;
+}
+
+.animate-modal-pop {
+  animation: modalPopIn 220ms var(--ease-out) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-drawer-right {
+  animation: drawerSlideRight 280ms var(--ease-drawer) forwards;
+  will-change: transform;
+}
+
+.animate-drawer-left {
+  animation: drawerSlideLeft 280ms var(--ease-drawer) forwards;
+  will-change: transform;
+}
+
+.animate-drawer-top {
+  animation: drawerSlideTop 200ms var(--ease-out) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-bottom-sheet {
+  animation: bottomSheetSlideUp 260ms var(--ease-drawer) forwards;
+  will-change: transform;
+}
+
+.animate-floating-dock {
+  animation: floatingDockSlideUp 220ms var(--ease-spring) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-dropdown {
+  animation: dropdownPop 160ms var(--ease-out) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-stagger-fade {
+  animation: staggerFadeUp 240ms var(--ease-out) forwards;
+  will-change: transform, opacity;
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmerWave 1.8s infinite linear;
+}
+
+/* Button & Card Micro-Interactions */
+.btn-press {
+  transition: transform 140ms var(--ease-out), box-shadow 140ms var(--ease-out), opacity 140ms ease;
+}
+
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .hover-lift {
+    transition: transform 200ms var(--ease-out), box-shadow 200ms var(--ease-out), border-color 200ms ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* Universal Accessible Focus Rings */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--color-brand-500) !important;
+  outline-offset: 2px !important;
+}
+
+/* Accessible Reduced Motion Overrides */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-modal-pop,
+  .animate-drawer-right,
+  .animate-drawer-left,
+  .animate-bottom-sheet,
+  .animate-floating-dock,
+  .animate-dropdown,
+  .hover-lift:hover {
+    transform: none !important;
+  }
+}
+
 
