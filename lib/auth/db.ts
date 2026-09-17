@@ -9,9 +9,6 @@ export interface UserRecord extends User {
 
 const USERS_COLLECTION = 'filecraft_users';
 
-// In-memory fallback / quick cache for serverless lifecycles
-const memoryCache = new Map<string, UserRecord>();
-
 let dbInitialized = false;
 
 async function ensureDefaultUsers(): Promise<void> {
@@ -68,8 +65,6 @@ async function ensureDefaultUsers(): Promise<void> {
         passwordSalt: yashPass.salt,
       };
       await collection.insertOne(yashUser);
-      memoryCache.set(yashUser.email.toLowerCase(), yashUser);
-      memoryCache.set(yashUser.id, yashUser);
     }
 
     // Check if demo user exists
@@ -99,8 +94,6 @@ async function ensureDefaultUsers(): Promise<void> {
         passwordSalt: demoPass.salt,
       };
       await collection.insertOne(demoUser);
-      memoryCache.set(demoUser.email.toLowerCase(), demoUser);
-      memoryCache.set(demoUser.id, demoUser);
     }
   } catch (err) {
     console.warn('[FileCraft Auth] MongoDB initialization fallback to memory:', err);
@@ -116,9 +109,6 @@ export function sanitizeUser(record: UserRecord): User {
 
 export async function findUserByEmail(email: string): Promise<UserRecord | null> {
   const normalized = email.toLowerCase().trim();
-  if (memoryCache.has(normalized)) {
-    return memoryCache.get(normalized)!;
-  }
 
   ensureDefaultUsers().catch(() => {});
 
@@ -128,8 +118,6 @@ export async function findUserByEmail(email: string): Promise<UserRecord | null>
     const collection = db.collection<UserRecord>(USERS_COLLECTION);
     const doc = await collection.findOne({ email: normalized });
     if (doc) {
-      memoryCache.set(normalized, doc);
-      memoryCache.set(doc.id, doc);
       return doc;
     }
   } catch (err) {
@@ -140,12 +128,6 @@ export async function findUserByEmail(email: string): Promise<UserRecord | null>
 }
 
 export async function findUserById(id: string): Promise<UserRecord | null> {
-  if (memoryCache.has(id)) {
-    return memoryCache.get(id)!;
-  }
-  for (const user of memoryCache.values()) {
-    if (user.id === id) return user;
-  }
 
   ensureDefaultUsers().catch(() => {});
 
@@ -155,8 +137,6 @@ export async function findUserById(id: string): Promise<UserRecord | null> {
     const collection = db.collection<UserRecord>(USERS_COLLECTION);
     const doc = await collection.findOne({ id });
     if (doc) {
-      memoryCache.set(doc.email.toLowerCase(), doc);
-      memoryCache.set(id, doc);
       return doc;
     }
   } catch (err) {
@@ -213,8 +193,6 @@ export async function createUser(data: {
     console.warn('[FileCraft Auth] MongoDB insert error:', err);
   }
 
-  memoryCache.set(normalizedEmail, newUser);
-  memoryCache.set(newUser.id, newUser);
   return newUser;
 }
 
@@ -252,8 +230,6 @@ export async function createGuestUser(): Promise<UserRecord> {
     console.warn('[FileCraft Auth] MongoDB insert guest error:', err);
   }
 
-  memoryCache.set(guestUser.email.toLowerCase(), guestUser);
-  memoryCache.set(guestUser.id, guestUser);
   return guestUser;
 }
 
@@ -276,8 +252,6 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
     console.warn('[FileCraft Auth] MongoDB update error:', err);
   }
 
-  memoryCache.set(updatedUser.email.toLowerCase(), updatedUser);
-  memoryCache.set(id, updatedUser);
   return sanitizeUser(updatedUser);
 }
 
@@ -301,7 +275,5 @@ export async function updateUserPassword(id: string, newPassword: string): Promi
     console.warn('[FileCraft Auth] MongoDB update password error:', err);
   }
 
-  memoryCache.set(updatedUser.email.toLowerCase(), updatedUser);
-  memoryCache.set(id, updatedUser);
   return true;
 }
