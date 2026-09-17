@@ -30,6 +30,13 @@ import Link from 'next/link';
 import { DriveRelatedItems } from './DriveRelatedItems';
 import { useBodyScrollLock } from '@/hooks/useBodyScrollLock';
 
+/** Build the server-side streaming URL for a cloud file. */
+function buildCloudFileUrl(id: string): string {
+  const token = typeof window !== 'undefined' ? localStorage.getItem('omnipdf_token') : null;
+  const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
+  return `/api/drive/file/${id}${tokenParam}`;
+}
+
 interface DriveQuickLookModalProps {
   item: DriveItem | null;
   onClose: () => void;
@@ -42,6 +49,8 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
   const { openQuickTools, openToolSearch } = useDrive();
   const [blob, setBlob] = useState<Blob | null>(null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  // pdfSrc: direct URL for the PDF <iframe> — avoids blob: URL browser restrictions
+  const [pdfSrc, setPdfSrc] = useState<string | null>(null);
   const [textContent, setTextContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [zoom, setZoom] = useState(1.0);
@@ -59,12 +68,48 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
       setLoading(true);
       setTextContent(null);
       setBlob(null);
-      // Never leave a stale blob: URL as the iframe/img src while we refetch —
-      // the cleanup below revokes the previous one, and a revoked blob: URL
-      // fed to an <iframe> crashes the native PDF viewer instead of just erroring.
       setBlobUrl(null);
+      setPdfSrc(null);
+
+      const isPdf = item.category === 'pdf' || item.extension === 'pdf';
 
       try {
+        // ── PDF FAST PATH ────────────────────────────────────────────────────
+        // blob: URLs inside <iframe> are blocked in many browser/CSP contexts.
+        // Use the server streaming URL directly — it serves content-type
+        // application/pdf with Content-Disposition: inline, which every
+        // browser accepts without restriction.
+        if (isPdf) {
+          const cloudUrl = buildCloudFileUrl(item.id);
+          const token = typeof window !== 'undefined' ? localStorage.getItem('omnipdf_token') : null;
+
+          // Quick HEAD probe — confirms the file is reachable in the cloud.
+          const probe = await fetch(cloudUrl, {
+            method: 'HEAD',
+            headers: token ? { Authorization: `Bearer ${token}` } : {},
+          }).catch(() => null);
+
+          if (probe?.ok) {
+            if (isMounted) {
+              setPdfSrc(cloudUrl);
+              setLoading(false);
+            }
+            return;
+          }
+
+          // Fallback: local-only IndexedDB blob (offline mode)
+          const localBlob = await getFileBlob(item.id);
+          if (localBlob && isMounted) {
+            url = URL.createObjectURL(localBlob);
+            setBlob(localBlob);
+            setBlobUrl(url);
+            setPdfSrc(url);
+          }
+          if (isMounted) setLoading(false);
+          return;
+        }
+
+        // ── ALL OTHER FILE TYPES ──────────────────────────────────────────────
         const fetchedBlob = (await getCloudFileBlob(item.id)) || (await getFileBlob(item.id));
         if (!fetchedBlob) return;
 
@@ -114,7 +159,7 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
       name: item.name,
       size: item.size,
       textContent: textContent || undefined,
-      previewUrl: blobUrl || undefined,
+      previewUrl: pdfSrc || blobUrl || undefined,
     });
     openDrawer();
   };
@@ -268,16 +313,22 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
             )}
 
             {/* Download */}
-            {blobUrl && (
-              <a
-                href={blobUrl}
-                download={item.name}
-                className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
-                title="Download File"
-              >
-                <Download className="w-4 h-4" />
-              </a>
-            )}
+            {(pdfSrc || blobUrl) && (() => {
+              // For cloud PDFs, use the server URL with ?download=1 to force Content-Disposition: attachment
+              const downloadHref = pdfSrc && !pdfSrc.startsWith('blob:')
+                ? `${pdfSrc}${pdfSrc.includes('?') ? '&' : '?'}download=1`
+                : (blobUrl || pdfSrc || '');
+              return (
+                <a
+                  href={downloadHref}
+                  download={item.name}
+                  className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+                  title="Download File"
+                >
+                  <Download className="w-4 h-4" />
+                </a>
+              );
+            })()}
 
             {/* Close Button */}
             <button
@@ -370,10 +421,11 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
                 style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
               />
             </div>
-          ) : item.category === 'pdf' && blobUrl ? (
-            // 6. PDF Interactive Canvas Frame
+          ) : item.category === 'pdf' && pdfSrc ? (
+            // 6. PDF Interactive Canvas Frame — uses direct server URL, not blob:
+            // blob: URLs in iframes are blocked by browsers/CSP in production.
             <iframe
-              src={blobUrl}
+              src={pdfSrc}
               title={item.name}
               className="w-full h-full rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white"
             />
