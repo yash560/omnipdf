@@ -294,7 +294,7 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
               <button
                 type="button"
                 onClick={() => onOpenShare(item)}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-bold transition-colors cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 text-xs font-bold transition-colors cursor-pointer"
               >
                 <Share2 className="w-3.5 h-3.5 text-rose-500" />
                 <span>Share</span>

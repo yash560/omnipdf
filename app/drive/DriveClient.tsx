@@ -109,6 +109,7 @@ function DriveWorkspaceInner() {
     openPreview,
     closePreview,
     shareModalItem,
+    openShareModal,
     closeShareModal,
     loadItems,
     uploadFiles,
@@ -252,13 +253,30 @@ function DriveWorkspaceInner() {
       setSearchTerm(qParam);
     }
 
-    if (previewParam && items.length > 0 && previewItem?.id !== previewParam) {
+    if (previewParam && items.length > 0) {
       const match = items.find((it) => it.id === previewParam);
       if (match) {
         openPreview(match);
       }
     }
-  }, [searchParams, items, previewItem, searchTerm, openPreview, setSearchTerm, setIsExpiryRadarOpen, setIsVaultModalOpen, setIsDedupModalOpen]);
+  // NOTE: previewItem is intentionally excluded from deps — we only want to open
+  // the preview when the URL param or items list changes, NOT when the user closes
+  // the modal (which would cause it to re-open in an infinite loop).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, items, searchTerm, openPreview, setSearchTerm, setIsExpiryRadarOpen, setIsVaultModalOpen, setIsDedupModalOpen]);
+
+  // Closes the preview modal AND strips ?preview=... from the URL so the effect
+  // above doesn't immediately re-open the document.
+  const handleClosePreview = () => {
+    closePreview();
+    if (!searchParams) return;
+    const previewParam = searchParams.get('preview');
+    if (!previewParam) return;
+    const next = new URLSearchParams(searchParams.toString());
+    next.delete('preview');
+    const qs = next.toString();
+    router.replace(window.location.pathname + (qs ? `?${qs}` : ''), { scroll: false });
+  };
 
   // Global Keyboard Shortcuts (Space for Quick Look, Cmd+A, Del, ?, Esc)
   useEffect(() => {
@@ -310,7 +328,7 @@ function DriveWorkspaceInner() {
         selectAll();
       } else if (e.key === 'Escape') {
         clearSelection();
-        closePreview();
+        handleClosePreview();
         setIsFolderChatOpen(false);
         setIsExpiryRadarOpen(false);
         setIsDedupModalOpen(false);
@@ -697,7 +715,11 @@ function DriveWorkspaceInner() {
       {/* Quick Look Preview Modal */}
       <DriveQuickLookModal
         item={previewItem}
-        onClose={closePreview}
+        onClose={handleClosePreview}
+        onOpenShare={(it) => {
+          handleClosePreview();
+          openShareModal(it);
+        }}
       />
 
       {/* PIN-Protected Secure Vault Keypad Modal */}
