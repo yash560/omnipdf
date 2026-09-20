@@ -206,24 +206,43 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
           <div className="w-10 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
         </div>
 
-        {/* Header Bar */}
-        <div className="p-3 sm:p-4 bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between gap-2 sm:gap-4 shrink-0">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
-              <FileText className="w-4 h-4" />
+        {/* ── Header ──────────────────────────────────────────────────────────
+            Mobile: stacked two rows.
+              Row 1 — file icon + name/meta + close button (always visible)
+              Row 2 — action buttons with flex-wrap (wrap if they don't fit)
+            Desktop (sm+): single flex row like before.
+        ───────────────────────────────────────────────────────────────────── */}
+        <div className="bg-zinc-50 dark:bg-zinc-950/80 border-b border-zinc-200 dark:border-zinc-800 shrink-0">
+
+          {/* Row 1 — File identity + Close */}
+          <div className="px-3 pt-3 pb-2 flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold text-xs shrink-0">
+                <FileText className="w-4 h-4" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 truncate leading-tight">
+                  {item.name}
+                </h3>
+                <p className="text-[11px] text-zinc-400 font-mono">
+                  {formatBytes(item.size)} · {item.category.toUpperCase()}
+                </p>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h3 className="text-sm font-extrabold text-zinc-900 dark:text-zinc-100 truncate">
-                {item.name}
-              </h3>
-              <p className="text-[11px] text-zinc-400 font-mono">
-                {formatBytes(item.size)} • {item.category.toUpperCase()}
-              </p>
-            </div>
+
+            {/* Close — always right-most on Row 1 */}
+            <button
+              type="button"
+              onClick={onClose}
+              className="shrink-0 p-2 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-200/70 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
           </div>
 
-          {/* Header Controls */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Row 2 — Action buttons, wrapping on mobile */}
+          <div className="px-3 pb-3 flex flex-wrap items-center gap-1.5">
+
             {/* Ask AI */}
             <button
               type="button"
@@ -231,24 +250,10 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-500 to-indigo-600 hover:from-rose-600 hover:to-indigo-700 text-white text-xs font-bold shadow-xs transition-all cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Ask AI Copilot</span>
+              <span>Ask AI</span>
             </button>
 
-            {/* Related Files */}
-            <button
-              type="button"
-              onClick={() => setShowRelated(!showRelated)}
-              className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                showRelated
-                  ? 'bg-rose-500 text-white border-rose-500 shadow-xs'
-                  : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
-              }`}
-            >
-              <Sparkles className={`w-3.5 h-3.5 ${showRelated ? 'text-white' : 'text-amber-500'}`} />
-              <span>Related</span>
-            </button>
-
-            {/* Search 50+ Specialized Tools */}
+            {/* Tools Hub */}
             <button
               type="button"
               onClick={() => {
@@ -258,11 +263,10 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-black border border-rose-500/20 transition-colors cursor-pointer"
             >
               <Search className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Tools Hub (50+)</span>
-              <span className="sm:hidden">Tools</span>
+              <span>Tools</span>
             </button>
 
-            {/* In-Place Quick Tools Launcher */}
+            {/* In-Place Quick Tools */}
             <button
               type="button"
               onClick={() => {
@@ -301,7 +305,21 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
               </button>
             )}
 
-            {/* Direct Tool Launch */}
+            {/* Related Files — desktop only */}
+            <button
+              type="button"
+              onClick={() => setShowRelated(!showRelated)}
+              className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                showRelated
+                  ? 'bg-rose-500 text-white border-rose-500 shadow-xs'
+                  : 'border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+              }`}
+            >
+              <Sparkles className={`w-3.5 h-3.5 ${showRelated ? 'text-white' : 'text-amber-500'}`} />
+              <span>Related</span>
+            </button>
+
+            {/* Direct Tool Launch (desktop only, shows first tool) */}
             {tools.length > 0 && (
               <Link
                 href={tools[0].href}
@@ -314,7 +332,6 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
 
             {/* Download */}
             {(pdfSrc || blobUrl) && (() => {
-              // For cloud PDFs, use the server URL with ?download=1 to force Content-Disposition: attachment
               const downloadHref = pdfSrc && !pdfSrc.startsWith('blob:')
                 ? `${pdfSrc}${pdfSrc.includes('?') ? '&' : '?'}download=1`
                 : (blobUrl || pdfSrc || '');
@@ -322,22 +339,14 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
                 <a
                   href={downloadHref}
                   download={item.name}
-                  className="p-2 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-300 text-xs font-bold transition-colors"
                   title="Download File"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Download</span>
                 </a>
               );
             })()}
-
-            {/* Close Button */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="p-2 rounded-xl text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
           </div>
         </div>
 
@@ -465,22 +474,24 @@ export function DriveQuickLookModal({ item, onClose, onOpenShare }: DriveQuickLo
         )}
       </div>
 
-        {/* Footer Toolbar: Quick Launch Options */}
+        {/* Footer Toolbar: Quick Launch Options — wraps to new rows on mobile */}
         {tools.length > 0 && (
-          <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-2 overflow-x-auto no-scrollbar shrink-0">
-            <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider whitespace-nowrap pl-2 mr-1">
-              Open In Tool:
-            </span>
-            {tools.map((t, idx) => (
-              <Link
-                key={idx}
-                href={t.href}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-rose-500 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-bold text-zinc-700 dark:text-zinc-300 shadow-2xs whitespace-nowrap transition-all"
-              >
-                <span>{t.label}</span>
-                <ExternalLink className="w-3.5 h-3.5 text-rose-500" />
-              </Link>
-            ))}
+          <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border-t border-zinc-200 dark:border-zinc-800 shrink-0">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider whitespace-nowrap pl-1">
+                Open In Tool:
+              </span>
+              {tools.map((t, idx) => (
+                <Link
+                  key={idx}
+                  href={t.href}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-rose-500 hover:text-rose-600 dark:hover:text-rose-400 text-xs font-bold text-zinc-700 dark:text-zinc-300 shadow-2xs whitespace-nowrap transition-all"
+                >
+                  <span>{t.label}</span>
+                  <ExternalLink className="w-3.5 h-3.5 text-rose-500" />
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
