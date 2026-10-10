@@ -18,6 +18,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://filecraft.thewebvale.com'),
   title: 'FileCraft — 50+ In-Browser File & Document Powerhouse Tools',
   description: 'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads.',
   keywords: ['FileCraft', 'PDF editor', 'image converter', 'csv cleaner', 'audio trimmer', 'video compress', 'burn share', 'client-side files'],
@@ -36,6 +37,18 @@ export const metadata: Metadata = {
     shortcut: ['/favicon.ico'],
   },
   manifest: '/manifest.json',
+  openGraph: {
+    title: 'FileCraft — 50+ In-Browser File & Document Powerhouse Tools',
+    description: 'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads.',
+    url: 'https://filecraft.thewebvale.com',
+    siteName: 'FileCraft',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FileCraft — 50+ In-Browser File & Document Powerhouse Tools',
+    description: 'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads.',
+  },
 };
 
 export const viewport: Viewport = {
