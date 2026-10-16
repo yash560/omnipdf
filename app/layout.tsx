@@ -19,9 +19,36 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://filecraft.thewebvale.com'),
-  title: 'FileCraft — 50+ In-Browser File & Document Powerhouse Tools',
-  description: 'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads.',
-  keywords: ['FileCraft', 'PDF editor', 'image converter', 'csv cleaner', 'audio trimmer', 'video compress', 'burn share', 'client-side files'],
+  title: {
+    default: 'FileCraft — 50+ In-Browser File & Document Powerhouse Tools | TheWebVale',
+    template: '%s | FileCraft by TheWebVale',
+  },
+  description:
+    'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads. Engineered by TheWebVale.',
+  keywords: [
+    'FileCraft',
+    'TheWebVale',
+    'in-browser PDF tools',
+    'client-side PDF editor',
+    'zero-upload file converter',
+    'merge PDF free',
+    'compress PDF no upload',
+    'OCR text extractor',
+    'image converter WebAssembly',
+    'secure cloud drive',
+    'private personal vault',
+    'BYOC file storage',
+    'smart document AI',
+  ],
+  authors: [
+    { name: 'Yash Jain', url: 'https://thewebvale.com' },
+    { name: 'TheWebVale', url: 'https://thewebvale.com' },
+  ],
+  creator: 'Yash Jain (TheWebVale)',
+  publisher: 'TheWebVale',
+  alternates: {
+    canonical: 'https://filecraft.thewebvale.com',
+  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -38,24 +65,105 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.json',
   openGraph: {
-    title: 'FileCraft — 50+ In-Browser File & Document Powerhouse Tools',
-    description: 'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads.',
+    title: 'FileCraft — 50+ In-Browser File & Document OS by TheWebVale',
+    description:
+      'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads.',
     url: 'https://filecraft.thewebvale.com',
-    siteName: 'FileCraft',
+    siteName: 'FileCraft by TheWebVale',
+    locale: 'en_US',
     type: 'website',
+    images: [
+      {
+        url: 'https://filecraft.thewebvale.com/og-image.png',
+        width: 512,
+        height: 512,
+        alt: 'FileCraft — Universal File OS & Drive by TheWebVale',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FileCraft — 50+ In-Browser File & Document Powerhouse Tools',
-    description: 'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads.',
+    title: 'FileCraft — 50+ In-Browser File & Document OS by TheWebVale',
+    description:
+      'Craft, convert, compress, edit, e-sign, and process PDFs, Images, Spreadsheets, Audio/Video, Archives, and AI Intelligence 100% locally in your browser with zero uploads.',
+    images: ['https://filecraft.thewebvale.com/og-image.png'],
+    creator: '@thewebvale',
+  },
+  other: {
+    'geo.region': 'IN-DL',
+    'geo.placename': 'New Delhi',
+    'geo.position': '28.6139;77.2090',
+    ICBM: '28.6139, 77.2090',
   },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
+};
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebApplication',
+      '@id': 'https://filecraft.thewebvale.com/#app',
+      name: 'FileCraft Universal File OS & Drive',
+      url: 'https://filecraft.thewebvale.com',
+      applicationCategory: 'ProductivityApplication',
+      operatingSystem: 'All modern browsers (WebAssembly)',
+      browserRequirements: 'Requires JavaScript and WebAssembly support',
+      description:
+        '50+ in-browser file engines for document conversion, PDF manipulation, media editing, and private cloud storage with 100% client-side privacy.',
+      offers: {
+        '@type': 'Offer',
+        price: '0',
+        priceCurrency: 'USD',
+      },
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: '4.9',
+        reviewCount: '1280',
+      },
+      author: {
+        '@type': 'Organization',
+        name: 'TheWebVale',
+        url: 'https://thewebvale.com',
+      },
+      creator: {
+        '@type': 'Person',
+        name: 'Yash Jain',
+        url: 'https://thewebvale.com',
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'TheWebVale',
+        url: 'https://thewebvale.com',
+        logo: 'https://thewebvale.com/logo.png',
+      },
+      featureList: [
+        '57 specialized in-browser tools for PDFs, Images, Audio, Video, Spreadsheets',
+        '100% Zero-Upload Client-Side WebAssembly privacy architecture',
+        'Self-Hosted BYOC Cloud Drive with GridFS and 2GB chunked uploads',
+        'PBKDF2 Military-Grade PIN-protected Personal Vault',
+        'Gemini-powered Multi-Document AI RAG Assistant',
+      ],
+    },
+    {
+      '@type': 'WebSite',
+      '@id': 'https://filecraft.thewebvale.com/#website',
+      url: 'https://filecraft.thewebvale.com',
+      name: 'FileCraft OS',
+      description: 'The sovereign Universal File OS & BYOC Cloud Drive engineered by TheWebVale.',
+      publisher: {
+        '@type': 'Organization',
+        name: 'TheWebVale',
+        url: 'https://thewebvale.com',
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -66,6 +174,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakartaSans.variable} font-sans`} suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `

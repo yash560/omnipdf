@@ -185,6 +185,26 @@ export function Footer() {
               </li>
               <li>
                 <a
+                  href="https://thewebvale.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                >
+                  TheWebVale Studios ↗
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://thewebvale.com#services"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-zinc-600 dark:text-zinc-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors"
+                >
+                  Enterprise Engineering ↗
+                </a>
+              </li>
+              <li>
+                <a
                   href="https://wa.me/918770183178"
                   target="_blank"
                   rel="noreferrer"

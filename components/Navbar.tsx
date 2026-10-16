@@ -44,6 +44,16 @@ export function Navbar() {
           {/* Left: Brand Logo & Catalog Dropdown */}
           <div className="flex items-center gap-2 sm:gap-5 min-w-0 shrink-0">
             <FileCraftLogo withLink href="/" size="md" variant="full" />
+            <a
+              href="https://thewebvale.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden xl:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-rose-500/20 bg-rose-500/5 text-[0.68rem] font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 transition-colors"
+              title="Architected by TheWebVale Studios"
+            >
+              <span>By TheWebVale</span>
+              <span className="text-[0.6rem]">↗</span>
+            </a>
 
             {/* Tools Mega Menu Dropdown */}
             <div className="relative hidden lg:block">
