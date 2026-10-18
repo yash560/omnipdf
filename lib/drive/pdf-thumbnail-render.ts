@@ -1,6 +1,19 @@
 import { createCanvas, type SKRSContext2D } from '@napi-rs/canvas';
 import path from 'node:path';
 
+// Polyfill Promise.withResolvers for Node.js < 22 runtimes (e.g. Node 20 LTS)
+if (typeof (Promise as any).withResolvers === 'undefined') {
+  (Promise as any).withResolvers = function <T>() {
+    let resolve!: (value: T | PromiseLike<T>) => void;
+    let reject!: (reason?: any) => void;
+    const promise = new Promise<T>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    return { promise, resolve, reject };
+  };
+}
+
 // Canonical raster width we cache server-side; per-request sizes are cheap
 // sharp resizes of this buffer, so the expensive PDF decode+render happens once.
 export const PDF_THUMBNAIL_CANONICAL_WIDTH = 480;

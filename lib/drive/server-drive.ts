@@ -97,6 +97,25 @@ const MAX_PDF_THUMBNAIL_SOURCE_BYTES = 80 * 1024 * 1024;
 
 /**
  * Fire-and-forget: render a PDF's first page to a cached webp thumbnail and
+/**
+ * Safely executes a background task via Next.js after() when within an active
+ * request scope, or falls back to an asynchronous event loop invocation when
+ * called outside (e.g. in test suites, batch migrations, or CLI scripts).
+ */
+function safeAfter(task: () => Promise<void>): void {
+  try {
+    after(task);
+  } catch {
+    task().catch((err) => {
+      console.warn('[ServerDrive] Background task fallback failed:', err);
+    });
+  }
+}
+
+/**
+ * Schedule a background generation of a standard 400px WebP thumbnail for a
+ * newly-uploaded PDF. Uses the server-rendered sharp pipeline and GridFS to
+ * cache the image forever under the item's ID in the thumbnails collection, and
  * notify any open Drive sessions once ready via the live-events bus. Never
  * throws — a failed or oversized render just leaves the generic file icon in
  * place, which the client already handles gracefully.
@@ -111,7 +130,7 @@ function scheduleServerPdfThumbnail(userId: string, item: DriveItem, buffer?: Bu
   // every PDF would fall through to the slow lazy-generate-on-first-view
   // path instead of arriving pre-warmed. after() keeps the function alive
   // (via Vercel's waitUntil) until this settles, on every runtime.
-  after(async () => {
+  safeAfter(async () => {
     try {
       let source = buffer;
       if (!source) {
@@ -605,7 +624,7 @@ export async function uploadCloudFile(
   // Trigger async deep Gemini enrichment in background. after() keeps this
   // alive past the response on Vercel (see scheduleServerPdfThumbnail above
   // for why plain fire-and-forget silently never runs there).
-  after(async () => {
+  safeAfter(async () => {
     try {
       const aiLabels = await autoLabelFile({
         fileName: name,
@@ -969,7 +988,7 @@ export async function completeChunkUploadSession(
   // Trigger async deep Gemini enrichment in background. after() keeps this
   // alive past the response on Vercel (see scheduleServerPdfThumbnail above
   // for why plain fire-and-forget silently never runs there).
-  after(async () => {
+  safeAfter(async () => {
     try {
       const aiLabels = await autoLabelFile({
         fileName: session.fileName,
