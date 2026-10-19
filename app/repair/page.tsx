@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Wrench, ArrowLeft, Download, CheckCircle2, AlertTriangle, ShieldCheck, Activity, FileCheck } from 'lucide-react';
+import { Wrench, ArrowLeft, Download, CheckCircle2, AlertTriangle, ShieldCheck, Activity, FileCheck, Sparkles } from 'lucide-react';
 import { FileDropzone } from '@/components/FileDropzone';
 import { ProcessingModal } from '@/components/ProcessingModal';
 import { StagedFile } from '@/types/pdf';
@@ -188,6 +188,133 @@ export default function RepairPdfPage() {
         onReset={handleReset}
         actionTitle="Repairing Damaged PDF"
       />
+
+      {/* SEO & Educational Guide Section: Optimized for Page 1 Google Snippets */}
+      <section className="mt-16 pt-12 border-t border-zinc-200 dark:border-zinc-800 space-y-12 max-w-4xl mx-auto">
+        {/* Definition Snippet Target */}
+        <div className="p-8 rounded-3xl bg-sky-50/60 dark:bg-sky-950/20 border border-sky-200/60 dark:border-sky-800/40 shadow-sm space-y-3">
+          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-sky-700 dark:text-sky-400">
+            <Sparkles className="w-4 h-4" />
+            <span>PDF Binary Recovery Standards</span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-extrabold text-zinc-900 dark:text-zinc-100">
+            How to Repair Corrupted PDF Files Online
+          </h2>
+          <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-medium">
+            To repair a corrupted or unreadable PDF file, the file's binary stream is scanned to identify broken cross-reference (XRef) index tables, missing <code>%%EOF</code> trailers, and unclosed content streams. Rather than rejecting the damaged file, <strong>FileCraft</strong> extracts all intact indirect objects, synthesizes a standard-compliant PDF catalog, and exports a restored document—executing 100% in-browser via WebAssembly with zero server uploads.
+          </p>
+        </div>
+
+        {/* PDF Failure Modes & Recovery Techniques Table */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            Common PDF Corruption Causes &amp; Repair Mechanisms
+          </h3>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Our diagnostic parser identifies specific structural anomalies and executes automated recovery routines:
+          </p>
+          <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
+            <table className="w-full text-left text-xs md:text-sm">
+              <thead className="bg-zinc-100 dark:bg-zinc-800/60 text-zinc-900 dark:text-zinc-200">
+                <tr>
+                  <th className="p-3.5 font-bold">Failure Mode</th>
+                  <th className="p-3.5 font-bold">Root Cause</th>
+                  <th className="p-3.5 font-bold">FileCraft Recovery Method</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                  <td className="p-3.5 font-semibold text-zinc-800 dark:text-zinc-200">Corrupted XRef Table</td>
+                  <td className="p-3.5 text-zinc-600 dark:text-zinc-400">Broken byte-offset table; Acrobat throws "File Corrupted or Damaged".</td>
+                  <td className="p-3.5 font-mono text-sky-600 dark:text-sky-400 font-bold">Deep Byte Stream Object Scan &amp; Table Rebuild</td>
+                </tr>
+                <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                  <td className="p-3.5 font-semibold text-zinc-800 dark:text-zinc-200">Truncated EOF Trailer</td>
+                  <td className="p-3.5 text-zinc-600 dark:text-zinc-400">Download interrupted before final bytes; missing <code>%%EOF</code> marker.</td>
+                  <td className="p-3.5 font-mono text-sky-600 dark:text-sky-400 font-bold">Synthetic Trailer &amp; Catalog Reconstruction</td>
+                </tr>
+                <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                  <td className="p-3.5 font-semibold text-zinc-800 dark:text-zinc-200">Unclosed Content Stream</td>
+                  <td className="p-3.5 text-zinc-600 dark:text-zinc-400">Abrupt printer spool or scanner disconnect during image serialization.</td>
+                  <td className="p-3.5 font-mono text-sky-600 dark:text-sky-400 font-bold">Safe Stream Delimitation &amp; FlateDecode Patch</td>
+                </tr>
+                <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                  <td className="p-3.5 font-semibold text-zinc-800 dark:text-zinc-200">Missing Root Dictionary</td>
+                  <td className="p-3.5 text-zinc-600 dark:text-zinc-400">Damaged document catalog preventing reader apps from locating pages.</td>
+                  <td className="p-3.5 font-mono text-sky-600 dark:text-sky-400 font-bold">Automated Page Tree Synthesis</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 100% In-Browser Privacy Protection Guarantee */}
+        <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-3">
+          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+            <CheckCircle2 className="w-5 h-5" />
+            <span>Zero Server Uploads — 100% Client-Side Privacy</span>
+          </div>
+          <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            Damaged files often contain highly sensitive business records, financial audits, or legal submissions. Unlike other converters that store your uploaded files on remote servers, FileCraft repairs your PDF completely inside your browser using client-side WebAssembly. No bytes leave your computer.
+          </p>
+        </div>
+
+        {/* TheWebVale Engineering & Attribution Card */}
+        <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-900 to-slate-900 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div className="text-xs font-mono uppercase tracking-wider text-indigo-300 font-semibold mb-1">
+              Architecture &amp; Engineering
+            </div>
+            <h4 className="text-base font-bold">
+              Engineered by TheWebVale Software Studio
+            </h4>
+            <p className="text-xs text-indigo-200/80 max-w-xl mt-1">
+              FileCraft is architected by <a href="https://www.thewebvale.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-white">TheWebVale</a>, building sub-second web platforms, enterprise ERP systems, and high-velocity digital products.
+            </p>
+          </div>
+          <a
+            href="https://www.thewebvale.com/services/website-development"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold whitespace-nowrap shadow-md transition-all"
+          >
+            Explore Custom Software
+          </a>
+        </div>
+
+        {/* Frequently Asked Questions */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            Frequently Asked Questions
+          </h3>
+          <div className="space-y-3">
+            <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 mb-1">
+                Can all corrupted PDF files be repaired?
+              </h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                If the core text and image byte streams are present in the file, FileCraft can rebuild the index tables and recover your document. Only files that have been completely overwritten with zeros or wiped by storage disk failure cannot be restored.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 mb-1">
+                Why does Adobe Acrobat say "The file is damaged and could not be repaired"?
+              </h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Standard PDF viewers require strict structural compliance and will refuse to render a file if the cross-reference table or header offsets are invalid. FileCraft bypasses broken pointers and reconstructs a fresh, compliant PDF index table.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 mb-1">
+                Is this PDF repair tool completely free?
+              </h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Yes. FileCraft is a free client-side utility suite with no paywalls, subscriptions, or watermarks.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

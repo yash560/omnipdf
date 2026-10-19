@@ -312,6 +312,133 @@ export default function BatesNumberingPage() {
         onReset={handleReset}
         actionTitle="Applying Bates Numbering"
       />
+
+      {/* SEO & Educational Guide Section: Optimized for Page 1 Google Snippets */}
+      <section className="mt-16 pt-12 border-t border-zinc-200 dark:border-zinc-800 space-y-12 max-w-4xl mx-auto">
+        {/* Definition Snippet Target */}
+        <div className="p-8 rounded-3xl bg-indigo-50/60 dark:bg-indigo-950/20 border border-indigo-200/60 dark:border-indigo-800/40 shadow-sm space-y-3">
+          <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-400">
+            <Sparkles className="w-4 h-4" />
+            <span>Document Discovery Standards</span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-extrabold text-zinc-900 dark:text-zinc-100">
+            What is Bates Numbering on a PDF?
+          </h2>
+          <p className="text-zinc-700 dark:text-zinc-300 leading-relaxed text-sm md:text-base font-medium">
+            <strong>Bates numbering</strong> (also known as <em>Bates stamping</em>) is an indexing method used in legal discovery and corporate compliance to assign unique, sequential reference identifiers to each page of a document packet. Commonly formatted with case-specific prefixes (such as <code>CONFIDENTIAL-</code>, <code>PLTF-</code>, or <code>DEF-</code>) and zero-padded digits (e.g., <code>000001</code>), Bates stamping prevents document tampering and ensures precise page citation during trials, depositions, and regulatory audits.
+          </p>
+        </div>
+
+        {/* Common Legal Bates Formats Table */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            Standard Legal Bates Numbering Formats
+          </h3>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+            Depending on your jurisdiction and case role, Bates numbering uses standard convention codes to distinguish evidentiary sources:
+          </p>
+          <div className="overflow-x-auto rounded-2xl border border-zinc-200 dark:border-zinc-800">
+            <table className="w-full text-left text-xs md:text-sm">
+              <thead className="bg-zinc-100 dark:bg-zinc-800/60 text-zinc-900 dark:text-zinc-200">
+                <tr>
+                  <th className="p-3.5 font-bold">Prefix Type</th>
+                  <th className="p-3.5 font-bold">Example Stamp</th>
+                  <th className="p-3.5 font-bold">Standard Legal Application</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+                <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                  <td className="p-3.5 font-semibold text-zinc-800 dark:text-zinc-200">Plaintiff Production</td>
+                  <td className="p-3.5 font-mono text-indigo-600 dark:text-indigo-400 font-bold">PLTF-000001</td>
+                  <td className="p-3.5 text-zinc-600 dark:text-zinc-400">Used by plaintiff counsel to number initial complaints and discovery exhibits.</td>
+                </tr>
+                <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                  <td className="p-3.5 font-semibold text-zinc-800 dark:text-zinc-200">Defendant Production</td>
+                  <td className="p-3.5 font-mono text-indigo-600 dark:text-indigo-400 font-bold">DEF-000001</td>
+                  <td className="p-3.5 text-zinc-600 dark:text-zinc-400">Used by defendant counsel during mandatory document disclosures.</td>
+                </tr>
+                <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                  <td className="p-3.5 font-semibold text-zinc-800 dark:text-zinc-200">Confidential Materials</td>
+                  <td className="p-3.5 font-mono text-indigo-600 dark:text-indigo-400 font-bold">CONFIDENTIAL-000001</td>
+                  <td className="p-3.5 text-zinc-600 dark:text-zinc-400">Protective order designations for sensitive financial records, PII, and trade secrets.</td>
+                </tr>
+                <tr className="hover:bg-zinc-50 dark:hover:bg-zinc-800/30">
+                  <td className="p-3.5 font-semibold text-zinc-800 dark:text-zinc-200">Deposition Exhibits</td>
+                  <td className="p-3.5 font-mono text-indigo-600 dark:text-indigo-400 font-bold">EXHIBIT-A-001</td>
+                  <td className="p-3.5 text-zinc-600 dark:text-zinc-400">Specific courtroom or arbitration evidentiary identification packets.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Client-Side WebAssembly Privacy Guarantee */}
+        <div className="p-6 rounded-2xl bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 space-y-3">
+          <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-bold text-sm">
+            <CheckCircle2 className="w-5 h-5" />
+            <span>100% In-Browser Privacy Protection</span>
+          </div>
+          <p className="text-xs md:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+            Unlike legacy online PDF tools that upload sensitive litigation files to remote third-party servers, FileCraft processes document streams entirely inside your browser's local memory via WebAssembly. Your confidential client records, tax filings, and evidence packets never leave your machine—preserving strict attorney-client privilege.
+          </p>
+        </div>
+
+        {/* TheWebVale Engineering & Attribution Card */}
+        <div className="p-6 rounded-2xl bg-gradient-to-br from-indigo-900 to-slate-900 text-white shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div>
+            <div className="text-xs font-mono uppercase tracking-wider text-indigo-300 font-semibold mb-1">
+              Architecture &amp; Engineering
+            </div>
+            <h4 className="text-base font-bold">
+              Engineered by TheWebVale Software Studio
+            </h4>
+            <p className="text-xs text-indigo-200/80 max-w-xl mt-1">
+              FileCraft is architected by <a href="https://www.thewebvale.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold hover:text-white">TheWebVale</a>, building sub-second web platforms, enterprise ERP systems, and high-velocity digital products.
+            </p>
+          </div>
+          <a
+            href="https://www.thewebvale.com/services/website-development"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold whitespace-nowrap shadow-md transition-all"
+          >
+            Explore Custom Software
+          </a>
+        </div>
+
+        {/* Frequently Asked Questions */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-bold text-zinc-900 dark:text-zinc-100">
+            Frequently Asked Questions
+          </h3>
+          <div className="space-y-3">
+            <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 mb-1">
+                How do I Bates number a PDF for free?
+              </h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Drag and drop your PDF into FileCraft, customize your prefix (e.g. <code>CONFIDENTIAL-</code>), set your starting number and digit padding (e.g. 6 digits), choose placement (such as bottom-right), and click Apply Bates Numbering. Your stamped document will be generated locally within seconds.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 mb-1">
+                Will Bates stamping alter or blur existing PDF text?
+              </h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                No. Bates numbering is injected as an overlay on the PDF content stream with configurable margin padding, ensuring underlying text, signatures, and stamps remain fully legible.
+              </p>
+            </div>
+            <div className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+              <h4 className="font-bold text-sm text-zinc-900 dark:text-zinc-100 mb-1">
+                Are there any file size or page count limits?
+              </h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                Because processing happens on your local device CPU rather than a shared cloud server, you can process large litigation binders with hundreds of pages without subscription fees or artificial limits.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
